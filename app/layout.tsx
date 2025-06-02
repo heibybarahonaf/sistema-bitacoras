@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Navbar from "@/components/NavBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,18 +18,22 @@ export const metadata: Metadata = {
   description: "Gestión y seguimiento de bitácoras técnicas para POS de Honduras",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="es">
+      <body className="bg-[#f9f9f9] text-[#1B1D22] min-h-screen flex flex-col">
+        <Navbar />
+        <main className="p-4 pt-20 flex flex-col flex-grow justify-start">
+          {children}
+        </main>
+        <footer className="bg-red-700 text-white text-center py-3">
+          © 2025 POS de Honduras.
+        </footer>
       </body>
     </html>
   );
 }
+
+
+
