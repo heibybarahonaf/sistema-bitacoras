@@ -1,32 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import ModalUsuario from "@/components/ModalUsuario"; // Suponiendo que harás un modal similar al de clientes
+import ModalUsuario from "@/components/ModalUsuario"; // Asumo que tendrás un modal para agregar/editar usuarios
 
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<any[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [usuarioActual, setUsuarioActual] = useState<any>(null);
 
-  // Función para cargar usuarios (por ahora, ejemplo vacío o datos de prueba)
+  // Fetch usuarios desde API (comentar mientras no haya API)
+  /*
   const fetchUsuarios = async () => {
-    // Aquí la llamada a la API (comentada por ahora)
-    /*
-    const res = await fetch("/api/usuarios");
-    const data = await res.json();
-    setUsuarios(data);
-    */
-    
-    // Datos de prueba
-    setUsuarios([
-      { id: 1, nombre: "Juan Pérez", email: "juan@example.com", activo: true },
-      { id: 2, nombre: "Ana Gómez", email: "ana@example.com", activo: false },
-    ]);
+  const res = await fetch("/api/usuarios");
+  const data = await res.json();
+  setUsuarios(data);
   };
 
   useEffect(() => {
     fetchUsuarios();
   }, []);
+  */
 
   const handleModalClose = () => {
     setModalOpen(false);
@@ -34,16 +27,55 @@ export default function UsuariosPage() {
   };
 
   const handleSave = () => {
-    fetchUsuarios();
+    // Refrescar lista luego de guardar
+    // fetchUsuarios();
   };
 
-  const handleDelete = (id: number) => {
-    if (!confirm("¿Estás seguro que deseas eliminar este usuario?")) return;
-    // Aquí iría la lógica para eliminar por API cuando esté lista
-    alert(`Eliminar usuario con id: ${id} (simulado)`);
-    // Luego recargar lista
-    fetchUsuarios();
+  const handleDelete = async (id: number) => {
+    const confirmDelete = confirm("¿Estás seguro que deseas eliminar este usuario?");
+    if (!confirmDelete) return;
+
+    try {
+      /*
+      const res = await fetch(`/api/usuarios/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Error al eliminar");
+      }
+
+      fetchUsuarios();
+      */
+    } catch (error: any) {
+      alert(`Error al eliminar el usuario: ${error.message}`);
+    }
   };
+
+  // Datos de prueba para mostrar la tabla antes de conectar con API
+  const datosPrueba = [
+    {
+      id: 1,
+      nombre: "Heiby Barahona",
+      correo: "heiby@mail.com",
+      rol: "admin",
+      activo: true,
+      zona_asignada: "Zona Norte",
+      fecha_ingreso: "2025-06-04T10:30:00",
+      telefono: "98765432",
+    },
+    {
+      id: 2,
+      nombre: "Jorge Canales",
+      correo: "jorge@mail.com",
+      rol: "tecnico",
+      activo: false,
+      zona_asignada: "Zona Sur",
+      fecha_ingreso: "2025-06-04T08:15:00",
+      telefono: "91234567",
+    },
+  ];
 
   return (
     <div className="p-6 bg-white min-h-screen">
@@ -53,7 +85,7 @@ export default function UsuariosPage() {
 
       <button
         onClick={() => setModalOpen(true)}
-        className="mb-6 bg-blue-700 text-white px-5 py-3 rounded-md hover:bg-blue-800 transition-colors duration-300 font-semibold shadow"
+        className="mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
       >
         Agregar Usuario
       </button>
@@ -63,16 +95,26 @@ export default function UsuariosPage() {
           <thead className="bg-gray-100">
             <tr>
               <th className="text-left px-4 py-3 font-medium border-b border-gray-300">Nombre</th>
-              <th className="text-left px-4 py-3 font-medium border-b border-gray-300">Email</th>
+              <th className="text-left px-4 py-3 font-medium border-b border-gray-300">Correo</th>
+              <th className="text-left px-4 py-3 font-medium border-b border-gray-300">Rol</th>
+              <th className="text-left px-4 py-3 font-medium border-b border-gray-300">Zona Asignada</th>
+              <th className="text-left px-4 py-3 font-medium border-b border-gray-300">Teléfono</th>
+              <th className="text-left px-4 py-3 font-medium border-b border-gray-300">Fecha Ingreso</th>
               <th className="text-center px-4 py-3 font-medium border-b border-gray-300">Activo</th>
               <th className="text-center px-4 py-3 font-medium border-b border-gray-300">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {usuarios.map((usuario) => (
+            {(usuarios.length ? usuarios : datosPrueba).map((usuario) => (
               <tr key={usuario.id} className="hover:bg-gray-50 transition-colors duration-200">
                 <td className="px-4 py-3 border-b border-gray-200">{usuario.nombre}</td>
-                <td className="px-4 py-3 border-b border-gray-200">{usuario.email}</td>
+                <td className="px-4 py-3 border-b border-gray-200">{usuario.correo}</td>
+                <td className="px-4 py-3 border-b border-gray-200">{usuario.rol}</td>
+                <td className="px-4 py-3 border-b border-gray-200">{usuario.zona_asignada || "-"}</td>
+                <td className="px-4 py-3 border-b border-gray-200">{usuario.telefono || "-"}</td>
+                <td className="px-4 py-3 border-b border-gray-200">
+                  {new Date(usuario.fecha_ingreso).toLocaleDateString()}
+                </td>
                 <td className="px-4 py-3 border-b border-gray-200 text-center">
                   {usuario.activo ? (
                     <span className="text-green-600 font-semibold">Sí</span>
@@ -80,19 +122,19 @@ export default function UsuariosPage() {
                     <span className="text-red-600 font-semibold">No</span>
                   )}
                 </td>
-                <td className="px-4 py-3 border-b border-gray-200 text-center">
+                <td className="px-4 py-3 border-b border-gray-200 text-center space-x-2">
                   <button
                     onClick={() => {
                       setUsuarioActual(usuario);
                       setModalOpen(true);
                     }}
-                    className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm font-medium mr-2"
+                    className="px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50] transition-colors duration-200 text-sm font-medium"
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => handleDelete(usuario.id)}
-                    className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200 text-sm font-medium"
+                    className="px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024] transition-colors duration-200 text-sm font-medium"
                   >
                     Eliminar
                   </button>

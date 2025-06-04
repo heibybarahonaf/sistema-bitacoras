@@ -1,59 +1,47 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
 
 interface ModalUsuarioProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
-  usuarioActual: any; // Puedes tipar mejor si quieres
+  usuarioActual: any;
 }
 
-export default function ModalUsuario({ isOpen, onClose, onSave, usuarioActual }: ModalUsuarioProps) {
-  const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState("");
-  const [activo, setActivo] = useState(true);
+export default function ModalUsuario({
+  isOpen,
+  onClose,
+  onSave,
+  usuarioActual,
+}: ModalUsuarioProps) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
 
   useEffect(() => {
     if (usuarioActual) {
-      setNombre(usuarioActual.nombre || "");
-      setEmail(usuarioActual.email || "");
-      setActivo(usuarioActual.activo ?? true);
+      reset({
+        nombre: usuarioActual.nombre,
+        correo: usuarioActual.correo,
+        password: "", // dejar vacío por seguridad
+        rol: usuarioActual.rol,
+        zona_asignada: usuarioActual.zona_asignada,
+        telefono: usuarioActual.telefono,
+        activo: usuarioActual.activo,
+      });
     } else {
-      setNombre("");
-      setEmail("");
-      setActivo(true);
+      reset();
     }
-  }, [usuarioActual]);
+  }, [usuarioActual, reset]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!nombre.trim() || !email.trim()) {
-      alert("Por favor completa nombre y email.");
-      return;
-    }
-
-    // Aquí iría la llamada a la API para crear o actualizar usuario (comentado)
-    /*
-    const method = usuarioActual ? "PUT" : "POST";
-    const url = usuarioActual ? `/api/usuarios/${usuarioActual.id}` : "/api/usuarios";
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, email, activo }),
-    });
-
-    if (!res.ok) {
-      const error = await res.json();
-      alert(error.message || "Error al guardar usuario");
-      return;
-    }
-    */
-
-    // Simulamos guardado exitoso
-    alert(`Usuario ${usuarioActual ? "actualizado" : "creado"} con éxito (simulado)`);
-
+  const onSubmit = async (data: any) => {
+    // Esta parte se conecta a la API cuando esté lista
+    console.log("Datos del formulario:", data);
     onSave();
     onClose();
   };
@@ -61,50 +49,106 @@ export default function ModalUsuario({ isOpen, onClose, onSave, usuarioActual }:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">{usuarioActual ? "Editar Usuario" : "Agregar Usuario"}</h2>
-        <form onSubmit={handleSubmit}>
-          <label className="block mb-2 font-medium">Nombre</label>
-          <input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="w-full px-3 py-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-600"
-            required
-          />
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-2xl">
+        <h2 className="text-xl font-semibold mb-4">
+          {usuarioActual ? "Editar Usuario" : "Agregar Usuario"}
+        </h2>
 
-          <label className="block mb-2 font-medium">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-600"
-            required
-          />
-
-          <label className="inline-flex items-center mb-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block font-medium">Nombre</label>
             <input
-              type="checkbox"
-              checked={activo}
-              onChange={(e) => setActivo(e.target.checked)}
-              className="mr-2"
+              type="text"
+              {...register("nombre", { required: "Nombre requerido" })}
+              className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
             />
-            Activo
-          </label>
+            {errors.nombre && <p className="text-red-600 text-sm">{"Ingrese nombre"}</p>}
+          </div>
 
-          <div className="flex justify-end gap-3">
+          <div>
+            <label className="block font-medium">Correo</label>
+            <input
+              type="email"
+              {...register("correo", {
+                required: "Correo requerido",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Correo inválido",
+                },
+              })}
+              className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
+            />
+            {errors.correo && <p className="text-red-600 text-sm">{"Ingrese correo"}</p>}
+          </div>
+
+          <div>
+            <label className="block font-medium">Contraseña</label>
+            <input
+              type="password"
+              {...register("password", { required: !usuarioActual && "Contraseña requerida" })}
+              className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
+            />
+            {errors.password && <p className="text-red-600 text-sm">{"Ingrese una contraseña"}</p>}
+          </div>
+
+          <div>
+            <label className="block font-medium">Teléfono</label>
+            <input
+              type="text"
+              {...register("telefono", {
+                pattern: {
+                  value: /^[0-9]{8,10}$/,
+                  message: "Teléfono inválido",
+                },
+              })}
+              className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
+            />
+            {errors.telefono && <p className="text-red-600 text-sm">{"Ingrese un telefono válido"}</p>}
+          </div>
+
+          <div>
+            <label className="block font-medium">Zona Asignada</label>
+            <input
+              type="text"
+              {...register("zona_asignada")}
+              className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="block font-medium">Rol</label>
+            <select
+              {...register("rol")}
+              className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
+            >
+              <option value="tecnico">Técnico</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </div>
+
+          {usuarioActual && (
+            <div>
+              <label className="block font-medium">Activo</label>
+              <select
+                {...register("activo")}
+                className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
+              >
+                <option value="true">Sí</option>
+                <option value="false">No</option>
+              </select>
+            </div>
+          )}
+
+          <div className="col-span-2 flex justify-end space-x-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 transition"
+              className="px-5 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-800 transition-colors duration-300"
             >
               Cancelar
             </button>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded bg-blue-700 text-white hover:bg-blue-800 transition"
-            >
+            <button type="submit" className="px-5 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a] transition-colors duration-300">
               Guardar
             </button>
           </div>
