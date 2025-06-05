@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { Cliente } from "@prisma/client";
 import { ResponseDto } from "../common/dtos/response.dto";
 import { prisma } from "../libs/prisma";
-import { Cliente } from "@prisma/client";
 import { CrearClienteDto } from "../dtos/cliente.dto";
+import { GeneralUtils } from "../common/utils/general.utils";
 
 const EditarClienteDto = CrearClienteDto.partial();
 type EditarClienteDto = z.infer<typeof EditarClienteDto>;
@@ -14,7 +15,7 @@ export class ClienteService {
         const clientes = await prisma.cliente.findMany({});
 
         if(clientes.length === 0){
-            throw new ResponseDto(404, "No se encontraron clientes.");
+            throw new ResponseDto(404, "No se encontraron clientes");
         }
 
         return clientes;
@@ -22,22 +23,21 @@ export class ClienteService {
 
 
     public static async obtenerClientePorId(id: number): Promise<Cliente> {
-    
         const cliente = await prisma.cliente.findUnique({ where: { id } });
 
         if(!cliente){
-            throw new ResponseDto(404, "Cliente no encontrado.");
+            throw new ResponseDto(404, "Cliente no encontrado");
         }
     
         return cliente;
     }
 
+
     public static async obtenerClientePorEmpresa(empresa: string): Promise<Cliente> {
-    
-        const cliente = await prisma.cliente.findFirst({ where: { empresa: empresa.toUpperCase() }});
+        const cliente = await prisma.cliente.findFirst({ where: { empresa: empresa }});
 
         if(!cliente){
-            throw new ResponseDto(404, "Cliente no encontrado.");
+            throw new ResponseDto(404, "Cliente no encontrado");
         }
     
         return cliente;
@@ -45,58 +45,96 @@ export class ClienteService {
 
 
     public static async crearCliente(clienteData: CrearClienteDto): Promise<Cliente> {
+        const clienteExistente = await prisma.cliente.findFirst({ where: { empresa: clienteData.empresa }});
+        const emailExistente = await prisma.cliente.findFirst({ where: { correo: clienteData.correo }});
+        const rtnExistente = await prisma.cliente.findFirst({ where: { rtn: clienteData.rtn }});
         
-        const empresaUpper = clienteData.empresa.toUpperCase();
-        const clienteExistente = await prisma.cliente.findFirst({ where: { empresa: empresaUpper }});
-        if (clienteExistente) {
-            throw new ResponseDto(404, "La empresa ya está registrada.");
+        if (emailExistente) {
+            throw new ResponseDto(409, "El email ya está registrado");
         }
 
-        const cliente = await prisma.cliente.create({
-            data: {
-                ...clienteData,
-                empresa: empresaUpper,
-                correo: clienteData.correo.toLowerCase(),
-            },
-        });
+        if (clienteExistente) {
+            throw new ResponseDto(409, "La empresa ya está registrada");
+        }
 
-         return cliente;
+        if (rtnExistente) {
+            throw new ResponseDto(409, "El RTN ya está registrado");
+        }
+
+        try {
+            const cliente = await prisma.cliente.create({
+                data: clienteData
+            });
+
+            return cliente;
+
+        } catch (error) {
+            throw new ResponseDto(500, "Error al crear el cliente");
+        }
 
     }
 
 
     public static async editarCliente(id: number, clienteData: EditarClienteDto): Promise<Cliente> {
-    
-        const cliente = await this.obtenerClientePorId(id);
-        const empresa = clienteData.empresa ? clienteData.empresa.toUpperCase() : undefined;
-        const correo = clienteData.correo ? clienteData.correo.toLowerCase() : undefined;
+        const clienteExistente = await this.obtenerClientePorId(id);
+        const { empresa, rtn, correo } = clienteData;
 
-        if (empresa && empresa !== cliente.empresa) {
-            this.obtenerClientePorEmpresa(empresa)
+        if (correo && correo !== clienteExistente.correo) {
+            const correoExiste = await prisma.cliente.findFirst({ where: { correo }});
+            if (correoExiste) {
+                throw new ResponseDto(409, "El correo ya está registrado");
+            }
         }
 
-        const clienteActualizado = await prisma.cliente.update({
-            where: { id },
-            data: {
-                ...clienteData,
-                empresa: empresa || clienteData.empresa,
-                correo: correo || clienteData.correo,
-            },
-        });
+        if (empresa && empresa !== clienteExistente.empresa) {
+            const empresaExiste = await prisma.cliente.findFirst({ where: { empresa }});
 
-        return clienteActualizado;
+            if (empresaExiste) {
+                throw new ResponseDto(409, "La empresa ya está registrada");
+            }
+        }
+
+        if (rtn && rtn !== clienteExistente.rtn) {
+            const rtnExiste = await prisma.cliente.findFirst({ where: { rtn }});
+
+            if (rtnExiste) {
+                throw new ResponseDto(409, "El RTN ya está registrado");
+            }
+        }
+
+        const datosActualizacion = GeneralUtils.filtrarCamposActualizables(clienteData);
+        if (Object.keys(datosActualizacion).length === 0) {
+            throw new ResponseDto(400, "No se proporcionaron datos para actualizar");
+        }
+
+        try {
+            const clienteActualizado = await prisma.cliente.update({
+                where: { id : id },
+                data: datosActualizacion,
+            });
+
+            return clienteActualizado;
+
+        } catch (error) {
+            throw new ResponseDto(500, "Error al actualizar el cliente");
+        }
+
     }
+
 
     public static async eliminarCliente(id: number): Promise<Cliente> {
-        const cliente = await this.obtenerClientePorId(id);
+        await this.obtenerClientePorId(id);
 
-        const clienteEliminado = await prisma.cliente.delete({
-            where: { id },
-        });
+        try {
+            const clienteEliminado = await prisma.cliente.delete({ where: { id }});
 
-        return clienteEliminado;
+            return clienteEliminado;
+
+        } catch (error) {
+            throw new ResponseDto(500, "Error al eliminar el cliente");
+        }
+
     }
-
 
 
 }
