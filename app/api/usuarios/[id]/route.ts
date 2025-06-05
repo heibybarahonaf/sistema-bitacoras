@@ -15,7 +15,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         const id = parseInt(idParams);
 
         if (isNaN(id)) {
-            throw new ResponseDto(400, "Formato del Id invalido!");
+            throw new ResponseDto(400, "ID inválido"); 
         }
 
         const usuario = await UsuarioService.obtenerUsuarioPorId(id);
@@ -40,7 +40,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         const id = parseInt(idParams);
 
         if (isNaN(id)) {
-            throw new ResponseDto(400, "ID inválido."); 
+            throw new ResponseDto(400, "ID inválido"); 
         }
 
         const body = await req.json();
@@ -72,7 +72,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
         const id = parseInt(idParams);
 
         if (isNaN(id)) {
-            throw new ResponseDto(400, "ID inválido."); 
+            throw new ResponseDto(400, "ID inválido"); 
         }
 
         const usuarioEliminado = await UsuarioService.eliminarUsuario(id);
