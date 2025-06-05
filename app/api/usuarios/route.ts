@@ -9,7 +9,7 @@ export async function GET() {
     try {
 
         const usuarios = await UsuarioService.obtenerUsuarios();
-        return NextResponse.json(new ResponseDto(200, "Usuarios obtenidos correctamente.", usuarios));
+        return NextResponse.json(new ResponseDto(200, "Usuarios obtenidos correctamente", usuarios));
 
     } catch (error) {
 
