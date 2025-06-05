@@ -14,4 +14,9 @@ export class GeneralUtils {
         throw new ResponseDto(400, "Datos inválidos", erroresFormateados);
     }
 
+
+    public static filtrarCamposActualizables<T extends object>(datos: T): Partial<T> {
+        return Object.fromEntries(Object.entries(datos).filter(([_, value]) => value !== undefined)) as Partial<T>;
+    }
+
 }
