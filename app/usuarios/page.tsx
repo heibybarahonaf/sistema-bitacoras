@@ -9,6 +9,7 @@ interface Usuario {
   password: string;
   correo: string;
   rol: string;
+  telefono: string;
   activo: boolean;
   zona_asignada: string;
 }
@@ -101,16 +102,19 @@ export default function UsuariosPage() {
     if (!usuarioEditar) return;
 
     const formData = new FormData(event.currentTarget);
-    const usuarioActualizado = {
+    const usuarioActualizado: any = {
       nombre: formData.get("nombre") as string,
       password: formData.get("password") as string,
-      correo: formData.get("correo") as string,
       rol: formData.get("rol") as string,
       zona_asignada: formData.get("zona_asignada") as string,
-      activo: formData.get("activo") === "true", // ← Convierte string a boolean
       telefono: formData.get("telefono") as string,
+      activo: formData.get("activo") === "true", // ← Convierte string a boolean
       updateAt: new Date().toISOString(),
     };
+    const nuevoCorreo = formData.get("correo") as string;
+    if (nuevoCorreo !== usuarioEditar.correo) {
+      usuarioActualizado.correo = nuevoCorreo;
+    }
     
     try {
       const res = await fetch(`/api/usuarios/${usuarioEditar.id}`, {
@@ -158,6 +162,7 @@ export default function UsuariosPage() {
                 <th className="px-4 py-3 border-b text-left">Correo</th>
                 <th className="px-4 py-3 border-b text-left">Rol</th>
                 <th className="px-4 py-3 border-b text-left">Zona</th>
+                <th className="px-4 py-3 border-b text-left">Teléfono</th>
                 <th className="px-4 py-3 border-b text-center">Activo</th>
                 <th className="px-4 py-3 border-b text-center">Acciones</th>
               </tr>
@@ -169,6 +174,7 @@ export default function UsuariosPage() {
                   <td className="px-4 py-3 border-b">{usuario.correo}</td>
                   <td className="px-4 py-3 border-b">{usuario.rol}</td>
                   <td className="px-4 py-3 border-b">{usuario.zona_asignada}</td>
+                  <td className="px-4 py-3 border-b">{usuario.telefono}</td>
                   <td className="px-4 py-3 border-b text-center">
                     {usuario.activo ? "✅" : "❌"}
                   </td>
@@ -206,7 +212,7 @@ export default function UsuariosPage() {
         <h2 className="text-xl font-semibold mb-6 text-gray-900">
           {usuarioEditar ? "Editar Usuario" : "Nuevo Usuario"}
         </h2>
-        <form onSubmit={handleSubmitUsuario} className="space-y-4">
+        <form onSubmit={usuarioEditar ? handleEditarCliente : handleSubmitUsuario} className="space-y-4">
           {[
             { label: "Nombre", name: "nombre", type: "text", placeholder: "Nombre de usuario" },
             { label: "Correo", name: "correo", type: "email", placeholder: "Correo electrónico" },
