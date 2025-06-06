@@ -149,6 +149,7 @@ model Sistema {
   id          Int        @id @default(autoincrement())
   sistema     String?    @db.VarChar(20)
   descripcion String?
+  activo      Boolean?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   bitacora    Bitacora[]
