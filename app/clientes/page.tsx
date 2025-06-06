@@ -58,7 +58,7 @@ export default function ClientesPage() {
       horas_paquetes: 0,
       horas_individuales: 0,
       createdAt: new Date().toISOString(),
-      updateAt: new Date().toISOString
+      updateAt: new Date().toISOString()
     };
 
 
@@ -181,9 +181,9 @@ export default function ClientesPage() {
                   <td className="px-4 py-3 border-b">{cliente.correo}</td>
                   <td className="px-4 py-3 border-b text-center">
                     {cliente.activo ? (
-                      <span className="text-green-600 font-semibold">Sí</span>
+                      <span className="text-green-600 font-semibold">✅</span>
                     ) : (
-                      <span className="text-red-600 font-semibold">No</span>
+                      <span className="text-red-600 font-semibold">❌</span>
                     )}
                   </td>
                   <td className="px-4 py-3 border-b text-center space-x-3">
