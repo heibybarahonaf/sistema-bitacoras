@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { User, Users, NotebookText, BarChart, LogOut, ClipboardList } from "lucide-react";
+import { User, Users, NotebookText, BarChart, LogOut, ClipboardList, Settings, Cpu, HardDrive, Receipt, MonitorDot } from "lucide-react";
 
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -32,6 +32,21 @@ export default function Navbar() {
       href: "/bitacoras",
       label: "Bitácoras",
       icon: NotebookText
+    },
+    {
+      href: "/sistemas",
+      label: "Sistemas",
+      icon: HardDrive
+    },
+    {
+      href: "/equipos",
+      label: "Equipos",
+      icon: MonitorDot
+    },
+    {
+      href: "/pagos",
+      label: "Pagos",
+      icon: Receipt
     },
     {
       href: "/reportes",
@@ -82,7 +97,7 @@ export default function Navbar() {
           ✖ Cerrar
         </button>
 
-        <ul className="space-y-4 mt-4">
+        <ul className="space-y-4 mt-4 flex flex-col h-[calc(100%-8rem)] justify-center">
           {menuItems.map((item) => {
             const IconComponent = item.icon;
             const active = isActive(item.href);
