@@ -9,10 +9,10 @@ datasource db {
 
 model Firma {
   id              Int        @id @default(autoincrement())
-  token           String?
-  firma_base64    String?
-  usada           Boolean?
-  url             String?
+  token           String
+  firma_base64    String
+  usada           Boolean
+  url             String
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
   clienteBitacora Bitacora[] @relation("FirmaCliente")
@@ -28,27 +28,29 @@ model Bitacora {
   encuesta_id          Int
   firmaTecnico_id      Int
   firmaCLiente_id      Int
-  no_ticket            String?            @db.VarChar(10)
-  fecha_servicio       DateTime?
-  hora_llegada         DateTime?
-  hora_salida          DateTime?
+  no_ticket            String             @db.VarChar(10)
+  fecha_servicio       DateTime
+  hora_llegada         DateTime
+  hora_salida          DateTime
   sistema_id           Int
-  tipo_servicio        String?            @db.VarChar(100)
-  nombres_capacitados  String?
-  descripcion_servicio String?
-  fase_implementacion  String?            @db.VarChar(50)
-  comentarios          String?
-  calificacion         Int?
-  ventas               String?
-  horas_consumidas     Int?
-  tipo_horas           String?            @db.VarChar(25)
+  equipo_id            Int
+  tipo_servicio        String             @db.VarChar(100)
+  nombres_capacitados  String
+  descripcion_servicio String
+  fase_implementacion  String             @db.VarChar(50)
+  comentarios          String
+  calificacion         Int
+  ventas               String
+  horas_consumidas     Int
+  tipo_horas           String             @db.VarChar(25)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   cliente              Cliente            @relation(fields: [cliente_id], references: [id])
-  encuesta             Encuestas_Bitacora @relation(fields: [encuesta_id], references: [id])
+  //encuesta             Encuesta_Bitacora  @relation(fields: [encuesta_id], references: [id])
   firmaCliente         Firma              @relation("FirmaCliente", fields: [firmaCLiente_id], references: [id])
   firmaTecnico         Firma              @relation("FirmaTecnico", fields: [firmaTecnico_id], references: [id])
   sistema              Sistema            @relation(fields: [sistema_id], references: [id])
+  equipo               Equipo             @relation(fields: [equipo_id], references: [id])
   usuario              Usuario            @relation(fields: [usuario_id], references: [id])
 
   @@map("bitacoras")
@@ -57,11 +59,12 @@ model Bitacora {
 model Pagos_Cliente {
   id           Int      @id @default(autoincrement())
   cliente_id   Int
-  no_factura   String?  @db.VarChar(20)
-  forma_pago   String?  @db.VarChar(50)
-  detalle_pago String?  @db.VarChar(50)
-  monto        Decimal?
-  tipo_horas   String?  @db.VarChar(20)
+  no_factura   String   @db.VarChar(20)
+  forma_pago   String   @db.VarChar(50)
+  detalle_pago String   @db.VarChar(50)
+  monto        Int
+  tipo_horas   String   @db.VarChar(20)
+  cant_horas   Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   cliente      Cliente  @relation(fields: [cliente_id], references: [id])
@@ -71,16 +74,17 @@ model Pagos_Cliente {
 
 model Cliente {
   id                 Int             @id @default(autoincrement())
-  responsable        String?         @db.VarChar(200)
-  empresa            String?
-  rtn                String?         @db.VarChar(50)
-  direccion          String?         @db.VarChar(30)
-  telefono           String?         @db.VarChar(10)
-  correo             String?         @unique @db.VarChar(100)
-  fecha_registro     DateTime?
-  activo             Boolean?
-  horas_paquetes     Int?
-  horas_individuales Int?
+  responsable        String          @db.VarChar(200)
+  empresa            String
+  rtn                String          @db.VarChar(50)
+  direccion          String          @db.VarChar(30)
+  telefono           String          @db.VarChar(10)
+  correo             String          @unique @db.VarChar(100)
+  activo             Boolean
+  horas_paquetes     Int
+  horas_individuales Int
+  monto_paquetes     Int
+  monto_individuales Int
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   bitacora           Bitacora[]
@@ -95,10 +99,10 @@ model Usuario {
   password      String     @db.VarChar(400)
   correo        String     @unique @db.VarChar(100)
   rol           String     @default("tecnico")
-  activo        Boolean?
-  zona_asignada String?    @db.VarChar(300)
-  fecha_ingreso DateTime?
-  telefono      String?    @db.VarChar(10)
+  activo        Boolean
+  zona_asignada String     @db.VarChar(300)
+  fecha_ingreso DateTime
+  telefono      String     @db.VarChar(10)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   bitacora      Bitacora[]
@@ -106,53 +110,65 @@ model Usuario {
   @@map("usuarios")
 }
 
-model Encuesta {
-  id          Int                  @id @default(autoincrement())
-  titulo      String?              @db.VarChar(250)
-  descripcion String?              @db.VarChar(250)
-  activa      Boolean?
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  respuesta   Encuestas_Bitacora[]
-  pregunta    Encuestas_Pregunta[]
-
-  @@map("encuestas")
-}
-
-model Encuestas_Pregunta {
-  id          Int                  @id @default(autoincrement())
-  encuesta_id Int
-  pregunta    String?              @db.VarChar(250)
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  respuesta   Encuestas_Bitacora[]
-  encuesta    Encuesta             @relation(fields: [encuesta_id], references: [id])
-
-  @@map("encuesta_preguntas")
-}
-
-model Encuestas_Bitacora {
-  id          Int                @id @default(autoincrement())
-  pregunta_id Int
-  encuesta_id Int
-  respuesta   BigInt?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  bitacora    Bitacora[]
-  encuesta    Encuesta           @relation(fields: [encuesta_id], references: [id])
-  pregunta    Encuestas_Pregunta @relation(fields: [pregunta_id], references: [id])
-
-  @@map("encuesta_bitacora")
-}
-
 model Sistema {
   id          Int        @id @default(autoincrement())
-  sistema     String?    @db.VarChar(20)
-  descripcion String?
-  activo      Boolean?
+  sistema     String     @db.VarChar(20)
+  descripcion String
+  activo      Boolean
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   bitacora    Bitacora[]
 
   @@map("sistemas")
+}
+
+model Equipo {
+  id          Int        @id @default(autoincrement())
+  equipo      String     @db.VarChar(200)
+  descripcion String
+  activo      Boolean
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  bitacora    Bitacora[]
+
+  @@map("equipos")
+}
+
+model Pregunta {
+  id                Int                    @id @default(autoincrement())
+  pregunta          String                 @db.VarChar(250)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  
+  encuestaPreguntas EncuestaPregunta[]
+
+  @@map("preguntas")
+}
+
+model Encuesta {
+  id                Int                    @id @default(autoincrement())
+  titulo            String                 @db.VarChar(250)
+  descripcion       String                 @db.VarChar(250)
+  activa            Boolean                @default(false)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  
+  // Relaciones
+  preguntas         EncuestaPregunta[]
+
+  @@map("encuestas")
+}
+
+model EncuestaPregunta {
+  id          Int      @id @default(autoincrement())
+  encuesta_id Int
+  pregunta_id Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  encuesta    Encuesta @relation(fields: [encuesta_id], references: [id])
+  pregunta    Pregunta @relation(fields: [pregunta_id], references: [id])
+
+  @@unique([encuesta_id, pregunta_id])
+  @@map("encuesta_preguntas")
 }
