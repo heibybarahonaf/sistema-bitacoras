@@ -31,5 +31,15 @@ export const CrearClienteDto = z.object({
     horas_individuales: z.number()
         .int("Las horas individuales deben ser un número entero.")
         .nonnegative("Las horas individuales no pueden ser negativas."),
-
+    monto_paquetes: z.number({
+            required_error: "El monto es obligatorio.",
+            invalid_type_error: "El monto debe ser un número.",
+        })
+        .nonnegative("El monto no puede ser negativo."),
+    monto_individuales: z.number({
+            required_error: "El monto es obligatorio.",
+            invalid_type_error: "El monto debe ser un número.",
+        })
+        .nonnegative("El monto no puede ser negativo."),
+        
 });
