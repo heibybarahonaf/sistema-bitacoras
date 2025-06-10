@@ -13,11 +13,8 @@ export async function GET() {
 
     } catch (error) {
 
-        if (error instanceof ResponseDto) {
-          return NextResponse.json(error, { status: error.code });
-        }
+        return GeneralUtils.generarErrorResponse(error);
 
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
     }
 
 }
@@ -39,11 +36,8 @@ export async function POST(req: Request) {
 
       } catch (error) {
 
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
-
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
+        return GeneralUtils.generarErrorResponse(error);
+        
     }
 
 }

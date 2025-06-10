@@ -1,5 +1,5 @@
-import { ResponseDto } from "../../common/dtos/response.dto";
 import { NextResponse } from "next/server";
+import { ResponseDto } from "../../common/dtos/response.dto";
 import { SistemaService } from "../../services/sistemaService";
 import { GeneralUtils } from "../../common/utils/general.utils";
 import { CrearSistemaDto } from "../../dtos/sistema.dto";
@@ -13,11 +13,7 @@ export async function GET() {
 
     }catch (error) {
 
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
-
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
+        return GeneralUtils.generarErrorResponse(error);
 
     }
 
@@ -40,11 +36,7 @@ export async function POST(req: Request) {
 
     } catch (error) {
 
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
-
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
+       return GeneralUtils.generarErrorResponse(error);
 
     }
 
