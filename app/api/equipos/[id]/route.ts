@@ -1,7 +1,7 @@
 import { z } from "zod";
+import { NextResponse } from "next/server";
 import { GeneralUtils } from "../../../common/utils/general.utils";
 import { ResponseDto } from "../../../common/dtos/response.dto";
-import { NextResponse } from "next/server";
 import { EquipoService } from "../../../services/equipoService";
 import { CrearEquipoDto } from "../../../dtos/equipo.dto";
 
@@ -9,25 +9,19 @@ const EditarEquipoDto = CrearEquipoDto.partial();
 type EditarEquipoDto = z.infer<typeof EditarEquipoDto>;
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
+   const idParams = (await params).id;
 
     try {
-        const id = parseInt(idParams);
-
-        if (isNaN(id)) {
-            throw new ResponseDto(400, "ID inválido"); 
-        }
-
+        
+        const id = GeneralUtils.validarIdParam(idParams);
         const equipo = await EquipoService.obtenerEquipoPorId(id);
+
         return NextResponse.json(new ResponseDto(200, "Equipo recuperado con éxito", [equipo]));
 
     } catch (error) {
 
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
+        return GeneralUtils.generarErrorResponse(error);
 
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
     }
 
 }
@@ -37,12 +31,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const idParams = (await params).id;
 
     try {
-        const id = parseInt(idParams);
-
-        if (isNaN(id)) {
-            throw new ResponseDto(400, "ID inválido"); 
-        }
-
+        
+        const id = GeneralUtils.validarIdParam(idParams);
         const body = await req.json();
         const parsed = EditarEquipoDto.safeParse(body);
 
@@ -55,11 +45,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
     } catch (error) {
 
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
+        return GeneralUtils.generarErrorResponse(error);
 
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
     }
 
 }
@@ -69,22 +56,16 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     const idParams = (await params).id;
 
     try {
-        const id = parseInt(idParams);
-
-        if (isNaN(id)) {
-            throw new ResponseDto(400, "ID inválido"); 
-        }
-
+        
+        const id = GeneralUtils.validarIdParam(idParams);
         const equipoEliminado = await EquipoService.eliminarEquipo(id);
+
         return NextResponse.json(new ResponseDto(200, "Equipo eliminado con éxito", [equipoEliminado]));
       
     } catch (error) {
 
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
-
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
+        return GeneralUtils.generarErrorResponse(error);
+        
     }
 
 }

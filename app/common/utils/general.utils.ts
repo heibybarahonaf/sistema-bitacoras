@@ -1,7 +1,28 @@
 import { ZodError } from "zod";
 import { ResponseDto } from "../dtos/response.dto";
+import { NextResponse } from "next/server";
 
 export class GeneralUtils {
+
+    public static validarIdParam(idParam: string): number{
+        const id = parseInt(idParam)
+
+        if (isNaN(id)) {
+            throw new ResponseDto(400, "ID inválido");
+        }
+
+        return id;
+    }
+
+
+    public static generarErrorResponse(error: unknown) {
+        if (error instanceof ResponseDto) {
+            return NextResponse.json(error, { status: error.code });
+        }
+
+        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
+    }
+
 
     public static zodValidationError(error: ZodError): never {
         const fieldErrors = error.flatten().fieldErrors;
