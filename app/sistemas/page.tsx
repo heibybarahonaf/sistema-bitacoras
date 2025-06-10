@@ -90,7 +90,7 @@ function mostrarErroresValidacion(data: any) {
         }
         
         if (!res.ok || response.code !== 200) {
-          throw new Error(response.message || "Error al cargar usuarios");
+          throw new Error(response.message || "Error al cargar sistemas");
         }
         
         setSistemas(response.results ?? []);

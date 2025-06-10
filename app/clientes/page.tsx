@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ModalCliente from "@/components/ModalCliente";
 import { date } from "zod/v4";
+import Swal from 'sweetalert2';
 
 interface Cliente {
   id: number;
@@ -28,11 +29,18 @@ export default function ClientesPage() {
     try {
       const res = await fetch("/api/clientes");
       const response = await res.json();
-      if (!res.ok || response.code !== 200) throw new Error(response.message);
+      if (!res.ok || response.code !== 200) {
+          throw new Error(response.message || "Error al cargar sistemas");
+        }
       setClientes(response.results);
+      
     } catch (error) {
-      console.error(error);
-      alert("Error al cargar clientes");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al cargar sistemas',
+        text: error instanceof Error ? error.message : 'Error inesperado al cargar los sistemas',
+        confirmButtonColor: '#295d0c'
+      });
     } finally {
       setLoading(false);
     }
@@ -41,6 +49,45 @@ export default function ClientesPage() {
   useEffect(() => {
     fetchClientes();
   }, []);
+
+  function mostrarErroresValidacion(data: any) {
+  
+      if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
+        // varios
+        const erroresHtml = data.results.map((error: any) => 
+          `<div class="mb-2">
+            <ul class="ml-4 mt-1">
+              ${error.mensajes && Array.isArray(error.mensajes) 
+                ? error.mensajes.map((msg: string) => `<li>• ${msg}</li>`).join('') 
+                : '<li>Error inesperado!</li>'
+              }
+            </ul>
+          </div>`
+        ).join('');
+  
+        // 1 solo
+        Swal.fire({
+          icon: 'error',
+          title: 'Errores de validación',
+          html: `<div class="text-left">${erroresHtml}</div>`,
+          confirmButtonColor: '#295d0c',
+          width: '500px'
+        });
+  
+      } else {
+  
+        if (data.code !== 200 && data.code !== 201) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: data.message || 'Error inesperado',
+            confirmButtonColor: '#295d0c'
+          });
+        }
+  
+      }
+  
+    }
 
   // Crear cliente
   async function handleCrearCliente(event: React.FormEvent<HTMLFormElement>) {
@@ -70,31 +117,79 @@ export default function ClientesPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Error al crear cliente");
+      if (!res.ok || (data.code !== 200 && data.code !== 201)) {
+          mostrarErroresValidacion(data);
+          return;
+        }
+      
+      Swal.fire({
+        icon: 'success',
+        title: '¡Cliente creado!',
+        text: data.message || 'Cliente creado correctamente',
+        confirmButtonColor: '#295d0c'
+      });
 
       fetchClientes();
       setModalOpen(false);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Error inesperado";
-      alert(message);
-      console.error("Error en handleCrearCliente:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de conexión',
+        text: 'No se pudo conectar con el servidor',
+        confirmButtonColor: '#295d0c'
+      });
     }
   }
 
   // Eliminar cliente
   async function handleEliminarCliente(id: number) {
-    if (!confirm("¿Eliminar este cliente?")) return;
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "Esta acción no se puede deshacer",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch(`/api/clientes/${id}`, {
-        method: "DELETE",
+      const res = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
+      const data = await res.json();
+            
+      if (!res.ok || data.code !== 200) {
+        Swal.fire({
+        icon: 'error',
+        title: 'Error al eliminar',
+        text: data.message || 'Error al eliminar sistema',
+        confirmButtonColor: '#295d0c'
+        });
+      
+        return;
+      }
+      
+      Swal.fire({
+        icon: 'success',
+        title: '¡Sistema eliminado!',
+        text: data.message || 'Sistema eliminado correctamente',
+        confirmButtonColor: '#295d0c'
       });
-      if (!res.ok) throw new Error("Error al eliminar cliente");
+      
       fetchClientes();
-    } catch (error) {
-      alert("Error al eliminar cliente");
-      console.error(error);
+      
+      } catch (error) {
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de conexión',
+        text: 'No se pudo conectar con el servidor',
+        confirmButtonColor: '#295d0c'
+      });
     }
+      
   }
 
   // Abrir modal para editar cliente
@@ -127,15 +222,30 @@ export default function ClientesPage() {
         body: JSON.stringify(clienteActualizado),
       });
 
-
-      if (!res.ok) throw new Error("Error al actualizar cliente");
-
+      const data = await res.json();
+              
+      if (!res.ok || (data.code !== 200 && data.code !== 201)) {  
+        mostrarErroresValidacion(data);
+        return;
+        
+      }  
+      Swal.fire({
+        icon: 'success',
+        title: '¡Cliente actualizado!',
+        text: data.message || 'Cliente actualizado correctamente',
+        confirmButtonColor: '#295d0c'
+      });
+        
       fetchClientes();
       setModalOpen(false);
       setClienteEditar(null);
     } catch (error) {
-      alert("Error al actualizar cliente");
-      console.error(error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de conexión',
+        text: 'No se pudo conectar con el servidor',
+        confirmButtonColor: '#295d0c'
+      });
     }
   }
 
