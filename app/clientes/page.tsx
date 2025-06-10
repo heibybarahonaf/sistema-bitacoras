@@ -15,6 +15,8 @@ interface Cliente {
   activo: boolean;
   horas_individuales: number;
   horas_paquetes: number;
+  monto_individuales: number;
+  monto_paquetes: number;
 }
 
 export default function ClientesPage() {
@@ -104,6 +106,8 @@ export default function ClientesPage() {
       activo: true, //Siempre activo por defecto
       horas_paquetes: 0,
       horas_individuales: 0,
+      monto_paquetes: 0,
+      monto_individuales: 0,
       createdAt: new Date().toISOString(),
       updateAt: new Date().toISOString()
     };
