@@ -77,9 +77,6 @@ export function ModalBitacora({ onClose }: ModalProps) {
         <div className="mt-4">
           <label>Ventas / Recomendaciones</label>
           <input className="w-full border rounded p-1" />
-          <div className="text-sm text-green-600 mt-1">
-            Notificar a departamento ventas ✔
-          </div>
         </div>
         <div className="mt-2">
           <label>Descripción Servicio</label>

@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ModalSistema from "@/components/ModalSistema";
 import Swal from 'sweetalert2';
+import ModalEquipo from "@/components/ModalEquipo";
 
-interface Sistema {
+interface Equipo {
   id: number;
-  sistema: string;
+  equipo: string;
   descripcion: string;
   activo: boolean;
 }
@@ -18,21 +18,21 @@ const LoadingSpinner = () => (
     <div className="relative">
       <div className="w-12 h-12 border-4 border-gray-200 border-t-[#295d0c] rounded-full animate-spin"></div>
     </div>
-    <p className="mt-4 text-gray-600 font-medium">Cargando sistemas...</p>
+    <p className="mt-4 text-gray-600 font-medium">Cargando equipos...</p>
 
   </div>
 );
 
-export default function SistemasPage() {
-  const [sistemas, setSistemas] = useState<Sistema[]>([]);
+export default function EquiposPage() {
+  const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [sistemaEditar, setSistemaEditar] = useState<Sistema | null>(null);
+  const [equipoEditar, setEquipoEditar] = useState<Equipo | null>(null);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const [isEquipo, setIsEquipo] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setIsEquipo(true);
   }, []);
 
 function mostrarErroresValidacion(data: any) {
@@ -74,26 +74,26 @@ function mostrarErroresValidacion(data: any) {
 
   }
 
-  // Obtener sistemas desde la API
-    async function fetchSistemas() {
+  // Obtener equipos desde la API
+    async function fetchEquipos() {
       setLoading(true);
       setShowEmptyMessage(false);
       
       try {
-        const res = await fetch("/api/sistemas");
+        const res = await fetch("/api/equipos");
         const response = await res.json();
         
         if (response.code === 404) {
-          setSistemas([]);
+          setEquipos([]);
           setShowEmptyMessage(true);
           return;
         }
         
         if (!res.ok || response.code !== 200) {
-          throw new Error(response.message || "Error al cargar sistemas");
+          throw new Error(response.message || "Error al cargar equipos");
         }
         
-        setSistemas(response.results ?? []);
+        setEquipos(response.results ?? []);
         
         // por si acaso results viene vacío con código 200
         if (!response.results || response.results.length === 0) {
@@ -104,8 +104,8 @@ function mostrarErroresValidacion(data: any) {
   
         Swal.fire({
           icon: 'error',
-          title: 'Error al cargar sistemas',
-          text: error instanceof Error ? error.message : 'Error inesperado al cargar los sistemas',
+          title: 'Error al cargar equipos',
+          text: error instanceof Error ? error.message : 'Error inesperado al cargar los equipos',
           confirmButtonColor: '#295d0c'
         });
   
@@ -117,28 +117,28 @@ function mostrarErroresValidacion(data: any) {
 
     useEffect(() => {
 
-    if (isClient) {
-      fetchSistemas();
+    if (isEquipo) {
+      fetchEquipos();
     }
 
-  }, [isClient]);
+  }, [isEquipo]);
 
-  // Crear sistema
-    async function handleSubmitSistema(event: React.FormEvent<HTMLFormElement>) {
+  // Crear equipo
+    async function handleSubmitEquipo(event: React.FormEvent<HTMLFormElement>) {
       event.preventDefault();
   
       const formData = new FormData(event.currentTarget);
-      const datosSistema = {
-        sistema: formData.get("sistema") as string,
+      const datosEquipo = {
+        equipo: formData.get("equipo") as string,
         descripcion: formData.get("descripcion") as string,
         activo: true //Siempre activo por defecto
       };
   
       try {
-        const res = await fetch("/api/sistemas", {
+        const res = await fetch("/api/equipos", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(datosSistema),
+          body: JSON.stringify(datosEquipo),
         });
   
         const data = await res.json();
@@ -150,12 +150,12 @@ function mostrarErroresValidacion(data: any) {
   
         Swal.fire({
           icon: 'success',
-          title: '¡Sistema creado!',
-          text: data.message || 'Sistema creado correctamente',
+          title: '¡Equipo creado!',
+          text: data.message || 'Equipo creado correctamente',
           confirmButtonColor: '#295d0c'
         });
   
-        fetchSistemas();
+        fetchEquipos();
         setModalOpen(false);
   
       } catch (error) {
@@ -171,7 +171,7 @@ function mostrarErroresValidacion(data: any) {
     }
 
   //Eliminar
-  async function handleEliminarSistema(id: number) {
+  async function handleEliminarEquipo(id: number) {
 
     const result = await Swal.fire({
       title: '¿Estás seguro?',
@@ -187,7 +187,7 @@ function mostrarErroresValidacion(data: any) {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch(`/api/sistemas/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/equipos/${id}`, { method: "DELETE" });
       const data = await res.json();
       
       if (!res.ok || data.code !== 200) {
@@ -203,12 +203,12 @@ function mostrarErroresValidacion(data: any) {
 
       Swal.fire({
         icon: 'success',
-        title: '¡Sistema eliminado!',
-        text: data.message || 'Sistema eliminado correctamente',
+        title: '¡Equipo eliminado!',
+        text: data.message || 'Equipo eliminado correctamente',
         confirmButtonColor: '#295d0c'
       });
 
-      fetchSistemas();
+      fetchEquipos();
 
     } catch (error) {
 
@@ -222,30 +222,30 @@ function mostrarErroresValidacion(data: any) {
 
   }
 
-  // Abrir modal para editar sistema
-  function abrirEditarSistema(sistema: Sistema) {
-    setSistemaEditar(sistema);
+  // Abrir modal para editar equipo
+  function abrirEditarEquipo(sistema: Equipo) {
+    setEquipoEditar(sistema);
     setModalOpen(true);
   }
 
     // guardar editado
-    async function handleEditarSistema(event: React.FormEvent<HTMLFormElement>) {
+    async function handleEditarEquipo(event: React.FormEvent<HTMLFormElement>) {
       event.preventDefault();
-      if (!sistemaEditar) return;
+      if (!equipoEditar) return;
   
       const formData = new FormData(event.currentTarget);    
-      const sistemaActualizado: any = {
-        sistema: formData.get("sistema") as string,
+      const equipoActualizado: any = {
+        equipo: formData.get("equipo") as string,
         descripcion: formData.get("descripcion") as string,
         activo: formData.get("activo") === "true", // ← Convierte string a boolean
         updateAt: new Date().toISOString(),
       };
       
       try {
-        const res = await fetch(`/api/sistemas/${sistemaEditar.id}`, {
+        const res = await fetch(`/api/equipos/${equipoEditar.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(sistemaActualizado),
+          body: JSON.stringify(equipoActualizado),
         });
   
         const data = await res.json();
@@ -259,14 +259,14 @@ function mostrarErroresValidacion(data: any) {
   
         Swal.fire({
           icon: 'success',
-          title: '¡Sistema actualizado!',
-          text: data.message || 'Sistema actualizado correctamente',
+          title: '¡Equipo actualizado!',
+          text: data.message || 'Equipo actualizado correctamente',
           confirmButtonColor: '#295d0c'
         });
   
-        fetchSistemas();
+        fetchEquipos();
         setModalOpen(false);
-        setSistemaEditar(null);
+        setEquipoEditar(null);
   
       } catch (error) {
   
@@ -280,32 +280,32 @@ function mostrarErroresValidacion(data: any) {
   
     }
 
-    if (!isClient) {
+    if (!isEquipo) {
     return <LoadingSpinner />;
   }
    return (
       <div className="p-6 bg-white min-h-screen">
-        <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800">Gestión de Sistemas</h1>
+        <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800">Gestión de Equipos</h1>
   
         <button
           onClick={() => {
-            setSistemaEditar(null);
+            setEquipoEditar(null);
             setModalOpen(true);
           }}
           className="mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
         >
-          Agregar Sistema
+          Agregar Equipo
         </button>
   
         {loading ? (
           <LoadingSpinner />
-        ) : sistemas.length === 0 && showEmptyMessage ? (
+        ) : equipos.length === 0 && showEmptyMessage ? (
           <div className="text-center py-12">
             <div className="text-gray-400 text-6xl mb-4">👥</div>
-            <p className="text-gray-600 text-lg">No hay sistemas registrados.</p>
-            <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Sistema" para comenzar.</p>
+            <p className="text-gray-600 text-lg">No hay equipos registrados.</p>
+            <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Equipo" para comenzar.</p>
           </div>
-        ) : sistemas.length > 0 ? (
+        ) : equipos.length > 0 ? (
           <div className="overflow-x-auto rounded-lg shadow border border-gray-300">
             <table className="min-w-full table-auto border-collapse">
               <thead className="bg-gray-100">
@@ -317,17 +317,17 @@ function mostrarErroresValidacion(data: any) {
                 </tr>
               </thead>
               <tbody>
-                {sistemas.map((sistema) => (
-                  <tr key={sistema.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b">{sistema.sistema}</td>
-                    <td className="px-4 py-3 border-b">{sistema.descripcion}</td>
+                {equipos.map((equipo) => (
+                  <tr key={equipo.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 border-b">{equipo.equipo}</td>
+                    <td className="px-4 py-3 border-b">{equipo.descripcion}</td>
                     <td className="px-4 py-3 border-b text-center">
-                      {sistema.activo ? "✅" : "❌"}
+                      {equipo.activo ? "✅" : "❌"}
                     </td>
                     <td className="px-4 py-3 border-b text-center space-x-3">
                       <button
                         onClick={() => {
-                          setSistemaEditar(sistema);
+                          setEquipoEditar(equipo);
                           setModalOpen(true);
                         }}
                         className="px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
@@ -335,7 +335,7 @@ function mostrarErroresValidacion(data: any) {
                         Editar
                       </button>
                       <button
-                        onClick={() => handleEliminarSistema(sistema.id)}
+                        onClick={() => handleEliminarEquipo(equipo.id)}
                         className="px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
                       >
                         Eliminar
@@ -348,20 +348,20 @@ function mostrarErroresValidacion(data: any) {
           </div>
         ) : null}
   
-        <ModalSistema
+        <ModalEquipo
           isOpen={modalOpen}
           onClose={() => {
             setModalOpen(false);
-            setSistemaEditar(null);
+            setEquipoEditar(null);
           }}
         >
           <h2 className="text-xl font-semibold mb-6 text-gray-900">
-            {sistemaEditar ? "Editar Sistema" : "Nuevo Sistema"}
+            {equipoEditar ? "Editar Equipo" : "Nuevo Equipo"}
           </h2>
-          <form onSubmit={sistemaEditar ? handleEditarSistema : handleSubmitSistema} className="space-y-4">
+          <form onSubmit={equipoEditar ? handleEditarEquipo : handleSubmitEquipo} className="space-y-4">
             {[
-              { label: "Sistema", name: "sistema", type: "text", placeholder: "Nombre de sistema" },
-              { label: "Descripcion", name: "descripcion", type: "text", placeholder: "Descripcion del sistema" },
+              { label: "Equipo", name: "equipo", type: "text", placeholder: "Nombre del equipo" },
+              { label: "Descripcion", name: "descripcion", type: "text", placeholder: "Descripcion del equipo" },
             ].map(({ label, name, type, placeholder })  => (
             <label key={name} className="block mb-4 text-gray-800 font-medium">
               <span className="text-gray-700">{label}:</span>
@@ -369,7 +369,7 @@ function mostrarErroresValidacion(data: any) {
               {type === "select" ? (
                 <select
                   name={name}
-                  defaultValue={sistemaEditar ? (sistemaEditar as any)[name] : "tecnico"}
+                  defaultValue={equipoEditar ? (equipoEditar as any)[name] : ""}
                   required
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
                 >
@@ -380,7 +380,7 @@ function mostrarErroresValidacion(data: any) {
                   name={name}
                   type={type}
                   placeholder={placeholder}
-                  defaultValue={sistemaEditar ? (sistemaEditar as any)[name] : ""}
+                  defaultValue={equipoEditar ? (equipoEditar as any)[name] : ""}
                   required
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
                 />
@@ -389,12 +389,12 @@ function mostrarErroresValidacion(data: any) {
             ))
             }
   
-            {sistemaEditar && (
+            {equipoEditar && (
               <label className="block mb-4 text-gray-800 font-medium">
                 <span className="text-gray-700">Estado:</span>
                 <select
                   name="activo"
-                  defaultValue={sistemaEditar.activo ? "true" : "false"}
+                  defaultValue={equipoEditar.activo ? "true" : "false"}
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
                 >
                   <option value="true">Activo</option>
@@ -414,11 +414,11 @@ function mostrarErroresValidacion(data: any) {
                 type="submit"
                 className="px-5 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
               >
-                {sistemaEditar ? "Actualizar" : "Guardar"}
+                {equipoEditar ? "Actualizar" : "Guardar"}
               </button>
             </div>
           </form>
-        </ModalSistema>
+        </ModalEquipo>
       </div>
     );
   }
