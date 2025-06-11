@@ -10,24 +10,18 @@ type EditarUsuarioDto = z.infer<typeof EditarUsuarioDto>;
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
     const idParams = (await params).id;
-  
+
     try {
-        const id = parseInt(idParams);
-
-        if (isNaN(id)) {
-            throw new ResponseDto(400, "ID inválido"); 
-        }
-
+        
+        const id = GeneralUtils.validarIdParam(idParams);
         const usuario = await UsuarioService.obtenerUsuarioPorId(id);
+
         return NextResponse.json(new ResponseDto(200, "Usuario recuperado con éxito", [usuario]));
 
     } catch (error) {
 
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
-    
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
+        return GeneralUtils.generarErrorResponse(error);
+
     }
 
 }
@@ -35,14 +29,10 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
     const idParams = (await params).id;
-    
+
     try {
-        const id = parseInt(idParams);
-
-        if (isNaN(id)) {
-            throw new ResponseDto(400, "ID inválido"); 
-        }
-
+        
+        const id = GeneralUtils.validarIdParam(idParams);
         const body = await req.json();
         const parsed = EditarUsuarioDto.safeParse(body);
 
@@ -55,11 +45,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
     } catch (error) {
 
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
+        return GeneralUtils.generarErrorResponse(error);
 
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
     }
 
 }
@@ -69,22 +56,16 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     const idParams = (await params).id;
 
     try {
-        const id = parseInt(idParams);
-
-        if (isNaN(id)) {
-            throw new ResponseDto(400, "ID inválido"); 
-        }
-
+        
+        const id = GeneralUtils.validarIdParam(idParams);
         const usuarioEliminado = await UsuarioService.eliminarUsuario(id);
+        
         return NextResponse.json(new ResponseDto(200, "Usuario eliminado con éxito", [usuarioEliminado]));
       
     } catch (error) {
 
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
-
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
+        return GeneralUtils.generarErrorResponse(error);
+        
     }
 
 }
