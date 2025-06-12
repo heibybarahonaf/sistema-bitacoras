@@ -1,44 +1,158 @@
-"use client";
-import { useState } from "react";
+// components/BuscarCliente.tsx
+import React, { useState, useEffect } from "react";
+import FormNuevaBitacora from "@/components/ModalBitacora";
 
-export function BuscadorClientes({ onSelect }: { onSelect: (cliente: any) => void }) {
-  const [query, setQuery] = useState("");
-  const [resultados, setResultados] = useState([]);
+interface Cliente {
+  id: number;
+  responsable: string;
+  empresa: string;
+  rtn: string;
+  direccion: string;
+  telefono: string;
+  correo: string;
+  activo: boolean;
+  horas_paquetes: number;
+  horas_individuales: number;
+  monto_paquetes: number;
+  monto_individuales: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
-  const buscar = async () => {
-    const res = await fetch(`/api/clientes?q=${query}`);
-    const data = await res.json();
-    setResultados(data);
+const BuscarCliente: React.FC = () => {
+  const [rtn, setRtn] = useState("");
+  const [cliente, setCliente] = useState<Cliente | null>(null);
+  const [error, setError] = useState("");
+  const [bitacoras, setBitacoras] = useState([]);
+  const [loadingBitacoras, setLoadingBitacoras] = useState(false);
+  const [showNewBitacora, setShowNewBitacora] = useState(false);
+
+  const buscarCliente = async () => {
+    setError("");
+    setCliente(null);
+    setBitacoras([]);
+    try {
+      const res = await fetch(`/api/clientes?rtn=${rtn}`);
+      const data = await res.json();
+
+      if (data.code === 200 && data.results.length > 0) {
+        setCliente(data.results[0]);
+      } else {
+        setError("Cliente no encontrado.");
+      }
+    } catch (err) {
+      setError("Ocurrió un error al buscar el cliente.");
+    }
   };
 
+  useEffect(() => {
+    const fetchBitacoras = async () => {
+      if (!cliente?.id) return;
+      setLoadingBitacoras(true);
+      try {
+        const res = await fetch(`/api/bitacoras/${cliente.id}`);
+        const data = await res.json();
+        setBitacoras(data.results);
+      } catch (err) {
+        console.error("Error al cargar bitácoras", err);
+      } finally {
+        setLoadingBitacoras(false);
+      }
+    };
+
+    fetchBitacoras();
+  }, [cliente]);
+
   return (
-    <div className="space-y-2">
-      <div className="flex">
+    <div className="w-full p-6 bg-white min-h-screen">
+      <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800">Gestión de Bitácoras</h1>
+      <h2 className="text-xl font-bold mb-4">Buscar Cliente por RTN</h2>
+      <div className="mb-2">
         <input
           type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar empresa o responsable"
-          className="border p-2 rounded-l w-full"
+          placeholder="Ingrese RTN"
+          value={rtn}
+          onChange={(e) => setRtn(e.target.value)}
+          className="border p-2 w-full rounded"
         />
-        <button onClick={buscar} className="bg-green-700 text-white px-4 rounded-r">
-          Buscar
-        </button>
       </div>
+      <button
+        onClick={buscarCliente}
+        className="mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+      >
+        Buscar
+      </button>
 
-      {resultados.length > 0 && (
-        <ul className="border rounded p-2 max-h-40 overflow-y-auto bg-white">
-          {resultados.map((cliente: any) => (
-            <li
-              key={cliente.id}
-              className="p-2 hover:bg-green-100 cursor-pointer"
-              onClick={() => onSelect(cliente)}
-            >
-              {cliente.empresa} - {cliente.responsable}
-            </li>
-          ))}
-        </ul>
+      {error && <p className="text-red-500 mt-4">{error}</p>}
+
+      {cliente && (
+        <>
+          <div className="p-1 border rounded bg-gray-50 flex justify-between">
+            {/* Columna izquierda */}
+            <div className="flex flex-col space-y-2 text-left">
+              <p><strong>DATOS DEL CLIENTE</strong></p>
+              <p><strong>Empresa:</strong> {cliente.empresa}</p>
+              <p><strong>Responsable:</strong> {cliente.responsable}</p>
+              <p><strong>RTN:</strong> {cliente.rtn}</p>
+              <p><strong>Dirección:</strong> {cliente.direccion}</p>
+              <p><strong>Telefono:</strong> {cliente.telefono}</p>
+              <p><strong>Correo:</strong> {cliente.correo}</p>
+            </div>
+
+            {/* Columna derecha */}
+            <div className="flex flex-col space-y-2 text-right">
+              <p><strong>HORAS - SALDOS</strong></p>
+              <p><strong>Paquetes:</strong> {cliente.horas_paquetes} - {cliente.monto_paquetes}</p>
+              <p><strong>Individuales:</strong> {cliente.horas_individuales} - {cliente.monto_individuales}</p>
+            </div>
+          </div>
+
+          {/* Bitácoras */}
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">BITÁCORAS</h3>
+          <div className="space-x-2">
+            <button 
+            onClick={() => setShowNewBitacora(true)}
+            className="px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]">
+              Nueva
+            </button>
+            <button 
+            
+            className="px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]">
+              Pago
+            </button>
+          </div>
+        </div>
+        {showNewBitacora && cliente && (
+      <FormNuevaBitacora
+        clienteId={cliente.id}
+        onClose={() => setShowNewBitacora(false)}
+        onGuardar={() => buscarCliente()} // Para recargar bitácoras luego de guardar
+      />
+    )}
+            {loadingBitacoras ? (
+              <p className="text-gray-600">Cargando bitácoras...</p>
+            ) : bitacoras.length === 0 ? (
+              <p className="text-gray-500">Este cliente no tiene bitácoras registradas.</p>
+            ) : (
+              <div className="space-y-4">
+                {bitacoras.map((b: any) => (
+                  <div key={b.id} className="border p-4 rounded shadow bg-white">
+                    <p><strong>Fecha:</strong> {new Date(b.fecha_servicio).toLocaleDateString()}</p>
+                    <p><strong>Tipo de Servicio:</strong> {b.tipo_servicio}</p>
+                    <p><strong>Descripción:</strong> {b.descripcion_servicio}</p>
+                    <p><strong>Horas:</strong> {b.horas_consumidas} ({b.tipo_horas})</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
-}
+};
+
+export default BuscarCliente;
+

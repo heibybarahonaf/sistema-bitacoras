@@ -358,37 +358,55 @@ function mostrarErroresValidacion(data: any) {
           <h2 className="text-xl font-semibold mb-6 text-gray-900">
             {sistemaEditar ? "Editar Sistema" : "Nuevo Sistema"}
           </h2>
-          <form onSubmit={sistemaEditar ? handleEditarSistema : handleSubmitSistema} className="space-y-4">
-            {[
-              { label: "Sistema", name: "sistema", type: "text", placeholder: "Nombre de sistema" },
-              { label: "Descripcion", name: "descripcion", type: "text", placeholder: "Descripcion del sistema" },
-            ].map(({ label, name, type, placeholder })  => (
-            <label key={name} className="block mb-4 text-gray-800 font-medium">
-              <span className="text-gray-700">{label}:</span>
 
-              {type === "select" ? (
-                <select
-                  name={name}
-                  defaultValue={sistemaEditar ? (sistemaEditar as any)[name] : "tecnico"}
-                  required
-                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-                >
-                  
-                </select>
-              ) : (
-                <input
-                  name={name}
-                  type={type}
-                  placeholder={placeholder}
-                  defaultValue={sistemaEditar ? (sistemaEditar as any)[name] : ""}
-                  required
-                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-                />
-              )}
-            </label>
-            ))
-            }
-  
+          <form
+            onSubmit={sistemaEditar ? handleEditarSistema : handleSubmitSistema}
+            className="space-y-4"
+          >
+            {/* Campos de entrada dinámicos */}
+            {[
+              {
+                label: "Sistema",
+                name: "sistema",
+                type: "text",
+                placeholder: "Nombre de sistema",
+              },
+              {
+                label: "Descripción",
+                name: "descripcion",
+                type: "text",
+                placeholder: "Descripción del sistema",
+              },
+            ].map(({ label, name, type, placeholder }) => (
+              <label
+                key={name}
+                className="block mb-4 text-gray-800 font-medium"
+              >
+                <span className="text-gray-700">{label}:</span>
+
+                {type === "select" ? (
+                  <select
+                    name={name}
+                    defaultValue={
+                      sistemaEditar ? (sistemaEditar as any)[name] : "tecnico"
+                    }
+                    required
+                    className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+                  />
+                ) : (
+                  <input
+                    name={name}
+                    type={type}
+                    placeholder={placeholder}
+                    defaultValue={sistemaEditar ? (sistemaEditar as any)[name] : ""}
+                    required
+                    className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+                  />
+                )}
+              </label>
+            ))}
+
+            {/* Campo de estado (solo en modo edición) */}
             {sistemaEditar && (
               <label className="block mb-4 text-gray-800 font-medium">
                 <span className="text-gray-700">Estado:</span>
@@ -402,6 +420,8 @@ function mostrarErroresValidacion(data: any) {
                 </select>
               </label>
             )}
+
+            {/* Botones de acción */}
             <div className="mt-6 flex justify-end space-x-4">
               <button
                 type="button"
@@ -419,6 +439,7 @@ function mostrarErroresValidacion(data: any) {
             </div>
           </form>
         </ModalSistema>
+
       </div>
     );
   }

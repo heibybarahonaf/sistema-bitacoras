@@ -131,12 +131,7 @@ export default function Navbar() {
         </div>
       </aside>
 
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+
     </>
   );
 }

@@ -42,6 +42,22 @@ export class ClienteService {
     
         return cliente;
     }
+static async buscarClientePorRTN(rtn: string) {
+  const cleanedRTN = rtn.trim();
+  console.log("Buscando cliente con RTN:", cleanedRTN);
+  
+  return prisma.cliente.findFirst({
+    where: {
+      rtn: {
+        equals: cleanedRTN,
+        mode: "insensitive",
+      },
+    },
+  });
+}
+
+
+
 
 
     public static async crearCliente(clienteData: CrearClienteDto): Promise<Cliente> {

@@ -1,49 +1,49 @@
 "use client";
+import React, { useEffect, useState } from "react";
 
-import React, { useState } from "react";
-import { FaDownload, FaEye } from "react-icons/fa";
-import { ModalBitacora } from "@/components/ModalBitacora";
+export function BitacorasTabla({ clienteId }: { clienteId: number }) {
+  const [bitacoras, setBitacoras] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-// 👇 AÑADIR props
-type Props = {
-  clienteId?: number;
-};
+  useEffect(() => {
+    if (!clienteId) return;
 
-export function BitacorasTabla({ clienteId }: Props) {
-  const [modalAbierto, setModalAbierto] = useState(false);
+    setLoading(true);
+    fetch(`/api/bitacoras?clienteId=${clienteId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === 200) {
+          setBitacoras(data.data);
+        } else {
+          setBitacoras([]);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [clienteId]);
 
-  const bitacoras = [
-    // datos simulados o fetch por clienteId
-  ];
+  if (loading) return <p>Cargando bitácoras...</p>;
+  if (bitacoras.length === 0) return <p>No hay bitácoras para este cliente.</p>;
 
   return (
-    <div className="bg-white rounded shadow p-4">
-      <div className="flex justify-between mb-2">
-        <h2 className="font-bold text-lg">
-          Bitácoras {clienteId ? `(Cliente ID: ${clienteId})` : ""}
-        </h2>
-        <div className="space-x-2">
-          <button
-            className="bg-indigo-600 text-white px-3 py-1 rounded"
-            onClick={() => setModalAbierto(true)}
-          >
-            Nuevo
-          </button>
-          <button className="bg-purple-600 text-white px-3 py-1 rounded">
-            Pago
-          </button>
-        </div>
-      </div>
-
-      {/* Aquí iría tu tabla filtrada por clienteId */}
-
-      {/* Modal */}
-      {modalAbierto && (
-        <ModalBitacora
-          onClose={() => setModalAbierto(false)}
-          //clienteId={clienteId}
-        />
-      )}
-    </div>
+    <table className="w-full border border-gray-300 border-collapse">
+      <thead>
+        <tr>
+          <th className="border border-gray-300 p-2">No. Ticket</th>
+          <th className="border border-gray-300 p-2">Fecha Servicio</th>
+          <th className="border border-gray-300 p-2">Tipo Servicio</th>
+          <th className="border border-gray-300 p-2">Descripción</th>
+        </tr>
+      </thead>
+      <tbody>
+        {bitacoras.map((b) => (
+          <tr key={b.id}>
+            <td className="border border-gray-300 p-2">{b.no_ticket}</td>
+            <td className="border border-gray-300 p-2">{new Date(b.fecha_servicio).toLocaleDateString()}</td>
+            <td className="border border-gray-300 p-2">{b.tipo_servicio}</td>
+            <td className="border border-gray-300 p-2">{b.descripcion_servicio}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
