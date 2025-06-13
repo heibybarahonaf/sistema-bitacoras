@@ -32,7 +32,7 @@ const BuscarCliente: React.FC = () => {
     setCliente(null);
     setBitacoras([]);
     try {
-      const res = await fetch(`/api/clientes?rtn=${rtn}`);
+      const res = await fetch(`/api/clientes/rtn/${rtn}`);
       const data = await res.json();
 
       if (data.code === 200 && data.results.length > 0) {
@@ -50,7 +50,7 @@ const BuscarCliente: React.FC = () => {
       if (!cliente?.id) return;
       setLoadingBitacoras(true);
       try {
-        const res = await fetch(`/api/bitacoras/${cliente.id}`);
+        const res = await fetch(`/api/bitacoras/cliente/${cliente.id}`);
         const data = await res.json();
         setBitacoras(data.results);
       } catch (err) {

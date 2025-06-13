@@ -1,22 +1,22 @@
 import { NextResponse } from "next/server";
 import { BitacoraService } from "../../../services/bitacoraService";
 import { ResponseDto } from "../../../common/dtos/response.dto";
+import { GeneralUtils } from "../../../common/utils/general.utils";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const id = parseInt(params.id);
-    const bitacoras = await BitacoraService.obtenerBitacorasPorCliente(id);
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+    const idParams = (await params).id;
 
-    return NextResponse.json(
-      new ResponseDto(200, "Bitácoras del cliente obtenidas", bitacoras)
-    );
-  } catch (error) {
-    return NextResponse.json(
-      new ResponseDto(500, "Error al obtener bitácoras", []),
-      { status: 500 }
-    );
-  }
+    try {
+        
+        const id = GeneralUtils.validarIdParam(idParams);
+        const bitacora = await BitacoraService.obtenerBitacoraPorId(id);
+
+        return NextResponse.json(new ResponseDto(200, "Bitacora recuperada con éxito", [bitacora]));
+
+    } catch (error) {
+
+        return GeneralUtils.generarErrorResponse(error);
+
+    }
+
 }
