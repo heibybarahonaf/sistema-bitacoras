@@ -42,22 +42,18 @@ export class ClienteService {
     
         return cliente;
     }
-static async buscarClientePorRTN(rtn: string) {
-  const cleanedRTN = rtn.trim();
-  console.log("Buscando cliente con RTN:", cleanedRTN);
-  
-  return prisma.cliente.findFirst({
-    where: {
-      rtn: {
-        equals: cleanedRTN,
-        mode: "insensitive",
-      },
-    },
-  });
-}
 
 
+    public static async obtenerClientePorRtn(rtn: string): Promise<Cliente> {
+        const rtnLimpio = rtn.replace(/\D/g, "").trim();
+        const cliente = await prisma.cliente.findFirst({ where: { rtn: rtnLimpio }});
 
+        if(!cliente){
+            throw new ResponseDto(404, "Cliente no encontrado");
+        }
+    
+        return cliente;
+    }
 
 
     public static async crearCliente(clienteData: CrearClienteDto): Promise<Cliente> {
