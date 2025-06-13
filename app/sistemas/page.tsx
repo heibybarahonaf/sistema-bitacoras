@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ModalSistema from "@/components/ModalSistema";
 import Swal from 'sweetalert2';
+import { Settings2 , Plus, Edit3, Trash2 } from "lucide-react";
 
 interface Sistema {
   id: number;
@@ -285,15 +286,18 @@ function mostrarErroresValidacion(data: any) {
   }
    return (
       <div className="p-6 bg-white min-h-screen">
-        <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800">Gestión de Sistemas</h1>
-  
+        <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
+        <Settings2  className="w-8 h-8 text-[#295d0c]" />
+         Gestión de Sistemas
+        </h1>
         <button
           onClick={() => {
             setSistemaEditar(null);
             setModalOpen(true);
           }}
-          className="mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+          className="mb-6 flex items-center gap-2 bg-[#295d0c] text-white px-4 py-2 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
         >
+          <Plus className="w-5 h-5" />
           Agregar Sistema
         </button>
   
@@ -301,7 +305,7 @@ function mostrarErroresValidacion(data: any) {
           <LoadingSpinner />
         ) : sistemas.length === 0 && showEmptyMessage ? (
           <div className="text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">👥</div>
+            <div className="text-gray-400 text-6xl mb-4">⚙️</div>
             <p className="text-gray-600 text-lg">No hay sistemas registrados.</p>
             <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Sistema" para comenzar.</p>
           </div>
@@ -325,21 +329,25 @@ function mostrarErroresValidacion(data: any) {
                       {sistema.activo ? "✅" : "❌"}
                     </td>
                     <td className="px-4 py-3 border-b text-center space-x-3">
-                      <button
-                        onClick={() => {
-                          setSistemaEditar(sistema);
-                          setModalOpen(true);
-                        }}
-                        className="px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleEliminarSistema(sistema.id)}
-                        className="px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
-                      >
-                        Eliminar
-                      </button>
+                      <div className="flex justify-center items-center gap-3">
+                        <button
+                          onClick={() => {
+                            setSistemaEditar(sistema);
+                            setModalOpen(true);
+                          }}
+                          className="flex px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
+                        >
+                          <Edit3 className="w-5 h-5" />
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleEliminarSistema(sistema.id)}
+                          className="flex px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                          Eliminar
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

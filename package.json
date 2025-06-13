@@ -17,6 +17,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.57.0",
     "react-icons": "^5.5.0",
+    "react-input-mask": "^2.0.4",
     "sweetalert2": "^11.22.0",
     "zod": "^3.25.50"
   },
@@ -27,6 +28,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-input-mask": "^3.0.6",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "prisma": "^6.9.0",

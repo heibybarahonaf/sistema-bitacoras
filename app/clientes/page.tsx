@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ModalCliente from "@/components/ModalCliente";
 import Swal from 'sweetalert2';
+import { Contact, Plus, Edit3, Trash2 } from "lucide-react";
 
 interface Cliente {
   id: number;
@@ -13,6 +14,13 @@ interface Cliente {
   telefono: string;
   correo: string;
   activo: boolean;
+}
+
+function formatRTN(value: string) {
+  const raw = value.replace(/\D/g, "");
+  if (raw.length <= 4) return raw;
+  if (raw.length <= 8) return `${raw.slice(0, 4)}-${raw.slice(4)}`;
+  return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8, 13)}`;
 }
 
 // carga
@@ -337,15 +345,17 @@ export default function ClientesPage() {
 
   return (
     <div className="p-6 bg-white min-h-screen">
-      <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800">Gestión de Clientes</h1>
-
+      <h1 className="text-3xl font-semibold mb-6 flex items-center gap-2 text-gray-800">
+        <Contact className="w-7 h-7 text-[#295d0c]" />
+        Gestión de Clientes</h1>
       <button
         onClick={() => {
           setClienteEditar(null);
           setModalOpen(true);
         }}
-        className="mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+        className="flex mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
       >
+        <Plus className="w-5 h-5" />
         Agregar Cliente
       </button>
 
@@ -383,21 +393,25 @@ export default function ClientesPage() {
                     {cliente.activo ? "✅" : "❌"}
                   </td>
                   <td className="px-4 py-3 border-b text-center space-x-3">
+                    <div className="flex justify-center items-center gap-3">
                     <button
                       onClick={() => {
                         setClienteEditar(cliente);
                         setModalOpen(true);
                       }}
-                      className="px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
+                      className="flex px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
                     >
+                      <Edit3 className="w-5 h-5" />
                       Editar
                     </button>
                     <button
                       onClick={() => handleEliminarCliente(cliente.id)}
-                      className="px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
+                      className="flex px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
                     >
+                      <Trash2 className="w-5 h-5" />
                       Eliminar
                     </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -419,7 +433,7 @@ export default function ClientesPage() {
         <form onSubmit={clienteEditar ? handleEditarCliente : handleSubmitCliente} className="space-y-4">
           {[
             { label: "Empresa", name: "empresa", type: "text", placeholder: "Nombre de la empresa" },
-            { label: "Responsable", name: "responsable", type: "text", placeholder: "TResponsable" },
+            { label: "Responsable", name: "responsable", type: "text", placeholder: "Responsable" },
             { label: "RTN", name: "rtn", type: "text", placeholder: "RTN" },
             { label: "Direccion", name: "direccion", type: "text", placeholder: "Direccion" },
             { label: "Correo", name: "correo", type: "email", placeholder: "Correo" },

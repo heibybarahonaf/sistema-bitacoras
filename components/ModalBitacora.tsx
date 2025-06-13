@@ -40,6 +40,24 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [horasConsumidas, setHorasConsumidas] = useState(0);
   const [tipoHoras, setTipoHoras] = useState("paquete");
 
+  useEffect(() => {
+  if (horaLlegada && horaSalida && fechaServicio) {
+    const llegada = new Date(`${fechaServicio}T${horaLlegada}`);
+    const salida = new Date(`${fechaServicio}T${horaSalida}`);
+
+    const diferenciaMs = salida.getTime() - llegada.getTime();
+    const diferenciaHoras = diferenciaMs / (1000 * 60 * 60);
+
+    // Solo actualiza si es un número válido y positivo
+    if (!isNaN(diferenciaHoras) && diferenciaHoras > 0) {
+      setHorasConsumidas(diferenciaHoras);
+    } else {
+      setHorasConsumidas(0); 
+    }
+  }
+}, [horaLlegada, horaSalida, fechaServicio]);
+
+
   // Cargar sistemas y equipos al montar
   useEffect(() => {
     const fetchData = async () => {
@@ -196,16 +214,19 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             </select>
           </label>
 
-          {/* Tipo de Servicio */}
+           {/* Tipo de servicio */}
           <label className="block md:col-span-2">
             <span className="text-gray-700 font-medium">Tipo de Servicio</span>
-            <input
-              type="text"
+            <select
               value={tipoServicio}
               onChange={(e) => setTipoServicio(e.target.value)}
               required
               className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-            />
+            >
+              <option value="" disabled>Seleccione un tipo de servicio</option>
+              <option value="Presencial">Presencial</option>
+              <option value="Remoto">Remoto</option>
+            </select>
           </label>
 
           {/* Nombres Capacitados */}
@@ -233,20 +254,19 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
 
           {/* Fase de Implementación */}
           <label className="block md:col-span-2">
-  <span className="text-gray-700 font-medium">Fase de Implementación</span>
-  <select
-    value={faseImplementacion}
-    onChange={(e) => setFaseImplementacion(e.target.value)}
-    required
-    className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-  >
-    <option value="" disabled>Seleccione una fase</option>
-    <option value="Fase 1">Fase 1</option>
-    <option value="Fase 2">Fase 2</option>
-    <option value="Fase 3">Fase 3</option>
-  </select>
-</label>
-
+            <span className="text-gray-700 font-medium">Fase de Implementación</span>
+            <select
+              value={faseImplementacion}
+              onChange={(e) => setFaseImplementacion(e.target.value)}
+              required
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+            >
+              <option value="" disabled>Seleccione una fase</option>
+              <option value="Fase 1">Fase 1</option>
+              <option value="Fase 2">Fase 2</option>
+              <option value="Fase 3">Fase 3</option>
+            </select>
+          </label>
 
           {/* Comentarios */}
           <label className="block md:col-span-2">
@@ -258,17 +278,14 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             />
           </label>
 
-          {/* Calificación */}
+          {/* Horas consumidas */}
           <label className="block">
-            <span className="text-gray-700 font-medium">Calificación</span>
+            <span className="text-gray-700 font-medium">Horas consumidas</span>
             <input
               type="number"
-              value={calificacion}
-              onChange={(e) => setCalificacion(parseInt(e.target.value))}
-              min={1}
-              max={10}
-              required
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+              value={horasConsumidas}
+              readOnly
+              className="mt-1 w-full border border-gray-300 bg-gray-100 text-gray-700 rounded-md px-3 py-2"
             />
           </label>
 

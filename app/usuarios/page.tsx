@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ModalUsuario from "@/components/ModalUsuario";
 import Swal from 'sweetalert2';
+import { Trash2, Users, Edit3, Plus } from "lucide-react";
 
 interface Usuario {
   id: number;
@@ -331,15 +332,18 @@ export default function UsuariosPage() {
 
   return (
     <div className="p-6 bg-white min-h-screen">
-      <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800">Gestión de Usuarios</h1>
-
+      <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
+        <Users className="w-8 h-8 text-[#295d0c]" />
+        Gestión de Usuarios
+      </h1>
       <button
         onClick={() => {
           setUsuarioEditar(null);
           setModalOpen(true);
         }}
-        className="mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+        className="flex mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
       >
+        <Plus className="w-5 h-5" />
         Agregar Usuario
       </button>
 
@@ -377,21 +381,25 @@ export default function UsuariosPage() {
                     {usuario.activo ? "✅" : "❌"}
                   </td>
                   <td className="px-4 py-3 border-b text-center space-x-3">
+                    <div className="flex justify-center items-center gap-3">
                     <button
                       onClick={() => {
                         setUsuarioEditar(usuario);
                         setModalOpen(true);
                       }}
-                      className="px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
+                      className="flex px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
                     >
+                      <Edit3 className="w-5 h-5" />
                       Editar
                     </button>
                     <button
                       onClick={() => handleEliminarUsuario(usuario.id)}
-                      className="px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
+                      className="flex px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
                     >
+                      <Trash2 className="w-5 h-5" />
                       Eliminar
                     </button>
+                    </div>
                   </td>
                 </tr>
               ))}

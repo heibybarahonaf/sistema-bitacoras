@@ -1,6 +1,8 @@
 // components/BuscarCliente.tsx
 import React, { useState, useEffect } from "react";
 import FormNuevaBitacora from "@/components/ModalBitacora";
+import ModalPago from "@/components/ModalPago";
+import { Search } from "lucide-react";
 
 interface Cliente {
   id: number;
@@ -26,11 +28,20 @@ const BuscarCliente: React.FC = () => {
   const [bitacoras, setBitacoras] = useState([]);
   const [loadingBitacoras, setLoadingBitacoras] = useState(false);
   const [showNewBitacora, setShowNewBitacora] = useState(false);
+  const [showPago, setShowPago] = useState(false);
+
+  const formatoLempiras = (valor: number) =>
+  valor.toLocaleString("es-HN", { style: "currency", currency: "HNL" });
 
   const buscarCliente = async () => {
     setError("");
     setCliente(null);
     setBitacoras([]);
+    //Validar si el campo está vacío
+    if (!rtn.trim()) {
+      setError("Debe ingresar un RTN para buscar.");
+      return;
+    }
     try {
       const res = await fetch(`/api/clientes?rtn=${rtn}`);
       const data = await res.json();
@@ -63,6 +74,7 @@ const BuscarCliente: React.FC = () => {
     fetchBitacoras();
   }, [cliente]);
 
+
   return (
     <div className="w-full p-6 bg-white min-h-screen">
       <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800">Gestión de Bitácoras</h1>
@@ -72,14 +84,20 @@ const BuscarCliente: React.FC = () => {
           type="text"
           placeholder="Ingrese RTN"
           value={rtn}
-          onChange={(e) => setRtn(e.target.value)}
+          maxLength={14}
+          onChange={(e) => {
+            const soloNumeros = e.target.value.replace(/\D/g, ""); //elimina todo lo que no sea número
+            setRtn(soloNumeros);
+          }}
           className="border p-2 w-full rounded"
         />
+
       </div>
       <button
         onClick={buscarCliente}
-        className="mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+        className="flex mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
       >
+        <Search className="w-5 h-5" />
         Buscar
       </button>
 
@@ -102,8 +120,13 @@ const BuscarCliente: React.FC = () => {
             {/* Columna derecha */}
             <div className="flex flex-col space-y-2 text-right">
               <p><strong>HORAS - SALDOS</strong></p>
-              <p><strong>Paquetes:</strong> {cliente.horas_paquetes} - {cliente.monto_paquetes}</p>
-              <p><strong>Individuales:</strong> {cliente.horas_individuales} - {cliente.monto_individuales}</p>
+              <p><strong>Paquetes:</strong> {cliente.horas_paquetes} - {formatoLempiras(cliente.monto_paquetes)}</p>
+              <p><strong>Individuales:</strong> {cliente.horas_individuales} - {formatoLempiras(cliente.monto_individuales)}</p>
+              {/* Total horas y montos */}
+              <p className="mt-4 border-t pt-2 font-semibold">
+                <strong>Total:</strong> {cliente.horas_paquetes + cliente.horas_individuales} 
+                - {formatoLempiras(cliente.monto_paquetes + cliente.monto_individuales)}
+              </p>
             </div>
           </div>
 
@@ -118,19 +141,27 @@ const BuscarCliente: React.FC = () => {
               Nueva
             </button>
             <button 
-            
+            onClick={() => setShowPago(true)}
             className="px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]">
               Pago
             </button>
           </div>
         </div>
         {showNewBitacora && cliente && (
-      <FormNuevaBitacora
-        clienteId={cliente.id}
-        onClose={() => setShowNewBitacora(false)}
-        onGuardar={() => buscarCliente()} // Para recargar bitácoras luego de guardar
-      />
-    )}
+          <FormNuevaBitacora
+            clienteId={cliente.id}
+            onClose={() => setShowNewBitacora(false)}
+            onGuardar={() => buscarCliente()} // Para recargar bitácoras luego de guardar
+          />
+        )}
+        {showPago && cliente && (
+          <ModalPago
+            clienteId={cliente.id}
+            onClose={() => setShowPago(false)}
+            onGuardar={() => buscarCliente()} // recargar datos después de pagar
+          />
+        )}
+
             {loadingBitacoras ? (
               <p className="text-gray-600">Cargando bitácoras...</p>
             ) : bitacoras.length === 0 ? (
