@@ -21,23 +21,22 @@ export async function GET() {
 
 
 export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const parsed = CrearBitacoraDto.safeParse(body);
 
-    try {
-
-        const body = await req.json();
-        const parsed = CrearBitacoraDto.safeParse(body);
-
-        if (!parsed.success) {
-            GeneralUtils.zodValidationError(parsed.error);
-        }
-
-        const bitacoraCreada = await BitacoraService.crearBitacora(parsed.data);
-        return NextResponse.json(new ResponseDto(201, "Bitacora creada con éxito", [bitacoraCreada]));
-
-      } catch (error) {
-
-        return GeneralUtils.generarErrorResponse(error);
-
+    if (!parsed.success) {
+      throw GeneralUtils.zodValidationError(parsed.error); // lanzar error para cortar ejecución
     }
 
+    const bitacoraCreada = await BitacoraService.crearBitacora(parsed.data);
+
+    return NextResponse.json(
+      new ResponseDto(201, "Bitacora creada con éxito", [bitacoraCreada])
+    );
+
+  } catch (error) {
+    return GeneralUtils.generarErrorResponse(error);
+  }
 }
+

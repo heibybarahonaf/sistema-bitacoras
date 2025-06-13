@@ -38,7 +38,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [calificacion, setCalificacion] = useState(0);
   const [ventas, setVentas] = useState("");
   const [horasConsumidas, setHorasConsumidas] = useState(0);
-  const [tipoHoras, setTipoHoras] = useState("paquete");
+  const [tipoHoras, setTipoHoras] = useState("Paquete");
 
   useEffect(() => {
   if (horaLlegada && horaSalida && fechaServicio) {
@@ -103,8 +103,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         descripcion_servicio: descripcionServicio,
         fase_implementacion: faseImplementacion,
         comentarios,
-        calificacion,
-        ventas,
+        calificacion: 1,
+        ventas: "NA",
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
         firmaTecnico_id: 1, // Reemplazar por lógica de firma
@@ -188,7 +188,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             <select
               value={sistemaId ?? ""}
               onChange={(e) => setSistemaId(Number(e.target.value))}
-              required
+              
               className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
             >
               <option value="" disabled>Seleccione un sistema</option>
@@ -204,7 +204,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             <select
               value={equipoId ?? ""}
               onChange={(e) => setEquipoId(Number(e.target.value))}
-              required
+              
               className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
             >
               <option value="" disabled>Seleccione un equipo</option>
@@ -297,8 +297,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
               onChange={(e) => setTipoHoras(e.target.value)}
               className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
             >
-              <option value="paquete">Paquete</option>
-              <option value="individuales">Individuales</option>
+              <option value="Paquete">Paquete</option>
+              <option value="Individual">Individuales</option>
             </select>
           </label>
         </div>

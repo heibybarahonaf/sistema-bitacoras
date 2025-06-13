@@ -33,7 +33,7 @@ export class EncuestaService {
     }
 
 
-    public static async obtenerEncuestaActiva(): Promise<Encuesta> {
+    /*public static async obtenerEncuestaActiva(): Promise<Encuesta> {
         const encuestaActiva = await prisma.encuesta.findFirst({ where: { activa: true }});
 
         if(!encuestaActiva){
@@ -41,7 +41,7 @@ export class EncuestaService {
         }
 
         return encuestaActiva;
-    }
+    }*/
 
 
     public static async obtenerEncuestasPreguntas(): Promise<EncuestaPreguntas[]> {
