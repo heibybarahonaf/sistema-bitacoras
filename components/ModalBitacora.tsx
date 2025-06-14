@@ -50,12 +50,13 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
 
     // Solo actualiza si es un número válido y positivo
     if (!isNaN(diferenciaHoras) && diferenciaHoras > 0) {
-      setHorasConsumidas(diferenciaHoras);
+      setHorasConsumidas(parseFloat(diferenciaHoras.toFixed(2)));
     } else {
       setHorasConsumidas(0); 
     }
   }
 }, [horaLlegada, horaSalida, fechaServicio]);
+
 
 
   // Cargar sistemas y equipos al montar

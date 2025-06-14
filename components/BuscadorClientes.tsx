@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import FormNuevaBitacora from "@/components/ModalBitacora";
 import ModalPago from "@/components/ModalPago";
-import { Search } from "lucide-react";
+import { Eye, Search, Download } from "lucide-react";
 
 interface Cliente {
   id: number;
@@ -167,16 +167,44 @@ const BuscarCliente: React.FC = () => {
             ) : bitacoras.length === 0 ? (
               <p className="text-gray-500">Este cliente no tiene bitácoras registradas.</p>
             ) : (
-              <div className="space-y-4">
-                {bitacoras.map((b: any) => (
-                  <div key={b.id} className="border p-4 rounded shadow bg-white">
-                    <p><strong>Fecha:</strong> {new Date(b.fecha_servicio).toLocaleDateString()}</p>
-                    <p><strong>Tipo de Servicio:</strong> {b.tipo_servicio}</p>
-                    <p><strong>Descripción:</strong> {b.descripcion_servicio}</p>
-                    <p><strong>Horas:</strong> {b.horas_consumidas} ({b.tipo_horas})</p>
-                  </div>
-                ))}
-              </div>
+              <table className="min-w-full table-auto border-collapse">
+  <thead className="bg-gray-100">
+    <tr>
+      <th className="px-4 py-3 border-b text-left">Ticket</th>
+      <th className="px-4 py-3 border-b text-left">Fecha</th>
+      <th className="px-4 py-3 border-b text-left">Horas consumidas</th>
+      <th className="px-4 py-3 border-b text-left">Fase</th>
+      <th className="px-4 py-3 border-b text-left">Descripcion</th>
+      <th className="px-4 py-3 border-b text-center"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {bitacoras.map((b: any) => (
+      <tr key={b.id} className="hover:bg-gray-50">
+        <td className="px-4 py-3 border-b">{b.no_ticket}</td>
+        <td className="px-4 py-3 border-b">{new Date(b.fecha_servicio).toLocaleDateString()}</td>
+        <td className="px-4 py-3 border-b">{b.horas_consumidas} ({b.tipo_horas})</td>
+        <td className="px-4 py-3 border-b">{b.fase_implementacion}</td>
+        <td className="px-4 py-3 border-b">{b.descripcion_servicio}</td>
+        <td className="px-4 py-3 border-b text-center space-x-3">
+                    <div className="flex justify-center items-center gap-3">
+                    <button
+                      className="flex px-3 py-1 bg-red-800 rounded-md hover:bg-red-900"
+                    >
+                      <Eye className="w-5 h-5 text-blue-400 hover:text-blue-500 cursor-pointer" />
+                    </button>
+                    <button
+                      className="flex px-3 py-1 bg-red-800 text-white rounded-md hover:bg-red-900"
+                    >
+                      <Download className="w-5 h-5 text-green-400 hover:text-green-500 cursor-pointer" />
+                    </button>
+                    </div>
+                  </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
             )}
           </div>
         </>
