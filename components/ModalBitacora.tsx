@@ -39,6 +39,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [ventas] = useState("NA");
   const [horasConsumidas, setHorasConsumidas] = useState(0);
   const [tipoHoras, setTipoHoras] = useState("Paquete");
+  const [responsable, setResponsable] = useState("");
+  const [modalidad, setModalidad] = useState("");
 
   // Cálculo de horas redondeado según regla de 15 minutos
   useEffect(() => {
@@ -111,6 +113,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         firmaTecnico_id: 1, // Reemplazar con ID real
         firmaCLiente_id: 1,
         encuesta_id: 1,
+        modalidad: modalidad,
+        responsable: responsable,
       };
 
       const res = await fetch("/api/bitacoras", {
@@ -147,18 +151,43 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             {/* Hora de Salida */}
             <InputField label="Hora de Salida" type="time" value={horaSalida} onChange={setHoraSalida} required />
 
-            {/* Sistema */}
-            <SelectField label="Sistema" value={sistemaId} options={sistemas} onChange={setSistemaId} />
-
-            {/* Equipo */}
-            <SelectField label="Equipo" value={equipoId} options={equipos} onChange={setEquipoId} />
+            {/* Responsable */}
+            <InputField label="Responsable" value={responsable} onChange={setResponsable} required />
 
             {/* Tipo de Servicio */}
             <SelectSimple
               label="Tipo de Servicio"
               value={tipoServicio}
               onChange={setTipoServicio}
-              options={["Presencial", "Remoto"]}
+              options={["Soporte Equipo", "Soporte Sistema"]}
+              required
+            />
+
+            {/* Sistema o Equipo según el tipo de servicio */}
+            {tipoServicio === "Soporte Sistema" && (
+              <SelectField
+                label="Sistema"
+                value={sistemaId}
+                options={sistemas}
+                onChange={setSistemaId}
+              />
+            )}
+
+            {tipoServicio === "Soporte Equipo" && (
+              <SelectField
+                label="Equipo"
+                value={equipoId}
+                options={equipos}
+                onChange={setEquipoId}
+              />
+            )}
+
+            {/* Tipo de Modalidad */}
+            <SelectSimple
+              label="Tipo de Modalidad"
+              value={modalidad}
+              onChange={setModalidad}
+              options={["Presencial", "Remoto", "Tienda"]}
               required
             />
 

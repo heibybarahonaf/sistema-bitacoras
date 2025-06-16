@@ -1,5 +1,6 @@
 // components/ModalPago.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
 
 export default function ModalPago({ clienteId, onClose, onGuardar }: {
   clienteId: number;
@@ -12,33 +13,62 @@ export default function ModalPago({ clienteId, onClose, onGuardar }: {
   const [noFactura, setNoFactura] = useState("");
   const [formaPago, setFormaPago] = useState("Efectivo");
   const [detallePago, setDetallePago] = useState("");
+  const [config, setConfig] = useState({
+    valor_hora_paquete: 0,
+    valor_hora_individual: 0,
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const nuevoPago = {
-      cliente_id: clienteId,
-      no_factura: noFactura,
-      forma_pago: formaPago,
-      detalle_pago: detallePago,
-      monto,
-      tipo_horas: tipoHoras,
-      cant_horas: cantHoras,
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch("/api/configuracion/1");
+        const json = await res.json();
+        const conf = json.results?.[0];
+        if (conf) {
+          setConfig({
+            valor_hora_paquete: conf.valor_hora_paquete,
+            valor_hora_individual: conf.valor_hora_individual,
+          });
+        }
+      } catch (error) {
+        console.error("Error al cargar configuración", error);
+      }
     };
 
-    const res = await fetch("/api/pagos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nuevoPago),
-    });
+    fetchConfig();
+  }, []);
 
-    if (res.ok) {
-      onGuardar();
-      onClose();
-    } else {
-      alert("Error al registrar el pago");
-    }
-  };
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      const nuevoPago = {
+        cliente_id: clienteId,
+        no_factura: noFactura,
+        forma_pago: formaPago,
+        detalle_pago: detallePago,
+        monto,
+        tipo_horas: tipoHoras,
+        cant_horas: cantHoras,
+      };
+
+      const res = await fetch("/api/pagos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nuevoPago),
+      });
+
+      if (res.ok) {
+        onGuardar();
+        onClose();
+      } else {
+        alert("Error al registrar el pago");
+      }
+    };
+  useEffect(() => {
+    const precioPorHora =
+      tipoHoras === "Paquete" ? config.valor_hora_paquete : config.valor_hora_individual;
+    setMonto(cantHoras * precioPorHora);
+  }, [cantHoras, tipoHoras, config]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -116,9 +146,7 @@ export default function ModalPago({ clienteId, onClose, onGuardar }: {
             <input
               type="number"
               value={monto}
-              onChange={(e) => setMonto(parseInt(e.target.value))}
-              min={1}
-              required
+              readOnly
               className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
             />
           </label>

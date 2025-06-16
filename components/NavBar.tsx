@@ -57,6 +57,11 @@ export default function Navbar() {
       href: "/encuesta",
       label: "Encuestas",
       icon: ClipboardList
+    },
+    {
+      href: "/configuracion",
+      label: "Configuración",
+      icon: Settings
     }
 
   ];
@@ -97,7 +102,7 @@ export default function Navbar() {
           ✖ Cerrar
         </button>
 
-        <ul className="space-y-4 mt-4 flex flex-col h-[calc(100%-8rem)] justify-center">
+        <ul className="space-y-4 mt-10 flex flex-col h-[calc(100%-8rem)] justify-center">
           {menuItems.map((item) => {
             const IconComponent = item.icon;
             const active = isActive(item.href);
@@ -114,7 +119,7 @@ export default function Navbar() {
                   }`}
                 >
                   <IconComponent className={`w-5 h-5 ${active ? "text-red-200" : ""}`} />
-                  <span className={`font-medium ${active ? "text-white" : ""}`}>
+                  <span className={`font-medium text-sm truncate ${active ? "text-white" : ""}`}>
                     {item.label}
                   </span>
                 </Link>
