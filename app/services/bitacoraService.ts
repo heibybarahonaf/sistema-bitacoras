@@ -8,6 +8,7 @@ import { EquipoService } from "./equipoService";
 import { SistemaService } from "./sistemaService";
 import { EncuestaService } from "./encuestaService";
 import { UsuarioService } from "./usuarioService";
+import { ConfiguracionService } from "./configService";
 
 type CrearBitacoraDto = z.infer<typeof CrearBitacoraDto>;
 
@@ -69,12 +70,23 @@ export class BitacoraService {
         await UsuarioService.obtenerUsuarioPorId(bitacoraData.usuario_id);
 
         if (bitacoraData.equipo_id !== undefined) {
-            await EquipoService.obtenerEquipoPorId(bitacoraData.equipo_id);
+            const equipo = await EquipoService.obtenerEquipoPorId(bitacoraData.equipo_id);
+
+            if(!equipo.activo){
+                throw new ResponseDto(401, "El Sistema Ingresado no se encuentra acctivo!");
+            }
+
         } else if (bitacoraData.sistema_id !== undefined) {
-            await SistemaService.obtenerSistemaPorId(bitacoraData.sistema_id);
+            const sistema = await SistemaService.obtenerSistemaPorId(bitacoraData.sistema_id);
+
+            if(!sistema.activo){
+                throw new ResponseDto(401, "El Sistema Ingresado no se encuentra acctivo!");
+            }
+            
         }
 
         const { horas_consumidas, tipo_horas, cliente_id } = bitacoraData;
+        const configuracion = await ConfiguracionService.obtenerConfiguracionPorId(1);
 
         let datosActualizacion: { 
             horas_paquetes?: number; 
@@ -86,7 +98,7 @@ export class BitacoraService {
         if (tipo_horas === "Individual") {
             const horasActuales = cliente.horas_individuales ?? 0;
             const montoActual = cliente.monto_individuales ?? 0;
-            const montoDebitado = horas_consumidas * 805;
+            const montoDebitado = horas_consumidas * configuracion.valor_hora_individual;
             
             if (horasActuales < horas_consumidas || montoActual < montoDebitado) {
                 throw new ResponseDto(400, "Saldo insuficiente en horas individuales.");
@@ -100,7 +112,7 @@ export class BitacoraService {
         } else if (tipo_horas === "Paquete") {
             const horasActuales = cliente.horas_paquetes ?? 0;
             const montoActual = cliente.monto_paquetes ?? 0;
-            const montoDebitado = horas_consumidas * 690;
+            const montoDebitado = horas_consumidas * configuracion.valor_hora_paquete;
             
             if (horasActuales < horas_consumidas || montoActual < montoDebitado) {
                 throw new ResponseDto(400, "Saldo insuficiente en horas de paquete.");
