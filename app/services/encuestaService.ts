@@ -3,17 +3,16 @@ import { Encuesta } from "@prisma/client";
 import { ResponseDto } from "../common/dtos/response.dto";
 import { prisma } from "../libs/prisma";
 import { CrearEncuestaDto } from "../dtos/encuesta.dto";
-import { GeneralUtils } from "../common/utils/general.utils";
 
 type EncuestaPreguntas = {
-  id: number;
-  titulo: string;
-  descripcion: string;
-  activa: boolean;
-  preguntas: {
     id: number;
-    texto: string;
-  }[];
+    titulo: string;
+    descripcion: string;
+    activa: boolean;
+    preguntas: {
+        id: number;
+        texto: string;
+    }[];
 };
 
 const EditarEncuestaDto = CrearEncuestaDto.partial();
@@ -33,7 +32,7 @@ export class EncuestaService {
     }
 
 
-    /*public static async obtenerEncuestaActiva(): Promise<Encuesta> {
+    public static async obtenerEncuestaActiva(): Promise<Encuesta> {
         const encuestaActiva = await prisma.encuesta.findFirst({ where: { activa: true }});
 
         if(!encuestaActiva){
@@ -41,7 +40,7 @@ export class EncuestaService {
         }
 
         return encuestaActiva;
-    }*/
+    }
 
 
     public static async obtenerEncuestasPreguntas(): Promise<EncuestaPreguntas[]> {

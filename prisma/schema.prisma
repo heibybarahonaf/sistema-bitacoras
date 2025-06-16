@@ -1,190 +1,202 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model Firma {
-  id              Int        @id @default(autoincrement())
-  token           String
-  firma_base64    String?
-  usada           Boolean
-  url             String
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  clienteBitacora Bitacora[] @relation("FirmaCliente")
-  tecnicoBitacora Bitacora[] @relation("FirmaTecnico")
+    id              Int        @id @default(autoincrement())
+    token           String
+    firma_base64    String?
+    usada           Boolean
+    url             String
+    createdAt       DateTime   @default(now())
+    updatedAt       DateTime   @updatedAt
+    clienteBitacora Bitacora[] @relation("FirmaCliente")
+    tecnicoBitacora Bitacora[] @relation("FirmaTecnico")
 
-  @@map("firmas")
+    @@map("firmas")
 }
 
 model Bitacora {
-  id                   Int                @id @default(autoincrement())
-  cliente_id           Int
-  usuario_id           Int
-  firmaTecnico_id      Int?
-  firmaCLiente_id      Int?
-  no_ticket            String             @db.VarChar(10)
-  fecha_servicio       DateTime
-  hora_llegada         DateTime
-  hora_salida          DateTime
-  sistema_id           Int?
-  equipo_id            Int?
-  tipo_servicio        String             @db.VarChar(100)
-  nombres_capacitados  String?
-  descripcion_servicio String
-  fase_implementacion  String             @db.VarChar(50)
-  comentarios          String
-  calificacion         Int?
-  ventas               String
-  horas_consumidas     Int
-  tipo_horas           String             @db.VarChar(25)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+    id                   Int                @id @default(autoincrement())
+    cliente_id           Int
+    usuario_id           Int
+    firmaTecnico_id      Int?
+    firmaCLiente_id      Int?
+    no_ticket            String             @db.VarChar(10)
+    fecha_servicio       DateTime
+    hora_llegada         DateTime
+    hora_salida          DateTime
+    sistema_id           Int?
+    equipo_id            Int?
+    tipo_servicio        String             @db.VarChar(100)
+    modalidad            String             @db.VarChar(100)
+    responsable          String             @db.VarChar(100)
+    nombres_capacitados  String?
+    descripcion_servicio String
+    fase_implementacion  String             @db.VarChar(50)
+    comentarios          String
+    calificacion         Int?
+    ventas               String
+    horas_consumidas     Int
+    tipo_horas           String             @db.VarChar(25)
+    createdAt            DateTime           @default(now())
+    updatedAt            DateTime           @updatedAt
 
-  cliente              Cliente            @relation(fields: [cliente_id], references: [id])
-  firmaCliente         Firma?             @relation("FirmaCliente", fields: [firmaCLiente_id], references: [id])
-  firmaTecnico         Firma?             @relation("FirmaTecnico", fields: [firmaTecnico_id], references: [id])
-  sistema              Sistema?           @relation(fields: [sistema_id], references: [id])
-  equipo               Equipo?            @relation(fields: [equipo_id], references: [id])
-  usuario              Usuario            @relation(fields: [usuario_id], references: [id])
+    cliente              Cliente            @relation(fields: [cliente_id], references: [id])
+    firmaCliente         Firma?             @relation("FirmaCliente", fields: [firmaCLiente_id], references: [id])
+    firmaTecnico         Firma?             @relation("FirmaTecnico", fields: [firmaTecnico_id], references: [id])
+    sistema              Sistema?           @relation(fields: [sistema_id], references: [id])
+    equipo               Equipo?            @relation(fields: [equipo_id], references: [id])
+    usuario              Usuario            @relation(fields: [usuario_id], references: [id])
 
-  encuestaBitacoras    Encuesta_Bitacora[] // Relación uno a muchos
+    encuestaBitacoras    Encuesta_Bitacora[] // Relación uno a muchos
 
-  @@map("bitacoras")
+    @@map("bitacoras")
 }
 
 model Encuesta_Bitacora {
-  id           Int      @id @default(autoincrement())
-  bitacora_id  Int
-  encuesta_id  Int
-  respuestas   String?  @db.VarChar(50)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+    id           Int      @id @default(autoincrement())
+    bitacora_id  Int
+    encuesta_id  Int
+    respuestas   String?  @db.VarChar(50)
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 
-  bitacora     Bitacora @relation(fields: [bitacora_id], references: [id])
-  encuesta     Encuesta @relation(fields: [encuesta_id], references: [id])
+    bitacora     Bitacora @relation(fields: [bitacora_id], references: [id])
+    encuesta     Encuesta @relation(fields: [encuesta_id], references: [id])
 
-  @@unique([bitacora_id, encuesta_id])
-  @@map("encuesta_bitacora")
+    @@unique([bitacora_id, encuesta_id])
+    @@map("encuesta_bitacora")
 }
 
 model Encuesta {
-  id                Int                    @id @default(autoincrement())
-  titulo            String                 @db.VarChar(250)
-  descripcion       String                 @db.VarChar(250)
-  activa            Boolean                @default(false)
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
+    id                Int                    @id @default(autoincrement())
+    titulo            String                 @db.VarChar(250)
+    descripcion       String                 @db.VarChar(250)
+    activa            Boolean                @default(false)
+    createdAt         DateTime               @default(now())
+    updatedAt         DateTime               @updatedAt
 
-  preguntas         EncuestaPregunta[]
-  encuestaBitacoras Encuesta_Bitacora[]    // Relación inversa
+    preguntas         EncuestaPregunta[]
+    encuestaBitacoras Encuesta_Bitacora[]    // Relación inversa
 
-  @@map("encuestas")
+    @@map("encuestas")
 }
 
 model Cliente {
-  id                 Int             @id @default(autoincrement())
-  responsable        String          @db.VarChar(200)
-  empresa            String
-  rtn                String          @db.VarChar(50)
-  direccion          String          @db.VarChar(30)
-  telefono           String          @db.VarChar(10)
-  correo             String          @unique @db.VarChar(100)
-  activo             Boolean
-  horas_paquetes     Int
-  horas_individuales Int
-  monto_paquetes     Int
-  monto_individuales Int
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-  bitacora           Bitacora[]
-  pagos              Pagos_Cliente[]
+    id                 Int             @id @default(autoincrement())
+    responsable        String          @db.VarChar(200)
+    empresa            String
+    rtn                String          @db.VarChar(50)
+    direccion          String          @db.VarChar(30)
+    telefono           String          @db.VarChar(10)
+    correo             String          @unique @db.VarChar(100)
+    activo             Boolean
+    horas_paquetes     Int
+    horas_individuales Int
+    monto_paquetes     Int
+    monto_individuales Int
+    createdAt          DateTime        @default(now())
+    updatedAt          DateTime        @updatedAt
+    bitacora           Bitacora[]
+    pagos              Pagos_Cliente[]
 
-  @@map("clientes")
+    @@map("clientes")
 }
 
 model Usuario {
-  id            Int        @id @default(autoincrement())
-  nombre        String     @db.VarChar(200)
-  password      String     @db.VarChar(400)
-  correo        String     @unique @db.VarChar(100)
-  rol           String     @default("tecnico")
-  activo        Boolean
-  zona_asignada String     @db.VarChar(300)
-  fecha_ingreso DateTime
-  telefono      String     @db.VarChar(10)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  bitacora      Bitacora[]
+    id            Int        @id @default(autoincrement())
+    nombre        String     @db.VarChar(200)
+    password      String     @db.VarChar(400)
+    correo        String     @unique @db.VarChar(100)
+    rol           String     @default("tecnico")
+    activo        Boolean
+    zona_asignada String     @db.VarChar(300)
+    fecha_ingreso DateTime
+    telefono      String     @db.VarChar(10)
+    createdAt     DateTime   @default(now())
+    updatedAt     DateTime   @updatedAt
+    bitacora      Bitacora[]
 
-  @@map("usuarios")
+    @@map("usuarios")
 }
 
 model Sistema {
-  id          Int        @id @default(autoincrement())
-  sistema     String     @db.VarChar(20)
-  descripcion String
-  activo      Boolean
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  bitacora    Bitacora[]
+    id          Int        @id @default(autoincrement())
+    sistema     String     @db.VarChar(20)
+    descripcion String
+    activo      Boolean
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+    bitacora    Bitacora[]
 
-  @@map("sistemas")
+    @@map("sistemas")
 }
 
 model Equipo {
-  id          Int        @id @default(autoincrement())
-  equipo      String     @db.VarChar(200)
-  descripcion String
-  activo      Boolean
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  bitacora    Bitacora[]
+    id          Int        @id @default(autoincrement())
+    equipo      String     @db.VarChar(200)
+    descripcion String
+    activo      Boolean
+    createdAt   DateTime   @default(now())
+    updatedAt   DateTime   @updatedAt
+    bitacora    Bitacora[]
 
-  @@map("equipos")
+    @@map("equipos")
 }
 
 model Pagos_Cliente {
-  id           Int      @id @default(autoincrement())
-  cliente_id   Int
-  no_factura   String   @db.VarChar(20)
-  forma_pago   String   @db.VarChar(50)
-  detalle_pago String   @db.VarChar(50)
-  monto        Int
-  tipo_horas   String   @db.VarChar(20)
-  cant_horas   Int
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  cliente      Cliente  @relation(fields: [cliente_id], references: [id])
+    id           Int      @id @default(autoincrement())
+    cliente_id   Int
+    no_factura   String   @db.VarChar(20)
+    forma_pago   String   @db.VarChar(50)
+    detalle_pago String   @db.VarChar(50)
+    monto        Int
+    tipo_horas   String   @db.VarChar(20)
+    cant_horas   Int
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+    cliente      Cliente  @relation(fields: [cliente_id], references: [id])
 
-  @@map("pagos_clientes")
+    @@map("pagos_clientes")
 }
 
 model Pregunta {
-  id                Int                    @id @default(autoincrement())
-  pregunta          String                 @db.VarChar(250)
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
-  
-  encuestaPreguntas EncuestaPregunta[]
+    id                Int                    @id @default(autoincrement())
+    pregunta          String                 @db.VarChar(250)
+    createdAt         DateTime               @default(now())
+    updatedAt         DateTime               @updatedAt
+    
+    encuestaPreguntas EncuestaPregunta[]
 
-  @@map("preguntas")
+    @@map("preguntas")
 }
 
 model EncuestaPregunta {
-  id          Int      @id @default(autoincrement())
-  encuesta_id Int
-  pregunta_id Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  encuesta    Encuesta @relation(fields: [encuesta_id], references: [id])
-  pregunta    Pregunta @relation(fields: [pregunta_id], references: [id])
+    id          Int      @id @default(autoincrement())
+    encuesta_id Int
+    pregunta_id Int
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    
+    encuesta    Encuesta @relation(fields: [encuesta_id], references: [id])
+    pregunta    Pregunta @relation(fields: [pregunta_id], references: [id])
 
-  @@unique([encuesta_id, pregunta_id])
-  @@map("encuesta_preguntas")
+    @@unique([encuesta_id, pregunta_id])
+    @@map("encuesta_preguntas")
+}
+
+model Configuracion {
+    id                      Int      @id @default(autoincrement())
+    correo_ventas           String
+    comision                Int
+    valor_hora_individual   Int
+    valor_hora_paquete      Int
+
+    @@map("configuracion")
 }

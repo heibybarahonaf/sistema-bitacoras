@@ -22,6 +22,17 @@ export class SistemaService {
     }
 
 
+    public static async obtenerSistemasActivos(): Promise<Sistema[]> {
+        const sistemas = await prisma.sistema.findMany({ where: { activo: true } });
+
+        if (sistemas.length === 0) {
+            throw new ResponseDto(404, "No se encontraron sistemas activos");
+        }
+
+        return sistemas;
+    }
+
+
     public static async obtenerSistemaPorId(id: number): Promise<Sistema> {
         const sistema = await prisma.sistema.findUnique({ where: { id } });
 
