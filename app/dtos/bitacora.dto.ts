@@ -30,9 +30,18 @@ export const CrearBitacoraDto = z.object({
     equipo_id: z.number({
         invalid_type_error: "El ID del equipo debe ser un número.",
     }).optional(),
-    tipo_servicio: z.string()
-        .min(1, "El tipo de servicio es obligatorio.")
-        .max(100, "El tipo de servicio no debe exceder los 100 caracteres."),
+    tipo_servicio: z.string({
+        required_error: "El tipo de servicio es obligatorio.",
+        invalid_type_error: "El tipo de servicio debe ser un texto.",
+    }).refine(val => val === "Soporte Equipo" || val === "Soporte Sistema", {
+        message: "El tipo de servicio debe ser 'Soporte Equipo' o 'Soporte Sistema'."
+    }),
+    modalidad: z.string()
+        .min(1, "La modalidad es obligatoria.")
+        .max(100, "La modalidad no debe exceder los 100 caracteres."),
+    responsable: z.string()
+        .min(1, "El responsable es obligatorio.")
+        .max(100, "El responsable no debe exceder los 100 caracteres."),
     nombres_capacitados: z.string()
         .min(1, "Los nombres capacitados son obligatorios."),
     descripcion_servicio: z.string()

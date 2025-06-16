@@ -65,8 +65,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
     const fetchData = async () => {
       try {
         const [resSistemas, resEquipos] = await Promise.all([
-          fetch("/api/sistemas"),
-          fetch("/api/equipos"),
+          fetch("/api/sistemas/activos"),
+          fetch("/api/equipos/activos"),
         ]);
         const dataSistemas = await resSistemas.json();
         const dataEquipos = await resEquipos.json();
