@@ -36,7 +36,7 @@ export default function UsuariosPage() {
   const [usuarioEditar, setUsuarioEditar] = useState<Usuario | null>(null);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isClient, setIsClient] = useState(false);
-
+  const [filtroNombre, setFiltroNombre] = useState("");
 
   useEffect(() => {
     setIsClient(true);
@@ -336,16 +336,27 @@ export default function UsuariosPage() {
         <Users className="w-8 h-8 text-[#295d0c]" />
         Gestión de Usuarios
       </h1>
-      <button
-        onClick={() => {
-          setUsuarioEditar(null);
-          setModalOpen(true);
-        }}
-        className="flex mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
-      >
-        <Plus className="w-5 h-5" />
-        Agregar Usuario
-      </button>
+
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <input
+          type="text"
+          placeholder="Buscar por nombre de usuario..."
+          value={filtroNombre}
+          onChange={(e) => setFiltroNombre(e.target.value)}
+          className="w-full sm:w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+        />
+        <button
+          onClick={() => {
+            setUsuarioEditar(null);
+            setModalOpen(true);
+          }}
+          className="flex items-center gap-2 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+        >
+          <Plus className="w-5 h-5" />
+          Agregar Usuario
+        </button>
+      </div>
+
 
       {loading ? (
         <LoadingSpinner />
@@ -370,7 +381,11 @@ export default function UsuariosPage() {
               </tr>
             </thead>
             <tbody>
-              {usuarios.map((usuario) => (
+              {usuarios
+                .filter((usuario) =>
+                  usuario.nombre.toLowerCase().includes(filtroNombre.toLowerCase())
+                )
+                .map((usuario) => (
                 <tr key={usuario.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 border-b">{usuario.nombre}</td>
                   <td className="px-4 py-3 border-b">{usuario.correo}</td>

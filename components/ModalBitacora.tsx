@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import SignatureCanvas from "react-signature-canvas";
+import Swal from 'sweetalert2';
 
 interface FormNuevaBitacoraProps {
   clienteId: number;
@@ -21,7 +23,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   onClose,
   onGuardar,
 }) => {
-  // Estados del formulario
   const [noTicket, setNoTicket] = useState("");
   const [fechaServicio, setFechaServicio] = useState("");
   const [horaLlegada, setHoraLlegada] = useState("");
@@ -41,15 +42,15 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [responsable, setResponsable] = useState("");
   const [modalidad, setModalidad] = useState("");
+  const [firmaTecnico, setFirmaTecnico] = useState<string | null>(null);
+  const sigCanvas = useRef<SignatureCanvas>(null);
 
-  // Cálculo de horas redondeado según regla de 15 minutos
   useEffect(() => {
     if (horaLlegada && horaSalida && fechaServicio) {
       const llegada = new Date(`${fechaServicio}T${horaLlegada}`);
       const salida = new Date(`${fechaServicio}T${horaSalida}`);
-
       const diferenciaMs = salida.getTime() - llegada.getTime();
-      const diferenciaMin = diferenciaMs / (1000 * 60); // Total minutos
+      const diferenciaMin = diferenciaMs / (1000 * 60);
 
       if (!isNaN(diferenciaMin) && diferenciaMin > 0) {
         const horasEnteras = Math.floor(diferenciaMin / 60);
@@ -62,7 +63,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
     }
   }, [horaLlegada, horaSalida, fechaServicio]);
 
-  // Cargar sistemas y equipos al montar
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -83,7 +83,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
     fetchData();
   }, []);
 
-  // Enviar bitácora
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -94,7 +93,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
 
       const newBitacora = {
         cliente_id: clienteId,
-        usuario_id: 1, // Reemplazar con ID real
+        usuario_id: 1,
         no_ticket: noTicket,
         fecha_servicio: fecha,
         hora_llegada: llegada,
@@ -110,7 +109,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         ventas: "NA",
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
-        firmaTecnico_id: 1, // Reemplazar con ID real
+        firma_tecnico: firmaTecnico,
         firmaCLiente_id: 1,
         encuesta_id: 1,
         modalidad: modalidad,
@@ -139,22 +138,12 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* No Ticket */}
             <InputField label="No. Ticket" value={noTicket} onChange={setNoTicket} required />
-
-            {/* Fecha del Servicio */}
             <InputField label="Fecha del Servicio" type="date" value={fechaServicio} onChange={setFechaServicio} required />
-
-            {/* Hora de Llegada */}
             <InputField label="Hora de Llegada" type="time" value={horaLlegada} onChange={setHoraLlegada} required />
-
-            {/* Hora de Salida */}
             <InputField label="Hora de Salida" type="time" value={horaSalida} onChange={setHoraSalida} required />
-
-            {/* Responsable */}
             <InputField label="Responsable" value={responsable} onChange={setResponsable} required />
 
-            {/* Tipo de Servicio */}
             <SelectSimple
               label="Tipo de Servicio"
               value={tipoServicio}
@@ -163,26 +152,13 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
               required
             />
 
-            {/* Sistema o Equipo según el tipo de servicio */}
             {tipoServicio === "Soporte Sistema" && (
-              <SelectField
-                label="Sistema"
-                value={sistemaId}
-                options={sistemas}
-                onChange={setSistemaId}
-              />
+              <SelectField label="Sistema" value={sistemaId} options={sistemas} onChange={setSistemaId} />
             )}
-
             {tipoServicio === "Soporte Equipo" && (
-              <SelectField
-                label="Equipo"
-                value={equipoId}
-                options={equipos}
-                onChange={setEquipoId}
-              />
+              <SelectField label="Equipo" value={equipoId} options={equipos} onChange={setEquipoId} />
             )}
 
-            {/* Tipo de Modalidad */}
             <SelectSimple
               label="Tipo de Modalidad"
               value={modalidad}
@@ -191,13 +167,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
               required
             />
 
-            {/* Nombres Capacitados */}
             <InputField label="Nombres Capacitados" value={nombresCapacitados} onChange={setNombresCapacitados} required />
-
-            {/* Descripción del Servicio */}
             <TextAreaField label="Descripción del Servicio" value={descripcionServicio} onChange={setDescripcionServicio} required />
-
-            {/* Fase de Implementación */}
             <SelectSimple
               label="Fase de Implementación"
               value={faseImplementacion}
@@ -205,11 +176,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
               options={["Fase 1", "Fase 2", "Fase 3"]}
               required
             />
-
-            {/* Comentarios */}
             <TextAreaField label="Comentarios" value={comentarios} onChange={setComentarios} />
 
-            {/* Horas Consumidas */}
             <div className="block">
               <span className="text-gray-700 font-medium">Horas Consumidas</span>
               <input
@@ -220,13 +188,54 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
               />
             </div>
 
-            {/* Tipo de Horas */}
             <SelectSimple
               label="Tipo de Horas"
               value={tipoHoras}
               onChange={setTipoHoras}
               options={["Paquete", "Individual"]}
             />
+          </div>
+
+          {/* Firma del Técnico */}
+          <div className="md:col-span-2">
+            <span className="text-gray-700 font-medium block mb-1">Firma del Técnico</span>
+            <SignatureCanvas
+              ref={sigCanvas}
+              penColor="black"
+              canvasProps={{
+                width: 350,
+                height: 150,
+                className: "border border-gray-300 rounded-md"
+              }}
+            />
+            <div className="flex gap-2 mt-2">
+              <button
+                type="button"
+                onClick={() => sigCanvas.current?.clear()}
+                className="text-sm px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Limpiar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
+                    const image = sigCanvas.current.getCanvas().toDataURL("image/png");
+                    setFirmaTecnico(image);
+                    Swal.fire({
+                      icon: 'success',
+                      title: '¡Firma guardada!',
+                      text: 'La firma del técnico se ha guardado correctamente.',
+                      timer: 1500,
+                      showConfirmButton: false,
+                    });
+                  }
+                }}
+                className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Guardar Firma
+              </button>
+            </div>
           </div>
 
           {/* Botones */}
@@ -251,14 +260,9 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   );
 };
 
-// Reutilizables
-const InputField = ({
-  label,
-  type = "text",
-  value,
-  onChange,
-  required = false,
-}: any) => (
+// Componentes reutilizables
+
+const InputField = ({ label, type = "text", value, onChange, required = false }: any) => (
   <label className="block">
     <span className="text-gray-700 font-medium">{label}</span>
     <input
