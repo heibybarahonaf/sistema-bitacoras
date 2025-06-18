@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import SignatureCanvas from "react-signature-canvas";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 
 interface FormNuevaBitacoraProps {
   clienteId: number;
@@ -42,7 +42,55 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [responsable, setResponsable] = useState("");
   const [modalidad, setModalidad] = useState("");
-  const [firmaTecnico, setFirmaTecnico] = useState<string | null>(null);
+  const [firmaCliente, setFirmaCliente] = useState<number | null>(null);
+  const sigCanvasCliente = useRef<SignatureCanvas>(null);
+
+const guardarFirmaCliente = async () => {
+  if (sigCanvasCliente.current && !sigCanvasCliente.current.isEmpty()) {
+    const image = sigCanvasCliente.current.getCanvas().toDataURL("image/png");
+
+    try {
+      const res = await fetch("/api/firmas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firma_base64: image }),
+      });
+
+      const data = await res.json();
+      console.log("Respuesta guardar firma cliente:", data);
+
+      if (res.ok && data.results && data.results.length > 0) {
+        const idFirma = data.results[0].id;
+        setFirmaCliente(idFirma);
+        Swal.fire({
+          icon: "success",
+          title: "¡Firma del cliente guardada!",
+          text: data.message || "La firma del cliente se ha guardado correctamente.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } else {
+        throw new Error(data.message || "Error al guardar la firma");
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error al guardar firma del cliente",
+        text: error instanceof Error ? error.message : String(error),
+      });
+    }
+  } else {
+    Swal.fire({
+      icon: "warning",
+      title: "Firma vacía",
+      text: "Por favor, capture la firma del cliente antes de guardarla.",
+    });
+  }
+};
+
+  // Ahora firmaTecnico guarda el ID de la firma en BD, no la imagen base64
+  const [firmaTecnico, setFirmaTecnico] = useState<number | null>(null);
+
   const sigCanvas = useRef<SignatureCanvas>(null);
 
   useEffect(() => {
@@ -86,6 +134,15 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!firmaTecnico) {
+      Swal.fire({
+        icon: "error",
+        title: "Firma no guardada",
+        text: "Por favor, capture y guarde la firma del técnico antes de enviar.",
+      });
+      return;
+    }
+
     try {
       const fecha = new Date(fechaServicio);
       const llegada = new Date(`${fechaServicio}T${horaLlegada}`);
@@ -95,11 +152,11 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         cliente_id: clienteId,
         usuario_id: 1,
         no_ticket: noTicket,
-        fecha_servicio: fecha,
-        hora_llegada: llegada,
-        hora_salida: salida,
-        sistema_id: sistemaId,
-        equipo_id: equipoId,
+        fecha_servicio: fecha.toISOString(),
+        hora_llegada: llegada.toISOString(),
+        hora_salida: salida.toISOString(),
+        sistema_id: sistemaId || undefined,
+        equipo_id: equipoId || undefined,
         tipo_servicio: tipoServicio,
         nombres_capacitados: nombresCapacitados,
         descripcion_servicio: descripcionServicio,
@@ -109,12 +166,14 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         ventas: "NA",
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
-        firma_tecnico: firmaTecnico,
-        firmaCLiente_id: 1,
+        firma_tecnico_id: firmaTecnico,
+        firmaCLiente_id: firmaCliente,
         encuesta_id: 1,
         modalidad: modalidad,
         responsable: responsable,
       };
+
+      console.log("Enviando bitácora:", newBitacora);
 
       const res = await fetch("/api/bitacoras", {
         method: "POST",
@@ -122,12 +181,73 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         body: JSON.stringify(newBitacora),
       });
 
-      if (!res.ok) throw new Error("Error al guardar la bitácora");
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Error del backend:", errorData);
+        throw new Error(errorData.message || "Error al guardar la bitácora");
+      }
 
-      onGuardar();
-      onClose();
+      // ✅ Mensaje con SweetAlert2 y luego refresca datos y cierra el modal
+      Swal.fire({
+        icon: "success",
+        title: "Bitácora guardada",
+        text: "La bitácora se ha registrado correctamente.",
+        confirmButtonText: "OK",
+      }).then(() => {
+        onGuardar(); // Recargar la lista
+        onClose();   // Cerrar el modal
+      });
+
     } catch (error) {
-      alert("Error al guardar: " + error);
+      Swal.fire({
+        icon: "error",
+        title: "Error al guardar",
+        text: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
+
+  // Nuevo método para guardar la firma y obtener el id
+  const guardarFirma = async () => {
+    if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
+      const image = sigCanvas.current.getCanvas().toDataURL("image/png");
+
+      try {
+        const res = await fetch("/api/firmas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ firma_base64: image }),
+        });
+
+        const data = await res.json();
+        console.log("Respuesta guardar firma:", data);
+
+        if (res.ok && data.results && data.results.length > 0) {
+          const idFirma = data.results[0].id;
+          setFirmaTecnico(idFirma);
+          Swal.fire({
+            icon: "success",
+            title: "¡Firma guardada!",
+            text: data.message || "La firma del técnico se ha guardado correctamente.",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+        } else {
+          throw new Error(data.message || "Error al guardar la firma");
+        }
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error al guardar la firma",
+          text: error instanceof Error ? error.message : String(error),
+        });
+      }
+    } else {
+      Swal.fire({
+        icon: "warning",
+        title: "Firma vacía",
+        text: "Por favor, capture la firma antes de guardarla.",
+      });
     }
   };
 
@@ -138,8 +258,15 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Campos habituales */}
             <InputField label="No. Ticket" value={noTicket} onChange={setNoTicket} required />
-            <InputField label="Fecha del Servicio" type="date" value={fechaServicio} onChange={setFechaServicio} required />
+            <InputField
+              label="Fecha del Servicio"
+              type="date"
+              value={fechaServicio}
+              onChange={setFechaServicio}
+              required
+            />
             <InputField label="Hora de Llegada" type="time" value={horaLlegada} onChange={setHoraLlegada} required />
             <InputField label="Hora de Salida" type="time" value={horaSalida} onChange={setHoraSalida} required />
             <InputField label="Responsable" value={responsable} onChange={setResponsable} required />
@@ -205,10 +332,10 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
               canvasProps={{
                 width: 350,
                 height: 150,
-                className: "border border-gray-300 rounded-md"
+                className: "border border-gray-300 rounded-md",
               }}
             />
-            <div className="flex gap-2 mt-2">
+            <div className="flex gap-2 mt-2 items-center">
               <button
                 type="button"
                 onClick={() => sigCanvas.current?.clear()}
@@ -218,25 +345,53 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
-                    const image = sigCanvas.current.getCanvas().toDataURL("image/png");
-                    setFirmaTecnico(image);
-                    Swal.fire({
-                      icon: 'success',
-                      title: '¡Firma guardada!',
-                      text: 'La firma del técnico se ha guardado correctamente.',
-                      timer: 1500,
-                      showConfirmButton: false,
-                    });
-                  }
-                }}
+                onClick={guardarFirma}
                 className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
                 Guardar Firma
               </button>
+              {firmaTecnico && (
+                <span className="text-green-600 font-semibold ml-4">
+                  Firma guardada (ID: {firmaTecnico})
+                </span>
+              )}
             </div>
           </div>
+
+              {/* Firma del Cliente */}
+<div className="md:col-span-2 mt-6">
+  <span className="text-gray-700 font-medium block mb-1">Firma del Cliente</span>
+  <SignatureCanvas
+    ref={sigCanvasCliente}
+    penColor="black"
+    canvasProps={{
+      width: 350,
+      height: 150,
+      className: "border border-gray-300 rounded-md",
+    }}
+  />
+  <div className="flex gap-2 mt-2 items-center">
+    <button
+      type="button"
+      onClick={() => sigCanvasCliente.current?.clear()}
+      className="text-sm px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+    >
+      Limpiar
+    </button>
+    <button
+      type="button"
+      onClick={guardarFirmaCliente}
+      className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+    >
+      Guardar Firma
+    </button>
+    {firmaCliente && (
+      <span className="text-green-600 font-semibold ml-4">
+        Firma guardada (ID: {firmaCliente})
+      </span>
+    )}
+  </div>
+</div>
 
           {/* Botones */}
           <div className="mt-6 flex justify-end space-x-4">
@@ -260,8 +415,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   );
 };
 
-// Componentes reutilizables
-
+// Componentes reutilizables (sin cambios)
 const InputField = ({ label, type = "text", value, onChange, required = false }: any) => (
   <label className="block">
     <span className="text-gray-700 font-medium">{label}</span>
@@ -283,9 +437,13 @@ const SelectField = ({ label, value, options, onChange }: any) => (
       onChange={(e) => onChange(Number(e.target.value))}
       className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
     >
-      <option value="" disabled>Seleccione una opción</option>
+      <option value="" disabled>
+        Seleccione una opción
+      </option>
       {options.map((opt: any) => (
-        <option key={opt.id} value={opt.id}>{opt.sistema || opt.equipo}</option>
+        <option key={opt.id} value={opt.id}>
+          {opt.sistema || opt.equipo}
+        </option>
       ))}
     </select>
   </label>
@@ -300,9 +458,13 @@ const SelectSimple = ({ label, value, onChange, options, required = false }: any
       required={required}
       className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
     >
-      <option value="" disabled>Seleccione una opción</option>
+      <option value="" disabled>
+        Seleccione una opción
+      </option>
       {options.map((opt: string) => (
-        <option key={opt} value={opt}>{opt}</option>
+        <option key={opt} value={opt}>
+          {opt}
+        </option>
       ))}
     </select>
   </label>
