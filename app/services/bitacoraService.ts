@@ -3,12 +3,12 @@ import { Bitacora } from "@prisma/client";
 import { ResponseDto } from "../common/dtos/response.dto";
 import { prisma } from "../libs/prisma";
 import { CrearBitacoraDto } from "../dtos/bitacora.dto";
-import { ClienteService } from "./clienteService";
-import { EquipoService } from "./equipoService";
-import { SistemaService } from "./sistemaService";
-import { EncuestaService } from "./encuestaService";
-import { UsuarioService } from "./usuarioService";
-import { ConfiguracionService } from "./configService";
+import { ClienteService } from "../services/clienteService";
+import { EquipoService } from "../services/equipoService";
+import { SistemaService } from "../services/sistemaService";
+import { EncuestaService } from "../services/encuestaService";
+import { UsuarioService } from "../services/usuarioService";
+import { ConfiguracionService } from "../services/configService";
 
 type CrearBitacoraDto = z.infer<typeof CrearBitacoraDto>;
 
@@ -20,6 +20,35 @@ export class BitacoraService {
         if(bitacoras.length === 0){
             throw new ResponseDto(404, "No se encontraron bitacoras registradas");
         }
+
+        return bitacoras;
+    }
+
+
+    public static async obtenerBitacorasRangoFechas(fechaInicio: string, fechaFinal: string) {
+
+        const bitacoras = await prisma.bitacora.findMany({
+            where: {
+                fecha_servicio: {
+                gte: new Date(fechaInicio),
+                lte: new Date(fechaFinal),
+                },
+            },
+            include: {
+                sistema: true,
+                equipo: true,
+                cliente: true,
+                usuario: true,
+            },
+            orderBy: {
+                fecha_servicio: "asc",
+            },
+        });
+
+
+        if( bitacoras.length == 0){{
+            throw new ResponseDto(404, "No se encontraron bitacoras registradas en el rango de fechas ingresado");
+        }}
 
         return bitacoras;
     }
@@ -44,6 +73,58 @@ export class BitacoraService {
 
         if(bitacoras.length === 0){
             throw new ResponseDto(404, "No se encontraron bitacoras registradas con el cliente");
+        }
+
+        return bitacoras;
+    }
+
+
+    public static async obtenerBitacorasClienteFechas(idCliente: number, fechaInicio: string, fechaFinal: string) {
+        const bitacoras = await prisma.bitacora.findMany({
+            where: {
+                cliente_id: idCliente,
+                fecha_servicio: {
+                    gte: new Date(fechaInicio),
+                    lte: new Date(fechaFinal),
+                },
+            },
+            include: {
+                cliente: true,
+                usuario: true,
+                sistema: true,
+                equipo: true,
+            },
+            orderBy: { createdAt: "asc" }
+        });
+
+        if (bitacoras.length === 0) {
+            throw new ResponseDto(404, "No se encontraron bitácoras registradas con el cliente en el rango de fechas ingresado");
+        }
+
+        return bitacoras;
+    }
+
+
+    public static async obtenerBitacorasTecnicoFechas(idTecnico: number, fechaInicio: string, fechaFinal: string) {
+        const bitacoras = await prisma.bitacora.findMany({
+            where: {
+                usuario_id: idTecnico,
+                fecha_servicio: {
+                    gte: new Date(fechaInicio),
+                    lte: new Date(fechaFinal),
+                },
+            },
+            include: {
+                cliente: true,
+                usuario: true,
+                sistema: true,
+                equipo: true,
+            },
+            orderBy: { createdAt: "asc" }
+        });
+
+        if (bitacoras.length === 0) {
+            throw new ResponseDto(404, "No se encontraron bitácoras registradas con el técnico en el rango de fechas ingresado");
         }
 
         return bitacoras;
