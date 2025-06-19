@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ModalCliente from "@/components/ModalCliente";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
 import { Contact, Plus, Edit3, Trash2 } from "lucide-react";
 
 interface Cliente {
@@ -25,16 +25,13 @@ function formatRTN(value: string) {
 
 // carga
 const LoadingSpinner = () => (
-
   <div className="flex flex-col items-center justify-center py-12">
     <div className="relative">
       <div className="w-12 h-12 border-4 border-gray-200 border-t-[#295d0c] rounded-full animate-spin"></div>
     </div>
     <p className="mt-4 text-gray-600 font-medium">Cargando clientes...</p>
-
   </div>
 );
-
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -44,123 +41,109 @@ export default function ClientesPage() {
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isCliente, setIsCliente] = useState(false);
 
+  // Estado para filtro
+  const [filtroNombre, setFiltroNombre] = useState("");
+
+  // Paginación estados
+  const [paginaActual, setPaginaActual] = useState(1);
+  const clientesPorPagina = 5;
 
   useEffect(() => {
     setIsCliente(true);
   }, []);
 
-
-  // formatear el teléfono
+  // formatear teléfono
   const formatearTelefono = (valor: string) => {
-
-    const soloNumeros = valor.replace(/\D/g, '');
+    const soloNumeros = valor.replace(/\D/g, "");
     const limitado = soloNumeros.slice(0, 8);
-    
+
     if (limitado.length > 4) {
-      return limitado.slice(0, 4) + '-' + limitado.slice(4);
+      return limitado.slice(0, 4) + "-" + limitado.slice(4);
     }
-    
+
     return limitado;
   };
-
 
   const manejarCambioTelefono = (event: React.ChangeEvent<HTMLInputElement>) => {
     const valorFormateado = formatearTelefono(event.target.value);
     event.target.value = valorFormateado;
   };
-  
 
   function mostrarErroresValidacion(data: any) {
-
     if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
-      // varios
-      const erroresHtml = data.results.map((error: any) => 
-        `<div class="mb-2">
-          <ul class="ml-4 mt-1">
-            ${error.mensajes && Array.isArray(error.mensajes) 
-              ? error.mensajes.map((msg: string) => `<li>• ${msg}</li>`).join('') 
-              : '<li>Error inesperado!</li>'
-            }
-          </ul>
-        </div>`
-      ).join('');
+      const erroresHtml = data.results
+        .map(
+          (error: any) =>
+            `<div class="mb-2"><ul class="ml-4 mt-1">${
+              error.mensajes && Array.isArray(error.mensajes)
+                ? error.mensajes.map((msg: string) => `<li>• ${msg}</li>`).join("")
+                : "<li>Error inesperado!</li>"
+            }</ul></div>`
+        )
+        .join("");
 
-      // 1 solo
       Swal.fire({
-        icon: 'error',
-        title: 'Errores de validación',
+        icon: "error",
+        title: "Errores de validación",
         html: `<div class="text-left">${erroresHtml}</div>`,
-        confirmButtonColor: '#295d0c',
-        width: '500px'
+        confirmButtonColor: "#295d0c",
+        width: "500px",
       });
-
     } else {
-
       if (data.code !== 200 && data.code !== 201) {
         Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: data.message || 'Error inesperado',
-          confirmButtonColor: '#295d0c'
+          icon: "error",
+          title: "Error",
+          text: data.message || "Error inesperado",
+          confirmButtonColor: "#295d0c",
         });
       }
-
     }
-
   }
 
   // Obtener clientes desde la API
   async function fetchClientes() {
     setLoading(true);
     setShowEmptyMessage(false);
-    
+
     try {
       const res = await fetch("/api/clientes");
       const response = await res.json();
-      
+
       if (response.code === 404) {
         setClientes([]);
         setShowEmptyMessage(true);
         return;
       }
-      
+
       if (!res.ok || response.code !== 200) {
         throw new Error(response.message || "Error al cargar clientes");
       }
-      
+
       setClientes(response.results ?? []);
-      
-      // por si acaso results viene vacío con código 200
+
       if (!response.results || response.results.length === 0) {
         setShowEmptyMessage(true);
       }
-
     } catch (error) {
-
       Swal.fire({
-        icon: 'error',
-        title: 'Error al cargar clientes',
-        text: error instanceof Error ? error.message : 'Error inesperado al cargar los clientes',
-        confirmButtonColor: '#295d0c'
+        icon: "error",
+        title: "Error al cargar clientes",
+        text: error instanceof Error ? error.message : "Error inesperado al cargar los clientes",
+        confirmButtonColor: "#295d0c",
       });
-
     } finally {
       setLoading(false);
     }
-
   }
 
-
   useEffect(() => {
-
     if (isCliente) {
       fetchClientes();
     }
-
   }, [isCliente]);
 
-
-  // Crear clientes
+  // Crear cliente
   async function handleSubmitCliente(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -172,12 +155,12 @@ export default function ClientesPage() {
       direccion: formData.get("direccion") as string,
       telefono: formData.get("telefono") as string,
       correo: formData.get("correo") as string,
-      activo: true, //Siempre activo por defecto
+      activo: true,
       horas_paquetes: 0,
       horas_individuales: 0,
       monto_individuales: 0,
       monto_paquetes: 0,
-      createdAt: new Date().toISOString(), 
+      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
@@ -189,47 +172,44 @@ export default function ClientesPage() {
       });
 
       const data = await res.json();
-      
+
       if (!res.ok || (data.code !== 200 && data.code !== 201)) {
         mostrarErroresValidacion(data);
         return;
       }
 
       Swal.fire({
-        icon: 'success',
-        title: '¡Cliente creado!',
-        text: data.message || 'Cliente creado correctamente',
-        confirmButtonColor: '#295d0c'
+        icon: "success",
+        title: "¡Cliente creado!",
+        text: data.message || "Cliente creado correctamente",
+        confirmButtonColor: "#295d0c",
       });
 
       fetchClientes();
       setModalOpen(false);
+      setPaginaActual(1); // Volver a página 1 al agregar
 
     } catch (error) {
-
       Swal.fire({
-        icon: 'error',
-        title: 'Error de conexión',
-        text: 'No se pudo conectar con el servidor',
-        confirmButtonColor: '#295d0c'
+        icon: "error",
+        title: "Error de conexión",
+        text: "No se pudo conectar con el servidor",
+        confirmButtonColor: "#295d0c",
       });
-
     }
   }
 
-
-  //Eliminar
+  // Eliminar cliente
   async function handleEliminarCliente(id: number) {
-
     const result = await Swal.fire({
-      title: '¿Estás seguro?',
+      title: "¿Estás seguro?",
       text: "Esta acción no se puede deshacer",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
     });
 
     if (!result.isConfirmed) return;
@@ -237,37 +217,35 @@ export default function ClientesPage() {
     try {
       const res = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
       const data = await res.json();
-      
+
       if (!res.ok || data.code !== 200) {
         Swal.fire({
-          icon: 'error',
-          title: 'Error al eliminar',
-          text: data.message || 'Error al eliminar cliente',
-          confirmButtonColor: '#295d0c'
+          icon: "error",
+          title: "Error al eliminar",
+          text: data.message || "Error al eliminar cliente",
+          confirmButtonColor: "#295d0c",
         });
-
         return;
       }
 
       Swal.fire({
-        icon: 'success',
-        title: '¡Cliente eliminado!',
-        text: data.message || 'Cliente eliminado correctamente',
-        confirmButtonColor: '#295d0c'
+        icon: "success",
+        title: "¡Cliente eliminado!",
+        text: data.message || "Cliente eliminado correctamente",
+        confirmButtonColor: "#295d0c",
       });
 
       fetchClientes();
+      setPaginaActual(1); // Volver a página 1 al eliminar
 
     } catch (error) {
-
       Swal.fire({
-        icon: 'error',
-        title: 'Error de conexión',
-        text: 'No se pudo conectar con el servidor',
-        confirmButtonColor: '#295d0c'
+        icon: "error",
+        title: "Error de conexión",
+        text: "No se pudo conectar con el servidor",
+        confirmButtonColor: "#295d0c",
       });
     }
-
   }
 
   // Abrir modal para editar cliente
@@ -276,12 +254,12 @@ export default function ClientesPage() {
     setModalOpen(true);
   }
 
-  // guardar editado
+  // Guardar cliente editado
   async function handleEditarCliente(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!clienteEditar) return;
 
-    const formData = new FormData(event.currentTarget);    
+    const formData = new FormData(event.currentTarget);
     const clienteActualizado: any = {
       empresa: formData.get("empresa") as string,
       responsable: formData.get("responsable") as string,
@@ -289,15 +267,15 @@ export default function ClientesPage() {
       direccion: formData.get("direccion") as string,
       telefono: formData.get("telefono") as string,
       correo: formData.get("correo") as string,
-      activo: formData.get("activo") === "true", // ← Convierte string a boolean
+      activo: formData.get("activo") === "true",
       updateAt: new Date().toISOString(),
     };
-    
+
     const nuevoCorreo = formData.get("correo") as string;
     if (nuevoCorreo !== clienteEditar.correo) {
       clienteActualizado.correo = nuevoCorreo;
     }
-    
+
     try {
       const res = await fetch(`/api/clientes/${clienteEditar.id}`, {
         method: "PATCH",
@@ -306,118 +284,155 @@ export default function ClientesPage() {
       });
 
       const data = await res.json();
-      
-      if (!res.ok || (data.code !== 200 && data.code !== 201)) {
 
+      if (!res.ok || (data.code !== 200 && data.code !== 201)) {
         mostrarErroresValidacion(data);
         return;
-
       }
 
       Swal.fire({
-        icon: 'success',
-        title: '¡Cliente actualizado!',
-        text: data.message || 'Cliente actualizado correctamente',
-        confirmButtonColor: '#295d0c'
+        icon: "success",
+        title: "¡Cliente actualizado!",
+        text: data.message || "Cliente actualizado correctamente",
+        confirmButtonColor: "#295d0c",
       });
 
       fetchClientes();
       setModalOpen(false);
       setClienteEditar(null);
-
     } catch (error) {
-
       Swal.fire({
-        icon: 'error',
-        title: 'Error de conexión',
-        text: 'No se pudo conectar con el servidor',
-        confirmButtonColor: '#295d0c'
+        icon: "error",
+        title: "Error de conexión",
+        text: "No se pudo conectar con el servidor",
+        confirmButtonColor: "#295d0c",
       });
     }
-
   }
-
 
   if (!isCliente) {
     return <LoadingSpinner />;
   }
 
+  // Aquí se filtran los clientes por empresa o RTN según filtroNombre
+  const clientesFiltrados = clientes.filter((cliente) =>
+    (
+      (cliente.empresa ?? "").toLowerCase().includes(filtroNombre.toLowerCase()) ||
+      (cliente.rtn ?? "").toLowerCase().includes(filtroNombre.toLowerCase())
+    )
+  );
+
+  // Calcular clientes para la página actual
+  const indexUltimoCliente = paginaActual * clientesPorPagina;
+  const indexPrimerCliente = indexUltimoCliente - clientesPorPagina;
+  const clientesPaginados = clientesFiltrados.slice(indexPrimerCliente, indexUltimoCliente);
+  const totalPaginas = Math.ceil(clientesFiltrados.length / clientesPorPagina);
 
   return (
     <div className="p-6 bg-white min-h-screen">
       <h1 className="text-3xl font-semibold mb-6 flex items-center gap-2 text-gray-800">
         <Contact className="w-7 h-7 text-[#295d0c]" />
-        Gestión de Clientes</h1>
-      <button
-        onClick={() => {
-          setClienteEditar(null);
-          setModalOpen(true);
-        }}
-        className="flex mb-6 bg-[#295d0c] text-white px-5 py-3 rounded-md hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
-      >
-        <Plus className="w-5 h-5" />
-        Agregar Cliente
-      </button>
+        Gestión de Clientes
+      </h1>
 
+      {/* Input filtro */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <input
+          type="text"
+          placeholder="Buscar por nombre de usuario..."
+          value={filtroNombre}
+          onChange={(e) => {
+            setFiltroNombre(e.target.value);
+            setPaginaActual(1); // Reset paginación al filtrar
+          }}
+          className="w-full sm:w-1/2 border border-gray-300 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+        />
+        <button
+          onClick={() => {
+            setClienteEditar(null);
+            setModalOpen(true);
+          }}
+          className="flex items-center gap-1.5 sm:gap-2 bg-[#295d0c] text-white px-3 py-2 sm:px-5 sm:py-3 rounded-md text-sm sm:text-base hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+        >
+          <Plus className="w-5 h-5" />
+          Agregar Cliente
+        </button>
+      </div>
       {loading ? (
         <LoadingSpinner />
-      ) : clientes.length === 0 && showEmptyMessage ? (
+      ) : clientesFiltrados.length === 0 && showEmptyMessage ? (
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">👥</div>
           <p className="text-gray-600 text-lg">No hay clientes registrados.</p>
           <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Cliente" para comenzar.</p>
         </div>
-      ) : clientes.length > 0 ? (
-        <div className="overflow-x-auto rounded-lg shadow border border-gray-300">
-          <table className="min-w-full table-auto border-collapse">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-3 border-b text-left">Empresa</th>
-                <th className="px-4 py-3 border-b text-left">Responsable</th>
-                <th className="px-4 py-3 border-b text-left">RTN</th>
-                <th className="px-4 py-3 border-b text-left">Correo</th>
-                <th className="px-4 py-3 border-b text-left">Teléfono</th>
-                <th className="px-4 py-3 border-b text-center">Activo</th>
-                <th className="px-4 py-3 border-b text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientes.map((cliente) => (
-                <tr key={cliente.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b">{cliente.empresa}</td>
-                  <td className="px-4 py-3 border-b">{cliente.responsable}</td>
-                  <td className="px-4 py-3 border-b">{cliente.rtn}</td>
-                  <td className="px-4 py-3 border-b">{cliente.correo}</td>
-                  <td className="px-4 py-3 border-b">{formatearTelefono(cliente.telefono)}</td>
-                  <td className="px-4 py-3 border-b text-center">
-                    {cliente.activo ? "✅" : "❌"}
-                  </td>
-                  <td className="px-4 py-3 border-b text-center space-x-3">
-                    <div className="flex justify-center items-center gap-3">
-                    <button
-                      onClick={() => {
-                        setClienteEditar(cliente);
-                        setModalOpen(true);
-                      }}
-                      className="flex px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
-                    >
-                      <Edit3 className="w-5 h-5" />
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleEliminarCliente(cliente.id)}
-                      className="flex px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                      Eliminar
-                    </button>
-                    </div>
-                  </td>
+      ) : clientesFiltrados.length > 0 ? (
+        <>
+            <table className="min-w-full table-auto border-collapse">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-2 sm:px-4 py-2 border-b text-left">Empresa</th>
+                  <th className="px-2 sm:px-4 py-2 border-b text-left">Responsable</th>
+                  <th className="px-2 sm:px-4 py-2 border-b text-left">RTN</th>
+                  <th className="px-2 sm:px-4 py-2 border-b text-left">Correo</th>
+                  <th className="px-2 sm:px-4 py-2 border-b text-left">Teléfono</th>
+                  <th className="px-2 sm:px-4 py-2 border-b text-center">Activo</th>
+                  <th className="px-2 sm:px-4 py-2 border-b text-center">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {clientesPaginados.map((cliente) => (
+                  <tr key={cliente.id} className="hover:bg-gray-50">
+                    <td className="px-2 sm:px-4 py-2 border-b">{cliente.empresa}</td>
+                    <td className="px-2 sm:px-4 py-2 border-b">{cliente.responsable}</td>
+                    <td className="px-2 sm:px-4 py-2 border-b">{cliente.rtn}</td>
+                    <td className="px-2 sm:px-4 py-2 border-b">{cliente.correo}</td>
+                    <td className="px-2 sm:px-4 py-2 border-b">{formatearTelefono(cliente.telefono)}</td>
+                    <td className="px-2 sm:px-4 py-2 border-b text-centerr">{cliente.activo ? "✅" : "❌"}</td>
+                    <td className="px-2 sm:px-4 py-2 border-b text-center space-x-2">
+                      <div className="flex justify-center items-center gap-2">
+                        <button
+                          onClick={() => abrirEditarCliente(cliente)}
+                          className="flex px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
+                        >
+                          <Edit3 className="w-5 h-5" />
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => handleEliminarCliente(cliente.id)}
+                          className="flex px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+          {/* Controles de paginación */}
+          <div className="mt-4 flex justify-center items-center gap-2">
+            <button
+              onClick={() => setPaginaActual((prev) => Math.max(prev - 1, 1))}
+              disabled={paginaActual === 1}
+              className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50"
+            >
+              Anterior
+            </button>
+            <span className="text-gray-700 font-medium">
+                Página {paginaActual} de {Math.max(1, Math.ceil(clientesFiltrados.length / clientesPorPagina))}
+            </span>
+            <button
+              onClick={() => setPaginaActual((prev) => Math.min(prev + 1, totalPaginas))}
+              disabled={paginaActual === totalPaginas}
+              className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50"
+            >
+              Siguiente
+            </button>
+          </div>
+        </>
       ) : null}
 
       <ModalCliente
@@ -427,9 +442,7 @@ export default function ClientesPage() {
           setClienteEditar(null);
         }}
       >
-        <h2 className="text-xl font-semibold mb-6 text-gray-900">
-          {clienteEditar ? "Editar Cliente" : "Nuevo Cliente"}
-        </h2>
+        <h2 className="text-xl font-semibold mb-6 text-gray-900">{clienteEditar ? "Editar Cliente" : "Nuevo Cliente"}</h2>
         <form onSubmit={clienteEditar ? handleEditarCliente : handleSubmitCliente} className="space-y-4">
           {[
             { label: "Empresa", name: "empresa", type: "text", placeholder: "Nombre de la empresa" },
@@ -447,8 +460,7 @@ export default function ClientesPage() {
                   defaultValue={clienteEditar ? (clienteEditar as any)[name] : "tecnico"}
                   required
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-                >
-                </select>
+                ></select>
               ) : (
                 <input
                   name={name}
@@ -460,10 +472,8 @@ export default function ClientesPage() {
                 />
               )}
             </label>
-          ))
-          }
-          
-          {/* separado por el formateo */}
+          ))}
+
           <label className="block mb-4 text-gray-800 font-medium">
             <span className="text-gray-700">Teléfono:</span>
             <input

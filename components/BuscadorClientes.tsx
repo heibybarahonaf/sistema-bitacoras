@@ -4,6 +4,9 @@ import React, { useEffect, useState } from "react";
 import FormNuevaBitacora from "@/components/ModalBitacora";
 import ModalPago from "@/components/ModalPago";
 import { Eye, Notebook } from "lucide-react";
+import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
+import Swal from "sweetalert2";
+import { Bitacora } from "@prisma/client";
 
 interface Cliente {
   id: number;
@@ -22,6 +25,16 @@ interface Cliente {
   updatedAt: string;
 }
 
+interface Sistema {
+  id: number;
+  sistema: string;
+}
+
+interface Equipo {
+  id: number;
+  equipo: string;
+}
+
 const BuscarCliente: React.FC = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [filtro, setFiltro] = useState("");
@@ -30,9 +43,18 @@ const BuscarCliente: React.FC = () => {
   const [loadingBitacoras, setLoadingBitacoras] = useState(false);
   const [showNewBitacora, setShowNewBitacora] = useState(false);
   const [showPago, setShowPago] = useState(false);
+  const [bitacoraSeleccionada, setBitacoraSeleccionada] = useState<Bitacora | null>(null);
+  const [modalDetalleOpen, setModalDetalleOpen] = useState(false);
+  const [sistemas, setSistemas] = useState<Sistema[]>([]);
+  const [equipos, setEquipos] = useState<Equipo[]>([]);
 
   const formatoLempiras = (valor: number) =>
     valor.toLocaleString("es-HN", { style: "currency", currency: "HNL" });
+
+  const mostrarDetalleBitacora = (bitacora: Bitacora) => {
+    setBitacoraSeleccionada(bitacora);
+    setModalDetalleOpen(true);
+  };
 
   useEffect(() => {
     const fetchClientes = async () => {
@@ -46,7 +68,25 @@ const BuscarCliente: React.FC = () => {
         console.error("Error al cargar clientes", error);
       }
     };
+
+    const fetchSistemasYEquipos = async () => {
+      try {
+        const [resSistemas, resEquipos] = await Promise.all([
+          fetch("/api/sistemas/activos"),
+          fetch("/api/equipos/activos"),
+        ]);
+        const dataSistemas = await resSistemas.json();
+        const dataEquipos = await resEquipos.json();
+
+        setSistemas(dataSistemas.results || []);
+        setEquipos(dataEquipos.results || []);
+      } catch (error) {
+        console.error("Error al cargar sistemas y equipos", error);
+      }
+    };
+
     fetchClientes();
+    fetchSistemasYEquipos();
   }, []);
 
   const cargarBitacoras = async (clienteId: number) => {
@@ -67,7 +107,7 @@ const BuscarCliente: React.FC = () => {
       const res = await fetch(`/api/clientes/${clienteId}`);
       const data = await res.json();
       if (data.code === 200 && data.results?.length > 0) {
-        setClienteSeleccionado(data.results[0]); 
+        setClienteSeleccionado(data.results[0]);
       }
     } catch (error) {
       console.error("Error al recargar cliente", error);
@@ -94,31 +134,31 @@ const BuscarCliente: React.FC = () => {
       </h1>
 
       <h2 className="text-xl font-bold mb-4">Buscar Cliente</h2>
-      <div className="mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <input
           type="text"
           placeholder="Buscar por Empresa o RTN"
           value={filtro}
           onChange={(e) => setFiltro(e.target.value)}
-          className="border p-2 w-full rounded"
+          className="w-full sm:w-1/2 border border-gray-300 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
         />
       </div>
 
       {clientesFiltrados.length > 0 && !clienteSeleccionado && (
-        <table className="min-w-full mb-6 border">
+        <table className="min-w-full table-auto border-collapse">
           <thead className="bg-gray-100">
             <tr>
-              <th className="text-left px-4 py-2">Empresa</th>
-              <th className="text-left px-4 py-2">RTN</th>
-              <th className="text-center px-4 py-2">Ver</th>
+              <th className="px-2 sm:px-4 py-2 border-b text-left">Empresa</th>
+              <th className="px-2 sm:px-4 py-2 border-b text-left">RTN</th>
+              <th className="px-2 sm:px-4 py-2 border-b text-left"></th>
             </tr>
           </thead>
           <tbody>
             {clientesFiltrados.map((c) => (
               <tr key={c.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2">{c.empresa}</td>
-                <td className="px-4 py-2">{c.rtn}</td>
-                <td className="px-4 py-2 text-center">
+                <td className="px-4 py-2 border-b">{c.empresa}</td>
+                <td className="px-4 py-2 border-b">{c.rtn}</td>
+                <td className="px-4 py-2 text-center border-b">
                   <button
                     onClick={() => setClienteSeleccionado(c)}
                     className="px-3 py-1 bg-[#295d0c] text-white rounded hover:bg-[#23480a] flex items-center gap-1"
@@ -177,6 +217,14 @@ const BuscarCliente: React.FC = () => {
               </div>
             </div>
 
+            <ModalDetalleBitacora
+              isOpen={modalDetalleOpen}
+              onClose={() => setModalDetalleOpen(false)}
+              bitacora={bitacoraSeleccionada}
+              sistemas={sistemas}
+              equipos={equipos}
+            />
+
             {showNewBitacora && (
               <FormNuevaBitacora
                 clienteId={clienteSeleccionado.id}
@@ -214,6 +262,7 @@ const BuscarCliente: React.FC = () => {
                     <th className="px-4 py-3 border-b text-left">Horas consumidas</th>
                     <th className="px-4 py-3 border-b text-left">Fase</th>
                     <th className="px-4 py-3 border-b text-left">Descripción</th>
+                    <th className="px-4 py-3 border-b text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -224,6 +273,14 @@ const BuscarCliente: React.FC = () => {
                       <td className="px-4 py-3 border-b">{b.horas_consumidas} ({b.tipo_horas})</td>
                       <td className="px-4 py-3 border-b">{b.fase_implementacion}</td>
                       <td className="px-4 py-3 border-b">{b.descripcion_servicio}</td>
+                      <td className="px-4 py-3 border-b text-center">
+                        <button
+                          onClick={() => mostrarDetalleBitacora(b)}
+                          className="px-3 py-1 bg-[#295d0c] text-white rounded hover:bg-[#23480a] flex items-center gap-1"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -237,3 +294,4 @@ const BuscarCliente: React.FC = () => {
 };
 
 export default BuscarCliente;
+

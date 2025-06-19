@@ -166,7 +166,7 @@ const guardarFirmaCliente = async () => {
         ventas: "NA",
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
-        firma_tecnico_id: firmaTecnico,
+        firmaTecnico_id: firmaTecnico,
         firmaCLiente_id: firmaCliente,
         encuesta_id: 1,
         modalidad: modalidad,

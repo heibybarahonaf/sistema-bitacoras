@@ -4,7 +4,7 @@ import { LogOut } from "lucide-react";
 
 export default function Sidebar() {
   return (
-    <aside className="w-60 h-screen bg-black text-white flex flex-col justify-between fixed left-0 top-0">
+    <aside className="w-60 min-w-[240px] h-screen bg-black text-white flex flex-col justify-between fixed left-0 top-0 z-50">
       <div className="p-4">
         <h2 className="text-xl font-bold mb-4">Menú</h2>
         <ul className="space-y-2">

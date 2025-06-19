@@ -15,4 +15,14 @@ export class FirmaService {
 
     return firma;
   }
+
+  static async obtenerFirmaPorId(id: number) {
+    return await prisma.firma.findUnique({
+      where: { id },
+    });
+  }
 }
+
+
+
+

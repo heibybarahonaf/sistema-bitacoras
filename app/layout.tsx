@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="flex-1 p-4 pt-20">
           {children}
         </main>
-        <footer className="bg-red-700 text-white text-center py-3">
+        <footer className="fixed bottom-0 left-0 w-full bg-red-700 text-white text-center py-4">
           © 2025 POS de Honduras.
         </footer>
       </body>

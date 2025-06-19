@@ -24,14 +24,12 @@ export class BitacoraService {
         return bitacoras;
     }
 
-
     public static async obtenerBitacorasRangoFechas(fechaInicio: string, fechaFinal: string) {
-
         const bitacoras = await prisma.bitacora.findMany({
             where: {
                 fecha_servicio: {
-                gte: new Date(fechaInicio),
-                lte: new Date(fechaFinal),
+                    gte: new Date(fechaInicio),
+                    lte: new Date(fechaFinal),
                 },
             },
             include: {
@@ -45,14 +43,12 @@ export class BitacoraService {
             },
         });
 
-
-        if( bitacoras.length == 0){{
+        if(bitacoras.length === 0){
             throw new ResponseDto(404, "No se encontraron bitacoras registradas en el rango de fechas ingresado");
-        }}
+        }
 
         return bitacoras;
     }
-
 
     public static async obtenerBitacoraPorId(id: number): Promise<Bitacora> {
         const bitacora = await prisma.bitacora.findFirst({ where: { id: id }});
@@ -63,7 +59,6 @@ export class BitacoraService {
 
         return bitacora;
     }
-
 
     public static async obtenerBitacorasCliente(idCliente: number): Promise<Bitacora[]> {
         const bitacoras = await prisma.bitacora.findMany({ 
@@ -77,7 +72,6 @@ export class BitacoraService {
 
         return bitacoras;
     }
-
 
     public static async obtenerBitacorasClienteFechas(idCliente: number, fechaInicio: string, fechaFinal: string) {
         const bitacoras = await prisma.bitacora.findMany({
@@ -104,7 +98,6 @@ export class BitacoraService {
         return bitacoras;
     }
 
-
     public static async obtenerBitacorasTecnicoFechas(idTecnico: number, fechaInicio: string, fechaFinal: string) {
         const bitacoras = await prisma.bitacora.findMany({
             where: {
@@ -130,7 +123,6 @@ export class BitacoraService {
         return bitacoras;
     }
 
-
     public static async obtenerBitacorasTecnico(idTecnico: number): Promise<Bitacora[]> {
         const bitacoras = await prisma.bitacora.findMany({ 
             where: { usuario_id: idTecnico },
@@ -144,7 +136,6 @@ export class BitacoraService {
         return bitacoras;
     }
 
-
     public static async crearBitacora(bitacoraData: CrearBitacoraDto): Promise<Bitacora> {
         const cliente = await ClienteService.obtenerClientePorId(bitacoraData.cliente_id);
         const encuestaActiva = await EncuestaService.obtenerEncuestaActiva();
@@ -154,19 +145,19 @@ export class BitacoraService {
             const equipo = await EquipoService.obtenerEquipoPorId(bitacoraData.equipo_id);
 
             if(!equipo.activo){
-                throw new ResponseDto(401, "El Sistema Ingresado no se encuentra acctivo!");
+                throw new ResponseDto(401, "El Sistema Ingresado no se encuentra activo!");
             }
 
         } else if (bitacoraData.sistema_id !== undefined) {
             const sistema = await SistemaService.obtenerSistemaPorId(bitacoraData.sistema_id);
 
             if(!sistema.activo){
-                throw new ResponseDto(401, "El Sistema Ingresado no se encuentra acctivo!");
+                throw new ResponseDto(401, "El Sistema Ingresado no se encuentra activo!");
             }
             
         }
 
-        const { horas_consumidas, tipo_horas, cliente_id } = bitacoraData;
+        const { horas_consumidas, tipo_horas, cliente_id, firmaTecnico_id, firmaCLiente_id } = bitacoraData;
         const configuracion = await ConfiguracionService.obtenerConfiguracionPorId(1);
 
         let datosActualizacion: { 
@@ -205,38 +196,17 @@ export class BitacoraService {
             };
 
         } else {
-
             throw new ResponseDto(400, "Tipo de horas inválido. Debe ser 'Paquete' o 'Individual'");
-
         }
-            
+
         try {
-            // firma ejemplo - investigar
-            const firmaTecnico = await prisma.firma.create({
-                data: {
-                    token: "token-tecnico-ejem",
-                    firma_base64: "firma base 64",
-                    usada: false,
-                    url: "https://ejem.com/firmaTecnico"
-                }
-            });
-
-            const firmaCliente = await prisma.firma.create({
-                data: {
-                    token: "token-cliente-ejem",
-                    firma_base64: "firma base 64",
-                    usada: false,
-                    url: "https://ejem.com/firmaCliente"
-                }
-            });
-
             const { encuesta_id, ...bitacoraCampos } = bitacoraData;
 
             const bitacora = await prisma.bitacora.create({
                 data: {
                     ...bitacoraCampos,
-                    firmaTecnico_id: firmaTecnico.id,
-                    firmaCLiente_id: firmaCliente.id,
+                    firmaTecnico_id,
+                    firmaCLiente_id,
                 }
             });
 
@@ -251,11 +221,7 @@ export class BitacoraService {
             return bitacora;
 
         } catch (error) {
-
             throw new ResponseDto(500, "Error interno del servidor al crear la bitácora");
-            
         }
-
     }
-
 }
