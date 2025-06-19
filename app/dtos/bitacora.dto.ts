@@ -42,8 +42,7 @@ export const CrearBitacoraDto = z.object({
     responsable: z.string()
         .min(1, "El responsable es obligatorio.")
         .max(100, "El responsable no debe exceder los 100 caracteres."),
-    nombres_capacitados: z.string()
-        .min(1, "Los nombres capacitados son obligatorios."),
+    nombres_capacitados: z.string(),
     descripcion_servicio: z.string()
         .min(1, "La descripción del servicio es obligatoria."),
     fase_implementacion: z.string()
