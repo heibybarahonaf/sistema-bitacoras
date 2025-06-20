@@ -24,6 +24,29 @@ export class BitacoraService {
         return bitacoras;
     }
 
+
+    public static async obtenerBitacorasConFirma(bitacoraId: number): Promise<Bitacora> {
+        
+        const bitacora = await prisma.bitacora.findUnique({
+            where: { id: bitacoraId },
+            include: {
+                cliente: true,
+                usuario: true,
+                sistema: true,
+                equipo: true,
+                firmaTecnico: true,
+                firmaCliente: true,
+            },
+        });
+
+        if (!bitacora) {
+            throw new ResponseDto(404, "Bitácora no encontrada");
+        }
+
+        return bitacora;
+    }
+
+
     public static async obtenerBitacorasRangoFechas(fechaInicio: string, fechaFinal: string) {
         const bitacoras = await prisma.bitacora.findMany({
             where: {
@@ -157,8 +180,9 @@ export class BitacoraService {
             
         }
 
-        const { horas_consumidas, tipo_horas, cliente_id, firmaTecnico_id, firmaCLiente_id } = bitacoraData;
+        const { horas_consumidas, tipo_horas, cliente_id } = bitacoraData;
         const configuracion = await ConfiguracionService.obtenerConfiguracionPorId(1);
+        let monto = 0;
 
         let datosActualizacion: { 
             horas_paquetes?: number; 
@@ -171,6 +195,7 @@ export class BitacoraService {
             const horasActuales = cliente.horas_individuales ?? 0;
             const montoActual = cliente.monto_individuales ?? 0;
             const montoDebitado = horas_consumidas * configuracion.valor_hora_individual;
+            monto = montoDebitado;
             
             if (horasActuales < horas_consumidas || montoActual < montoDebitado) {
                 throw new ResponseDto(400, "Saldo insuficiente en horas individuales.");
@@ -185,6 +210,7 @@ export class BitacoraService {
             const horasActuales = cliente.horas_paquetes ?? 0;
             const montoActual = cliente.monto_paquetes ?? 0;
             const montoDebitado = horas_consumidas * configuracion.valor_hora_paquete;
+            monto = montoDebitado;
             
             if (horasActuales < horas_consumidas || montoActual < montoDebitado) {
                 throw new ResponseDto(400, "Saldo insuficiente en horas de paquete.");
@@ -200,13 +226,32 @@ export class BitacoraService {
         }
 
         try {
-            const { encuesta_id, ...bitacoraCampos } = bitacoraData;
+            const { firma_tecnico, ...bitacoraCampos } = bitacoraData;
+
+            const firmaTecnico = await prisma.firma.create({
+                data: {
+                    token: ".",
+                    firma_base64: bitacoraData.firma_tecnico,
+                    url: "1",
+                    usada: true
+                }}
+            );
+
+            const firmaCLiente = await prisma.firma.create({
+                data: {
+                    token: ".",
+                    firma_base64: "",
+                    url: "2",
+                    usada: true
+                }}
+            );
 
             const bitacora = await prisma.bitacora.create({
                 data: {
                     ...bitacoraCampos,
-                    firmaTecnico_id,
-                    firmaCLiente_id,
+                    monto: monto,
+                    firmaTecnico_id: firmaTecnico.id,
+                    firmaCLiente_id: firmaCLiente.id,
                 }
             });
 
@@ -221,7 +266,10 @@ export class BitacoraService {
             return bitacora;
 
         } catch (error) {
+
             throw new ResponseDto(500, "Error interno del servidor al crear la bitácora");
+
         }
     }
+
 }

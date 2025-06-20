@@ -10,8 +10,6 @@ export const CrearBitacoraDto = z.object({
         required_error: "El ID del usuario es obligatorio.",
         invalid_type_error: "El ID del usuario debe ser un número.",
     }),
-    firmaTecnico_id: z.number().optional(),
-    firmaCLiente_id: z.number().optional(),
     no_ticket: z.string()
         .min(1, "El número de ticket es obligatorio.")
         .max(10, "El número de ticket no debe exceder los 10 caracteres."),
@@ -61,7 +59,7 @@ export const CrearBitacoraDto = z.object({
     }).refine(val => val === "Individual" || val === "Paquete", {
         message: "El tipo de horas debe ser 'Individual' o 'Paquete'."
     }),
-    encuesta_id: z.number().optional(),
+    firma_tecnico: z.string().optional(),
 
     })
 

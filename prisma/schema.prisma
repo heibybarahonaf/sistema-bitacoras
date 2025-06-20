@@ -43,6 +43,7 @@ model Bitacora {
   calificacion         Int?
   ventas               String
   horas_consumidas     Int
+  monto                Int?
   tipo_horas           String   @db.VarChar(25)
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt

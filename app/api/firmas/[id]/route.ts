@@ -1,22 +1,26 @@
 import { NextResponse } from "next/server";
 import { FirmaService } from "@/app/services/firmaService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const id = Number(params.id);
+    const idParams = (await params).id;
+    
+    try {
+            
+        const id = GeneralUtils.validarIdParam(idParams);
+        const firma = await FirmaService.obtenerFirmaPorId(id);
 
-  if (isNaN(id)) {
-    return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-  }
+        if (!firma) {
+            throw new ResponseDto(404, "No se encontró la firma con el ID proporcionado");
+        }
 
-  try {
-    const firma = await FirmaService.obtenerFirmaPorId(id);
+        return NextResponse.json(new ResponseDto(200, "Firma recuperada con éxito", [firma]));
 
-    if (!firma) {
-      return NextResponse.json({ error: "Firma no encontrada" }, { status: 404 });
+    } catch (error) {
+
+        return GeneralUtils.generarErrorResponse(error);
+
     }
 
-    return NextResponse.json({ results: [firma] });
-  } catch (error) {
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
-  }
 }

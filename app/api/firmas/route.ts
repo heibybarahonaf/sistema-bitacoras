@@ -3,7 +3,7 @@ import { CrearFirmaDto } from "@/app/dtos/firma.dto";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { FirmaService } from "@/app/services/firmaService";
-
+/*
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -21,4 +21,4 @@ export async function POST(req: Request) {
   } catch (error) {
     return GeneralUtils.generarErrorResponse(error);
   }
-}
+}*/

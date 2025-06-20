@@ -34,7 +34,7 @@ export async function POST(req: Request) {
         return NextResponse.json(new ResponseDto(201, "Bitacora creada con éxito", [bitacoraCreada]));
 
     } catch (error) {
-
+        
         return GeneralUtils.generarErrorResponse(error);
 
     }

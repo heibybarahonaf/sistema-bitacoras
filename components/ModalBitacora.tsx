@@ -240,7 +240,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           : null;
 
       // Guardar firmas en backend (simulado)
-      const resFirmaTecnico = await fetch("/api/firmas", {
+      /*const resFirmaTecnico = await fetch("/api/firmas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ firma_base64: firmaTecnico }),
@@ -263,7 +263,9 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           throw new Error("Error al guardar la firma del cliente");
         }
         firmaClienteId = dataFirmaCliente.results[0].id;
-      }
+      }*/
+
+        //const firma = sigCanvasCliente.current?.getCanvas()?.toDataURL("image/png");
 
       const newBitacora = {
         cliente_id: clienteId,
@@ -283,9 +285,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         ventas: "NA",
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
-        firmaTecnico_id: firmaTecnicoId,
-        firmaCLiente_id: firmaClienteId,
-        encuesta_id: 1,
+        firma_tecnico: firmaTecnico,
         modalidad,
         responsable,
       };
