@@ -34,6 +34,7 @@ CREATE TABLE "bitacoras" (
     "calificacion" INTEGER,
     "ventas" TEXT NOT NULL,
     "horas_consumidas" INTEGER NOT NULL,
+    "monto" INTEGER,
     "tipo_horas" VARCHAR(25) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

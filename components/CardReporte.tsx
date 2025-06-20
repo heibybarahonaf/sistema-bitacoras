@@ -98,11 +98,19 @@ export default function CardReporte({ title, tipo, isGenerating, onGenerate }: C
         } text-white`}
       >
         {isGenerating ? (
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span className="flex items-center gap-1">
+            <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
+            </svg>
+            
+          </span>
         ) : (
-          <Download className="w-4 h-4" />
+          <>
+            <Download className="w-4 h-4" />
+            
+          </>
         )}
-        {isGenerating ? "Descargando..." : "Descargar"}
       </button>
     </div>
   );

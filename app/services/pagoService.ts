@@ -54,7 +54,13 @@ export class PagoService {
         const cliente = await ClienteService.obtenerClientePorId(pagoData.cliente_id);
 
         try {
-            const pagoCreado = await prisma.pagos_Cliente.create({ data: pagoData});
+            const pagoExistente = await prisma.pagos_Cliente.findFirst({ where: { no_factura: pagoData.no_factura } });
+
+            if (pagoExistente) {
+                throw new ResponseDto(400, "Ya existe un pago con el mismo número de factura");
+            }
+
+            const pagoCreado = await prisma.pagos_Cliente.create({ data: pagoData });
 
             let datosActualizacion: { 
                 horas_paquetes?: number; horas_individuales?: number; monto_paquetes?: number; monto_individuales?: number; 
@@ -85,6 +91,9 @@ export class PagoService {
 
         } catch (error) {
 
+            console.log("-------------------------");
+            console.error("Error al crear el pago:", error);
+            
             throw new ResponseDto(500, "Error al crear el pago");
 
         }

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import FormNuevaBitacora from "@/components/ModalBitacora";
 import ModalPago from "@/components/ModalPago";
-import { Eye, Notebook } from "lucide-react";
+import { Eye, Notebook, Download } from "lucide-react";
 import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
 import Swal from "sweetalert2";
 import { Bitacora } from "@prisma/client";
@@ -41,6 +41,7 @@ const BuscarCliente: React.FC = () => {
   const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
   const [bitacoras, setBitacoras] = useState<any[]>([]);
   const [loadingBitacoras, setLoadingBitacoras] = useState(false);
+  const [isDownloading, setIsDownloading] = useState<number | null>(null);
   const [showNewBitacora, setShowNewBitacora] = useState(false);
   const [showPago, setShowPago] = useState(false);
   const [bitacoraSeleccionada, setBitacoraSeleccionada] = useState<Bitacora | null>(null);
@@ -139,6 +140,47 @@ const BuscarCliente: React.FC = () => {
   const clientesFiltrados = clientes.filter((c) =>
     c.empresa.toLowerCase().includes(filtro.toLowerCase()) || c.rtn.includes(filtro)
   );
+
+  const handleDownload = async (bitacoraId: number) => {
+    setIsDownloading(bitacoraId);
+
+    try {
+      const res = await fetch(`/api/bitacoras/${bitacoraId}/reporte-firmas`);
+
+      if (!res.ok) {
+        const text = await res.text();
+        let mensaje = "Error al generar el PDF";
+        try {
+          const data = JSON.parse(text);
+          mensaje = data.message || mensaje;
+        } catch {}
+        mostrarAlertaError(mensaje);
+        return;
+      }
+
+      const blob = await res.blob();
+      if (blob.size === 0) {
+        mostrarAlertaError("El PDF generado está vacío");
+        return;
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `bitacora-${bitacoraId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      mostrarAlertaExito("PDF descargado exitosamente");
+    } catch (error) {
+      mostrarAlertaError("Error de conexión al generar el PDF");
+    } finally {
+      setIsDownloading(null);
+    }
+  };
+
 
   // Paginación Clientes
   const totalPaginasClientes = Math.ceil(clientesFiltrados.length / clientesPorPagina);
@@ -352,12 +394,18 @@ const BuscarCliente: React.FC = () => {
                       <td className="px-4 py-3 border-b">{b.fase_implementacion}</td>
                       <td className="px-4 py-3 border-b">{b.descripcion_servicio}</td>
                       <td className="px-4 py-3 border-b text-center">
-                        <button
-                          onClick={() => mostrarDetalleBitacora(b)}
-                          className="px-3 py-1 bg-[#295d0c] text-white rounded hover:bg-[#23480a] flex items-center gap-1"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </button>
+                        <div className="flex justify-center items-center gap-2">
+                          <button onClick={() => mostrarDetalleBitacora(b)} className="px-3 py-1 bg-[#295d0c] text-white rounded hover:bg-[#23480a] flex items-center gap-1">
+                            <Eye className="w-5 h-5" />
+                          </button>
+                          <button onClick={() => handleDownload(b.id)} disabled={isDownloading === b.id} className={`px-3 py-1 rounded text-sm text-white flex items-center justify-center gap-2 transition ${isDownloading === b.id ? "bg-gray-400 cursor-not-allowed" : "bg-[#5768b8] hover:bg-[#43529a] active:bg-[#1e2340]"}`}>
+                            {isDownloading === b.id ? (
+                              <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" /></svg>
+                            ) : (
+                              <Download className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -407,5 +455,44 @@ const BuscarCliente: React.FC = () => {
 
 
 };
+
+
+const handleDownload = async (bitacoraId: number) => {
+  try {
+    const res = await fetch(`/api/bitacoras/${bitacoraId}/reporte-firmas`);
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bitacora-${bitacoraId}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Error al descargar bitácora:", error);
+  }
+};
+
+  const mostrarAlertaError = (mensaje: string) => {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: mensaje,
+      confirmButtonColor: '#dc2626'
+    });
+  };
+
+  const mostrarAlertaExito = (mensaje: string) => {
+    Swal.fire({
+      icon: 'success',
+      title: 'Éxito',
+      text: mensaje,
+      confirmButtonColor: '#16a34a',
+      timer: 3000,
+      showConfirmButton: false
+    });
+  };
+
 
 export default BuscarCliente;

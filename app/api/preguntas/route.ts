@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
     } catch (error) {
 
-        GeneralUtils.generarErrorResponse(error);
+        return GeneralUtils.generarErrorResponse(error);
         
     }
 

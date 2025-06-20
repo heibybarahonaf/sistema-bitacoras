@@ -67,6 +67,8 @@ export default function ModalPago({
       body: JSON.stringify(nuevoPago),
     });
 
+    console.log("Respuesta del servidor:", res);
+
     if (res.ok) {
       onGuardar();
       onClose();
