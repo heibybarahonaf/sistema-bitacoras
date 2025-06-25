@@ -22,38 +22,40 @@ model Firma {
 }
 
 model Bitacora {
-  id                   Int      @id @default(autoincrement())
-  cliente_id           Int
-  usuario_id           Int
-  firmaTecnico_id      Int?
-  firmaCLiente_id      Int?
-  no_ticket            String   @db.VarChar(10)
-  fecha_servicio       DateTime
-  hora_llegada         DateTime
-  hora_salida          DateTime
-  sistema_id           Int?
-  equipo_id            Int?
-  tipo_servicio        String   @db.VarChar(100)
-  modalidad            String   @db.VarChar(100)
-  responsable          String   @db.VarChar(100)
-  nombres_capacitados  String?
-  descripcion_servicio String
-  fase_implementacion  String   @db.VarChar(50)
-  comentarios          String
-  calificacion         Int?
-  ventas               String
-  horas_consumidas     Int
-  monto                Int?
-  tipo_horas           String   @db.VarChar(25)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                      Int      @id @default(autoincrement())
+  cliente_id              Int
+  usuario_id              Int
+  firmaTecnico_id         Int?
+  firmaCLiente_id         Int?
+  no_ticket               String   @db.VarChar(10)
+  fecha_servicio          DateTime
+  hora_llegada            DateTime
+  hora_salida             DateTime
+  sistema_id              Int?
+  equipo_id               Int?
+  tipo_servicio_id        Int
+  modalidad               String   @db.VarChar(100)
+  responsable             String   @db.VarChar(100)
+  nombres_capacitados     String?
+  descripcion_servicio    String
+  fase_implementacion_id  Int
+  comentarios             String
+  calificacion            Int?
+  ventas                  String
+  horas_consumidas        Int
+  monto                   Int?
+  tipo_horas              String   @db.VarChar(25)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 
-  cliente      Cliente  @relation(fields: [cliente_id], references: [id])
-  firmaCliente Firma?   @relation("FirmaCliente", fields: [firmaCLiente_id], references: [id])
-  firmaTecnico Firma?   @relation("FirmaTecnico", fields: [firmaTecnico_id], references: [id])
-  sistema      Sistema? @relation(fields: [sistema_id], references: [id])
-  equipo       Equipo?  @relation(fields: [equipo_id], references: [id])
-  usuario      Usuario  @relation(fields: [usuario_id], references: [id])
+  cliente             Cliente  @relation(fields: [cliente_id], references: [id])
+  firmaCliente        Firma?   @relation("FirmaCliente", fields: [firmaCLiente_id], references: [id])
+  firmaTecnico        Firma?   @relation("FirmaTecnico", fields: [firmaTecnico_id], references: [id])
+  sistema             Sistema? @relation(fields: [sistema_id], references: [id])
+  equipo              Equipo?  @relation(fields: [equipo_id], references: [id])
+  fase_implementacion Fase_Implementacion?  @relation(fields: [fase_implementacion_id], references: [id])
+  tipo_servicio       Tipo_Servicio?  @relation(fields: [tipo_servicio_id], references: [id])
+  usuario             Usuario  @relation(fields: [usuario_id], references: [id])
 
   encuestaBitacoras Encuesta_Bitacora[] // Relación uno a muchos
 
@@ -149,6 +151,30 @@ model Equipo {
   bitacora    Bitacora[]
 
   @@map("equipos")
+}
+
+model Tipo_Servicio {
+  id             Int        @id @default(autoincrement())
+  tipo_servicio  String     @db.VarChar(200)
+  descripcion    String
+  activo         Boolean
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  bitacora       Bitacora[]
+
+  @@map("tipos_servicios")
+}
+
+model Fase_Implementacion {
+  id                   Int        @id @default(autoincrement())
+  fase                 String     @db.VarChar(200)
+  descripcion          String
+  activa               Boolean
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+  bitacora             Bitacora[]
+
+  @@map("fases_implementacion")
 }
 
 model Pagos_Cliente {

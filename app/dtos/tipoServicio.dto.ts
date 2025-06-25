@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-export const CrearEquipoDto = z.object({
+export const CrearTipoServicioDto = z.object({
 
-    equipo: z.string()
-        .max(200, "El nombre del equipo no debe exceder los 200 caracteres.")
-        .min(1, "El nombre del equipo es obligatorio."),
+    tipo_servicio: z.string()
+        .max(20, "El tipo de servicio no debe exceder los 200 caracteres.")
+        .min(1, "El tipo de servicio es obligatorio."),
     descripcion: z.string()
         .max(255, "La descripción no debe exceder los 255 caracteres.")
         .min(1, "La descripción es obligatoria."),

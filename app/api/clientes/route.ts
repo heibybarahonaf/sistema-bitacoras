@@ -5,26 +5,32 @@ import { CrearClienteDto } from "../../dtos/cliente.dto";
 import { GeneralUtils } from "../../common/utils/general.utils";
 
 export async function GET(request: Request) {
-  try {
-    const url = new URL(request.url);
-    const rtn = url.searchParams.get("rtn") || "";
 
-    let clientes;
-    if (rtn) {
-  const cliente = await ClienteService.buscarClientePorRTN(rtn);
-  clientes = cliente ? [cliente] : [];
-} else {
-  clientes = await ClienteService.obtenerClientes();
+    try {
+
+        const url = new URL(request.url);
+        const rtn = url.searchParams.get("rtn") || "";
+
+        let clientes;
+        if (rtn) {
+            const cliente = await ClienteService.obtenerClientePorRtn(rtn);
+            clientes = cliente ? [cliente] : [];
+        } else {
+            clientes = await ClienteService.obtenerClientes();
+        }
+
+        return NextResponse.json(new ResponseDto(200, "Clientes obtenidos correctamente", clientes));
+
+    } catch (error) {
+
+        return GeneralUtils.generarErrorResponse(error);
+
+    }
+
 }
 
-    return NextResponse.json(new ResponseDto(200, "Clientes obtenidos correctamente", clientes));
-  } catch (error) {
-    return GeneralUtils.generarErrorResponse(error);
-  }
-}
 
-
-  export async function POST(req: Request) {
+export async function POST(req: Request) {
 
     try {
 
