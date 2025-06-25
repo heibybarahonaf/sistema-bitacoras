@@ -1,0 +1,27 @@
+import { NextResponse } from "next/server";
+import { v4 as uuidv4 } from "uuid";
+import prisma from "@/app/libs/prisma";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+
+export async function POST() {
+  try {
+    const token = uuidv4();
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL; //Cambiar por dominio en .env
+    const url = `${baseUrl}/firma/${token}`;
+
+    const firma = await prisma.firma.create({
+      data: {
+        token,
+        url,
+        usada: false,
+        firma_base64: "",
+      },
+    });
+
+    return NextResponse.json(new ResponseDto(201, "Firma remota generada", [firma]));
+  } catch (error) {
+    console.error("Error creando firma remota:", error);
+    return NextResponse.json({ error: "Error creando firma" }, { status: 500 });
+  }
+}
+

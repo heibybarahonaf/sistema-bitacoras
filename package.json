@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
+    "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
@@ -22,6 +23,7 @@
     "react-input-mask": "^2.0.4",
     "react-signature-canvas": "^1.1.0-alpha.2",
     "sweetalert2": "^11.22.0",
+    "uuid": "^11.1.0",
     "zod": "^3.25.50"
   },
   "devDependencies": {

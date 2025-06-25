@@ -24,7 +24,7 @@ export default function Navbar() {
     { href: "/equipos", label: "Equipos", icon: MonitorDot },
     { href: "/pagos", label: "Pagos", icon: Receipt },
     { href: "/reportes", label: "Reportes", icon: BarChart },
-    { href: "/encuesta", label: "Encuestas", icon: ClipboardList },
+    { href: "/encuestas", label: "Encuestas", icon: ClipboardList },
     { href: "/configuracion", label: "Configuración", icon: Settings }
   ];
 

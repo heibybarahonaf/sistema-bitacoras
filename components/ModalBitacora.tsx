@@ -26,12 +26,14 @@ const InputField = ({
   value,
   onChange,
   required = false,
+  readonly = false,
 }: {
   label: string;
   type?: string;
   value: any;
   onChange: (val: any) => void;
   required?: boolean;
+  readonly?: boolean;
 }) => (
   <label className="block">
     <span className="text-gray-700 font-semibold">
@@ -42,6 +44,7 @@ const InputField = ({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       required={required}
+      readOnly={readonly}
       className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
     />
   </label>
@@ -164,9 +167,33 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [responsable, setResponsable] = useState("");
   const [modalidad, setModalidad] = useState("Presencial");
+  const [firmaClienteRemotaId, setFirmaClienteRemotaId] = useState<number | null>(null);
+  const [urlFirmaRemota, setUrlFirmaRemota] = useState<string | null>(null);
+  const [esperandoFirmaCliente, setEsperandoFirmaCliente] = useState(false);
+
 
   const sigCanvas = useRef<SignatureCanvas>(null);
   const sigCanvasCliente = useRef<SignatureCanvas>(null);
+
+  const generarNuevoEnlaceFirma = async () => {
+    try {
+      const res = await fetch("/api/firmas/remote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const json = await res.json();
+      const firma = json.results?.[0];
+      if (firma) {
+        setFirmaClienteRemotaId(firma.id);
+        setUrlFirmaRemota(firma.url);
+        setEsperandoFirmaCliente(true);
+      }
+    } catch (error) {
+      console.error("Error generando nuevo enlace de firma:", error);
+      Swal.fire("Error", "No se pudo generar un nuevo enlace de firma.", "error");
+    }
+  };
 
   useEffect(() => {
     // Cargar sistemas y equipos activos
@@ -199,6 +226,71 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
       setHorasConsumidas(diferenciaMin > 0 ? total : 0);
     }
   }, [horaLlegada, horaSalida, fechaServicio]);
+
+  useEffect(() => {
+  if (modalidad === "Remoto") {
+    const generarEnlace = async () => {
+      try {
+        const res = await fetch("/api/firmas/remote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        const json = await res.json();
+        const firma = json.results?.[0];
+        if (firma) {
+          setFirmaClienteRemotaId(firma.id);
+          setUrlFirmaRemota(firma.url);
+          setEsperandoFirmaCliente(true);
+        }
+      } catch (error) {
+        console.error("Error generando enlace de firma:", error);
+      }
+    };
+
+    generarEnlace();
+  } else {
+    setUrlFirmaRemota(null);
+    setFirmaClienteRemotaId(null);
+    setEsperandoFirmaCliente(false);
+  }
+}, [modalidad]);
+
+useEffect(() => {
+  if (!firmaClienteRemotaId) return;
+
+  const intervalo = setInterval(async () => {
+    try {
+      const res = await fetch(`/api/firmas/verificar/${firmaClienteRemotaId}`);
+      const json = await res.json();
+
+      if (json.vencida) {
+        clearInterval(intervalo);
+        setEsperandoFirmaCliente(false);
+        setFirmaClienteRemotaId(null);
+        setUrlFirmaRemota(null);
+
+        Swal.fire({
+          icon: "warning",
+          title: "El enlace ha expirado",
+          text: "Debe generar un nuevo enlace para que el cliente firme.",
+        });
+
+        return;
+      }
+
+      if (json.firmada) {
+        setEsperandoFirmaCliente(false);
+        clearInterval(intervalo);
+      }
+    } catch (error) {
+      console.error("Error verificando firma remota:", error);
+    }
+  }, 10000); // cada 10s
+
+  return () => clearInterval(intervalo);
+}, [firmaClienteRemotaId]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,8 +331,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           ? sigCanvasCliente.current?.getCanvas().toDataURL("image/png")
           : null;
 
-      // Guardar firmas en backend (simulado)
-      /*const resFirmaTecnico = await fetch("/api/firmas", {
+      // Guardar firmas en backend
+      const resFirmaTecnico = await fetch("/api/firmas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ firma_base64: firmaTecnico }),
@@ -263,13 +355,17 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           throw new Error("Error al guardar la firma del cliente");
         }
         firmaClienteId = dataFirmaCliente.results[0].id;
-      }*/
+      } else if (modalidad === "Remoto") {
+        if (!firmaClienteRemotaId) {
+          throw new Error("No se ha generado la firma remota del cliente.");
+        }
+        firmaClienteId = firmaClienteRemotaId;
+      }
 
-        //const firma = sigCanvasCliente.current?.getCanvas()?.toDataURL("image/png");
 
       const newBitacora = {
         cliente_id: clienteId,
-        usuario_id: 1, // Aquí usar el id del usuario logueado en tu sistema
+        usuario_id: 1, // Aquí usar el id del usuario logueado en el sistema
         no_ticket: noTicket,
         fecha_servicio: new Date(fechaServicio).toISOString(),
         hora_llegada: new Date(`${fechaServicio}T${horaLlegada}`).toISOString(),
@@ -428,6 +524,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             value={horasConsumidas}
             onChange={(v) => setHorasConsumidas(Number(v))}
             required
+            readonly
           />
           <SelectSimple
             label="Tipo de Horas"
@@ -487,19 +584,40 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
     </div>
   ) : (
     <div className="flex-1 shadow-md rounded-md p-4 bg-white max-w-xs">
-      <span className="text-gray-800 font-semibold block mb-1">
-        Firma del Cliente <span className="text-red-600">*</span>
-      </span>
-    <div className="flex-1 max-w-xs mt-4 sm:mt-0 p-4 border border-dashed border-gray-400 rounded text-center bg-gray-50">
-      <p className="mb-2 text-gray-700">
-        La firma del cliente se realizará a través de un enlace remoto.
-      </p>
-      <p className="text-sm text-gray-500 italic">
-        (El enlace será generado.)
-      </p>
-    </div>
-    </div>
-  )}
+    <span className="text-gray-800 font-semibold block mb-1">
+      Firma del Cliente <span className="text-red-600">*</span>
+    </span>
+
+    {urlFirmaRemota ? (
+      <div className="mt-2 text-sm text-gray-700">
+        <p className="mb-1">Enlace generado para firma remota:</p>
+        <a
+          href={urlFirmaRemota}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 underline break-all"
+        >
+          {urlFirmaRemota}
+        </a>
+        {esperandoFirmaCliente && (
+        <>
+          <p className="text-orange-600 mt-2 italic">Esperando firma del cliente...</p>
+          <button
+            type="button"
+            onClick={generarNuevoEnlaceFirma}
+            className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Generar nuevo enlace
+          </button>
+        </>
+      )}
+
+      </div>
+    ) : (
+      <p className="text-sm text-gray-500 italic">Generando enlace...</p>
+    )}
+  </div>
+)}
 </div>
 
 
@@ -514,8 +632,9 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             <button
               type="submit"
               className="px-6 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a] transition"
+              disabled={modalidad === "Remoto" && esperandoFirmaCliente}
             >
-              Guardar
+              {modalidad === "Remoto" && esperandoFirmaCliente ? "Esperando firma..." : "Guardar"}
             </button>
           </div>
         </form>
