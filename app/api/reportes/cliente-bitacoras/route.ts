@@ -8,16 +8,16 @@ export async function GET(request: Request) {
     try {
 
         const { searchParams } = new URL(request.url);
-        const clienteId = searchParams.get('clienteId');
+        const rtn = searchParams.get('RTN');
         const fechaInicio = searchParams.get('fechaInicio');
         const fechaFinal = searchParams.get('fechaFinal');
 
-        if (!clienteId || !fechaInicio || !fechaFinal) {
-            return NextResponse.json({ message: "Faltan parámetros" }, { status: 400 });
+        if (!rtn || !fechaInicio || !fechaFinal) {
+           return NextResponse.json({ message: "Se requieren ambas fechas y el rtn del cliente" }, { status: 400 });
         }
 
         const bitacoras = await BitacoraService.obtenerBitacorasClienteFechas(
-            parseInt(clienteId),
+            rtn,
             fechaInicio,
             fechaFinal
         );
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
             status: 200,
             headers: {
             "Content-Type": "application/pdf",
-            "Content-Disposition": `attachment; filename="bitacoras_cliente_${clienteId}_${fechaInicio}_a_${fechaFinal}.pdf"`,
+            "Content-Disposition": `attachment; filename="bitacoras_cliente_${rtn}_${fechaInicio}_a_${fechaFinal}.pdf"`,
             },
         });
 

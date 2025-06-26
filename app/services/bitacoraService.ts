@@ -60,6 +60,7 @@ export class BitacoraService {
                 equipo: true,
                 cliente: true,
                 usuario: true,
+                tipo_servicio: true,
             },
             orderBy: {
                 fecha_servicio: "asc",
@@ -73,6 +74,7 @@ export class BitacoraService {
         return bitacoras;
     }
 
+
     public static async obtenerBitacoraPorId(id: number): Promise<Bitacora> {
         const bitacora = await prisma.bitacora.findFirst({ where: { id: id }});
 
@@ -82,6 +84,7 @@ export class BitacoraService {
 
         return bitacora;
     }
+
 
     public static async obtenerBitacorasCliente(idCliente: number): Promise<Bitacora[]> {
         const bitacoras = await prisma.bitacora.findMany({ 
@@ -96,10 +99,12 @@ export class BitacoraService {
         return bitacoras;
     }
 
-    public static async obtenerBitacorasClienteFechas(idCliente: number, fechaInicio: string, fechaFinal: string) {
+
+    public static async obtenerBitacorasClienteFechas(rtn: string, fechaInicio: string, fechaFinal: string) {
+        const cliente = await ClienteService.obtenerClientePorRtn(rtn);
         const bitacoras = await prisma.bitacora.findMany({
             where: {
-                cliente_id: idCliente,
+                cliente_id: cliente.id,
                 fecha_servicio: {
                     gte: new Date(fechaInicio),
                     lte: new Date(fechaFinal),
@@ -110,6 +115,8 @@ export class BitacoraService {
                 usuario: true,
                 sistema: true,
                 equipo: true,
+                tipo_servicio: true,
+                fase_implementacion: true,
             },
             orderBy: { createdAt: "asc" }
         });
@@ -121,10 +128,12 @@ export class BitacoraService {
         return bitacoras;
     }
 
-    public static async obtenerBitacorasTecnicoFechas(idTecnico: number, fechaInicio: string, fechaFinal: string) {
+
+    public static async obtenerBitacorasTecnicoFechas(nombre: string, fechaInicio: string, fechaFinal: string) {
+        const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
         const bitacoras = await prisma.bitacora.findMany({
             where: {
-                usuario_id: idTecnico,
+                usuario_id: tecnico.id,
                 fecha_servicio: {
                     gte: new Date(fechaInicio),
                     lte: new Date(fechaFinal),
@@ -135,6 +144,7 @@ export class BitacoraService {
                 usuario: true,
                 sistema: true,
                 equipo: true,
+                tipo_servicio: true,
             },
             orderBy: { createdAt: "asc" }
         });
@@ -145,6 +155,7 @@ export class BitacoraService {
 
         return bitacoras;
     }
+
 
     public static async obtenerBitacorasTecnico(idTecnico: number): Promise<Bitacora[]> {
         const bitacoras = await prisma.bitacora.findMany({ 
@@ -158,6 +169,7 @@ export class BitacoraService {
 
         return bitacoras;
     }
+
 
     public static async crearBitacora(bitacoraData: CrearBitacoraDto): Promise<Bitacora> {
         const cliente = await ClienteService.obtenerClientePorId(bitacoraData.cliente_id);
@@ -226,32 +238,11 @@ export class BitacoraService {
         }
 
         try {
-            const { firma_tecnico, ...bitacoraCampos } = bitacoraData;
-
-            const firmaTecnico = await prisma.firma.create({
-                data: {
-                    token: ".",
-                    firma_base64: bitacoraData.firma_tecnico,
-                    url: "1",
-                    usada: true
-                }}
-            );
-
-            const firmaCLiente = await prisma.firma.create({
-                data: {
-                    token: ".",
-                    firma_base64: "",
-                    url: "2",
-                    usada: true
-                }}
-            );
 
             const bitacora = await prisma.bitacora.create({
                 data: {
-                    ...bitacoraCampos,
-                    monto: monto,
-                    firmaTecnico_id: firmaTecnico.id,
-                    firmaCLiente_id: firmaCLiente.id,
+                    ...bitacoraData,
+                    monto: monto
                 }
             });
 
@@ -270,6 +261,7 @@ export class BitacoraService {
             throw new ResponseDto(500, "Error interno del servidor al crear la bitácora");
 
         }
+
     }
 
 }

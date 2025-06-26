@@ -365,26 +365,29 @@ useEffect(() => {
 
       const newBitacora = {
         cliente_id: clienteId,
-        usuario_id: 1, // Aquí usar el id del usuario logueado en el sistema
+        usuario_id: 1, //
         no_ticket: noTicket,
         fecha_servicio: new Date(fechaServicio).toISOString(),
         hora_llegada: new Date(`${fechaServicio}T${horaLlegada}`).toISOString(),
         hora_salida: new Date(`${fechaServicio}T${horaSalida}`).toISOString(),
         sistema_id: sistemaId || undefined,
         equipo_id: equipoId || undefined,
-        tipo_servicio: tipoServicio,
+        tipo_servicio: 1, //
         nombres_capacitados: nombresCapacitados,
         descripcion_servicio: descripcionServicio,
-        fase_implementacion: faseImplementacion,
+        tipo_servicio_id: 1, //
+        fase_implementacion_id: 1, //
         comentarios,
-        calificacion: 1,
-        ventas: "NA",
+        calificacion: 1, //
+        ventas: "N/A", //
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
-        firma_tecnico: firmaTecnico,
+        firmaTecnico_id: firmaTecnicoId,
+        firmaCLiente_id: firmaClienteId,
         modalidad,
         responsable,
       };
+
 
       // Guardar bitácora
       const res = await fetch("/api/bitacoras", {

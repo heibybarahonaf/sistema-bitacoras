@@ -90,9 +90,6 @@ export class PagoService {
             return pagoCreado;
 
         } catch (error) {
-
-            console.log("-------------------------");
-            console.error("Error al crear el pago:", error);
             
             throw new ResponseDto(500, "Error al crear el pago");
 

@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import autoTable from "jspdf-autotable";
 import { jsPDF } from "jspdf";
-import { Bitacora, Sistema, Equipo, Usuario, Cliente } from "@prisma/client";
+import { Bitacora, Sistema, Equipo, Usuario, Cliente, Tipo_Servicio } from "@prisma/client";
 import { ConfiguracionService } from "../services/configService";
 
 export type BitacoraCompleta = Bitacora & {
@@ -10,6 +10,7 @@ export type BitacoraCompleta = Bitacora & {
     equipo?: Equipo | null;
     cliente?: Cliente | null;
     usuario?: Usuario | null;
+    tipo_servicio?: Tipo_Servicio | null;
 };
 
 const campo_vacio = "-";
@@ -20,7 +21,7 @@ function generarReporte(
     fechaInicio: string,
     fechaFinal: string,
     columnas: string[],
-    datos: (string | number)[][],
+    datos: (any)[][],
     valores_final?: { total?: string; comision?: string },
     nombresExtras?: { 
         tecnico?: string; 
@@ -103,32 +104,22 @@ function generarReporte(
 
 export function generarPDFBitacoras(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Buffer {
     const columnas = [
-        "ID", "Cliente", "Técnico", "Ticket", "Fecha", "Llegada", "Salida", "Servicio",
-        "Modalidad", "Responsable", "Capacitados", "Descripción", "Fase", "Comentarios",
-        "Calificación", "Ventas", "Horas", "Tipo Horas", "Sistema", "Equipo"
+        "Fecha","Ticket", "Cliente", "Técnico",  "Llegada", "Salida", "Servicio",
+        "Modalidad", "Horas", "Tipo Horas", "Descripción"
     ];
 
     const datos = bitacoras.map(b => [
-        b.id,
+        formatearFecha(b.fecha_servicio),
+        b.no_ticket,
         b.cliente?.empresa || `ID: ${b.cliente_id}`,
         b.usuario?.nombre || `ID: ${b.usuario_id}`,
-        b.no_ticket,
-        formatearFecha(b.fecha_servicio),
         formatearHora(b.hora_llegada),
         formatearHora(b.hora_salida),
-        b.tipo_servicio,
+        b.tipo_servicio?.descripcion || campo_vacio,
         b.modalidad,
-        b.responsable,
-        b.nombres_capacitados || campo_vacio,
-        b.descripcion_servicio,
-        b.fase_implementacion,
-        b.comentarios || campo_vacio,
-        b.calificacion || campo_vacio,
-        b.ventas || campo_vacio,
         b.horas_consumidas,
         b.tipo_horas,
-        b.sistema?.sistema || 'N/A',
-        b.equipo?.equipo || 'N/A',
+        b.descripcion_servicio,
     ]);
 
     const doc = generarReporte("Reporte de Bitácoras", bitacoras, fechaInicio, fechaFinal, columnas, datos);
@@ -144,7 +135,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
     const porcentajeComision = config.comision;
 
     const columnas = [
-        "ID", "Técnico", "Fecha", "Ticket", "Servicio", "Modalidad", "Horas", "Tipo Horas", "Monto"
+        "Fecha", "Ticket", "Cliente", "Servicio", "Modalidad", "Horas", "Tipo Horas", "Monto", "Comisión", "Descripcion"
     ];
 
     let total = 0;
@@ -152,75 +143,75 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
         const precio = b.tipo_horas === "Individual" ? precioIndividual : precioPaquete;
         const horas = b.horas_consumidas ?? 0;
         const monto = horas * precio;
+        const comision = monto * (porcentajeComision / 100);
         total += monto;
 
         return [
-            b.id,
-            b.usuario?.nombre || `ID: ${b.usuario_id}`,
             formatearFecha(b.fecha_servicio),
             b.no_ticket,
-            b.tipo_servicio,
+            b.cliente?.empresa || `ID: ${b.cliente_id}`,
+            b.tipo_servicio?.descripcion,
             b.modalidad,
             horas,
             b.tipo_horas,
-            monto.toFixed(2)
+            monto.toFixed(2),
+            comision.toFixed(2),
+            b.descripcion_servicio
         ];
-
     });
 
     const comision = total * (porcentajeComision / 100);
-    const usuario = bitacoras.length > 0 ? bitacoras[0].usuario : null;
+    const usuario = bitacoras[0]?.usuario ?? null;
+    
     const doc = generarReporte(
-        "Reporte de Bitácoras Técnico", 
-        bitacoras, 
-        fechaInicio, 
-        fechaFinal, 
-        columnas, 
-        datos, 
-        {
+        "Reporte de Bitácoras Técnico",  
+        bitacoras,                       
+        fechaInicio,                     
+        fechaFinal,                      
+        columnas,                        
+        datos,                           
+        {                              
             total: `L. ${total.toFixed(2)}`,
             comision: `L. ${comision.toFixed(2)}`,
         },
-        {
-            tecnico: usuario?.nombre || campo_vacio,
-            correoUsuario: usuario?.correo || campo_vacio,
-            telefono_usuario: usuario?.telefono || campo_vacio,
-            zona: usuario?.zona_asignada || campo_vacio
+        {                               
+            tecnico: safe(usuario?.nombre),
+            correoUsuario: safe(usuario?.correo),
+            telefono_usuario: safe(usuario?.telefono),
+            zona: safe(usuario?.zona_asignada)
         }
     );
 
     return Buffer.from(doc.output('arraybuffer'));
-
 }
 
 
 export function generarPDFPorCliente(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Buffer {
     const columnas = [
-        "ID", "Fecha", "Ticket", "Servicio", "Modalidad", "Horas", "Sistema", "Equipo", "Técnico"
+        "Fecha", "Ticket", "Servicio", "Modalidad", "Horas", "Tipo Horas", "Técnico", "Descripción"
     ];
 
     const datos = bitacoras.map(b => [
-        b.id,
         formatearFecha(b.fecha_servicio),
         b.no_ticket,
-        b.tipo_servicio,
+        b.tipo_servicio?.descripcion,
         b.modalidad,
         b.horas_consumidas,
-        b.sistema?.sistema || 'N/A',
-        b.equipo?.equipo || 'N/A',
-        b.usuario?.nombre || `ID: ${b.usuario_id}`,
+        b.tipo_horas,
+        b.usuario?.nombre || campo_vacio,
+        b.descripcion_servicio
     ]);
 
     const cliente = bitacoras.length > 0 ? bitacoras[0].cliente : null;
     const doc = generarReporte(
-        "Reporte de Bitácoras Cliente",
-        bitacoras,
-        fechaInicio,
-        fechaFinal,
-        columnas,
-        datos,
-        undefined,
-        {
+        "Reporte de Bitácoras Cliente",  
+        bitacoras,                       
+        fechaInicio,                     
+        fechaFinal,                      
+        columnas,                        
+        datos,                           
+        undefined,                       
+        {                               
             cliente: cliente?.empresa ?? campo_vacio,
             responsable: cliente?.responsable || campo_vacio,
             rtn: cliente?.rtn || campo_vacio,
@@ -231,7 +222,6 @@ export function generarPDFPorCliente(bitacoras: BitacoraCompleta[], fechaInicio:
     );
 
     return Buffer.from(doc.output('arraybuffer'));
-
 }
 
 

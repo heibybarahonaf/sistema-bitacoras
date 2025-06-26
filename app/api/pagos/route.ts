@@ -31,8 +31,6 @@ export async function POST(req: Request) {
             GeneralUtils.zodValidationError(parsed.error);
         }
 
-        console.log("Parsed data:", parsed.data);
-
         const pagoCreado = await PagoService.crearPago(parsed.data);
         return NextResponse.json(new ResponseDto(201, "Pago creado con éxito", [pagoCreado]));
 
