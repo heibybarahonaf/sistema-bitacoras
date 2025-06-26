@@ -106,7 +106,6 @@ export default function PreguntasPage() {
 
       <ul className="space-y-2">
         {preguntas.map((p, index) => {
-          console.log(`🧾 Render pregunta [${index}] - ID: ${p?.id}, Texto: ${p?.pregunta}`); // <---
           return (
             <li
               key={p.id}

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { GeneralUtils } from "../../../../common/utils/general.utils";
 import { FirmaReporteService } from "@/app/services/firmaReporteService";
+import { TipoServicioService } from "@/app/services/tipoServicioService";
+import { BitacoraService } from "@/app/services/bitacoraService";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
     const idParams = (await params).id;
@@ -8,7 +10,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     try {
         
         const id = GeneralUtils.validarIdParam(idParams);
-        const pdfBuffer = await FirmaReporteService.generarReporteFirma(id);
+        const bitacora = await BitacoraService.obtenerBitacoraPorId(id);
+        const tipo_servicio = await TipoServicioService.obtenerTipoServicioPorId(bitacora.tipo_servicio_id);
+        const pdfBuffer = await FirmaReporteService.generarReporteFirma(id, tipo_servicio.descripcion);
 
         return new NextResponse(pdfBuffer, {
             status: 200,
@@ -21,7 +25,6 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     } catch (error) {
 
-        console.error("Error generating report:", error);
         return GeneralUtils.generarErrorResponse(error);
         
     }

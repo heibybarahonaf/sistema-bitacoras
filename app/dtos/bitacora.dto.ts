@@ -28,12 +28,6 @@ export const CrearBitacoraDto = z.object({
     equipo_id: z.number({
         invalid_type_error: "El ID del equipo debe ser un número.",
     }).optional(),
-    tipo_servicio: z.string({
-        required_error: "El tipo de servicio es obligatorio.",
-        invalid_type_error: "El tipo de servicio debe ser un texto.",
-    }).refine(val => val === "Soporte Equipo" || val === "Soporte Sistema", {
-        message: "El tipo de servicio debe ser 'Soporte Equipo' o 'Soporte Sistema'."
-    }),
     modalidad: z.string()
         .min(1, "La modalidad es obligatoria.")
         .max(100, "La modalidad no debe exceder los 100 caracteres."),
@@ -43,9 +37,6 @@ export const CrearBitacoraDto = z.object({
     nombres_capacitados: z.string(),
     descripcion_servicio: z.string()
         .min(1, "La descripción del servicio es obligatoria."),
-    fase_implementacion: z.string()
-        .min(1, "La fase de implementación es obligatoria.")
-        .max(50, "La fase de implementación no debe exceder los 50 caracteres."),
     comentarios: z.string(),
     calificacion: z.number(),
     ventas: z.string(),
@@ -59,9 +50,22 @@ export const CrearBitacoraDto = z.object({
     }).refine(val => val === "Individual" || val === "Paquete", {
         message: "El tipo de horas debe ser 'Individual' o 'Paquete'."
     }),
-    firma_tecnico: z.string().optional(),
+    tipo_servicio_id: z.number({
+    required_error: "El ID del tipo de servicio es obligatorio.",
+    invalid_type_error: "El ID del tipo de servicio debe ser un número.",
+  }),
+    fase_implementacion_id: z.number({
+        required_error: "El ID de la fase de implementación es obligatorio.",
+        invalid_type_error: "El ID de la fase de implementación debe ser un número.",
+    }),
+    firmaTecnico_id: z.number({
+        invalid_type_error: "El ID de la firma del técnico debe ser un número.",
+    }).optional(),
+    firmaCLiente_id: z.number({
+        invalid_type_error: "El ID de la firma del cliente debe ser un número.",
+    }).optional(),
 
-    })
+})
 
     .refine(data => {
         return data.sistema_id !== undefined || data.equipo_id !== undefined;

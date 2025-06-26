@@ -1,35 +1,76 @@
 import { useState } from "react";
-import { FileText, Download } from "lucide-react";
+import { FileText, Download, Eye } from "lucide-react";
 
 interface CardReporteProps {
   title: string;
   tipo: "general" | "cliente" | "usuario";
   isGenerating: boolean;
-  onGenerate: (tipo: "general" | "cliente" | "usuario", fechaInicio: string, fechaFinal: string, id?: string) => void;
+  onGenerate: (
+    tipo: "general" | "cliente" | "usuario",
+    fechaInicio: string,
+    fechaFinal: string,
+    id?: string,
+    rtn?: string
+  ) => void;
+  onPreview: (
+    tipo: "general" | "cliente" | "usuario",
+    fechaInicio: string,
+    fechaFinal: string,
+    id?: string,
+    rtn?: string
+  ) => void;
 }
 
-export default function CardReporte({ title, tipo, isGenerating, onGenerate }: CardReporteProps) {
+export default function CardReporte({
+  title,
+  tipo,
+  isGenerating,
+  onGenerate,
+  onPreview,
+}: CardReporteProps) {
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFinal, setFechaFinal] = useState("");
   const [entidadId, setEntidadId] = useState("");
 
   const handleGenerate = () => {
-    onGenerate(tipo, fechaInicio, fechaFinal, tipo !== "general" ? entidadId : undefined);
+    onGenerate(
+      tipo,
+      fechaInicio,
+      fechaFinal,
+      tipo == "usuario" ? entidadId : undefined,
+      tipo === "cliente" ? entidadId : undefined
+    );
+  };
+
+  const handlePreview = () => {
+    onPreview(
+      tipo,
+      fechaInicio,
+      fechaFinal,
+      tipo === "usuario" ? entidadId : undefined,
+      tipo === "cliente" ? entidadId : undefined
+    );
   };
 
   const getIdLabel = () => {
     switch (tipo) {
-      case "cliente": return "ID Cliente";
-      case "usuario": return "ID Tecnico";
-      default: return "";
+      case "cliente":
+        return "RTN Cliente";
+      case "usuario":
+        return "Nombre Técnico";
+      default:
+        return "";
     }
   };
 
   const getIdPlaceholder = () => {
     switch (tipo) {
-      case "cliente": return "Ingresa el ID del cliente";
-      case "usuario": return "Ingresa el ID del Tecnico";
-      default: return "";
+      case "cliente":
+        return "Ingresa el RTN del cliente";
+      case "usuario":
+        return "Ingresa el nombre del técnico";
+      default:
+        return "";
     }
   };
 
@@ -46,9 +87,7 @@ export default function CardReporte({ title, tipo, isGenerating, onGenerate }: C
 
       <div className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha Inicio
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label>
           <input
             type="date"
             value={fechaInicio}
@@ -59,9 +98,7 @@ export default function CardReporte({ title, tipo, isGenerating, onGenerate }: C
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha Final
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Final</label>
           <input
             type="date"
             value={fechaFinal}
@@ -88,31 +125,33 @@ export default function CardReporte({ title, tipo, isGenerating, onGenerate }: C
         )}
       </div>
 
-      <button
-        onClick={handleGenerate}
-        disabled={isGenerating}
-        className={`w-full py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
-          isGenerating 
-            ? "bg-gray-400 cursor-not-allowed" 
-            : "bg-[#5768b8] hover:bg-[#43529a] active:bg-[#1e2340]"
-        } text-white`}
-      >
-        {isGenerating ? (
-          <span className="flex items-center gap-1">
-            <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16v-4l-3 3 3 3v-4a8 8 0 01-8-8z" />
-            </svg>
-            
-          </span>
-        ) : (
-          <>
-            <Download className="w-4 h-4" />
-            
-          </>
-        )}
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={handleGenerate}
+          disabled={isGenerating}
+          className={`flex-1 py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+            isGenerating
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-[#5768b8] hover:bg-[#43529a] active:bg-[#1e2340]"
+          } text-white`}
+        >
+          <Download className="w-4 h-4" />
+          {isGenerating ? "Generando..." : ""}
+        </button>
+
+        <button
+          onClick={handlePreview}
+          disabled={isGenerating}
+          className={`flex-1 py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+            isGenerating
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-emerald-600 hover:bg-emerald-700"
+          } text-white`}
+        >
+          <Eye className="w-4 h-4" />
+          
+        </button>
+      </div>
     </div>
   );
-
 }

@@ -4,21 +4,25 @@ import { jsPDF } from "jspdf";
 import { prisma } from "../libs/prisma";
 import { BitacoraService } from "./bitacoraService";
 
+let tipo_servicio = "";
+
 export class FirmaReporteService {
   
-    public static async generarReporteFirma(bitacoraId: number): Promise<Buffer> {
+    public static async generarReporteFirma(bitacoraId: number, tipo_servicio_in: string): Promise<Buffer> {
+        tipo_servicio = tipo_servicio_in;
+
         const bitacora = await BitacoraService.obtenerBitacorasConFirma(bitacoraId);
         const doc = new jsPDF('p', 'mm', 'a4');
         this.configurarEncabezado(doc, bitacora);
         
-        let currentY = 60;
+        let currentY = 48;
 
         currentY = this.renderInfoCliente(doc, currentY, bitacora);
-        currentY += 10;
+        currentY += 7;
         currentY = this.renderInfoBitacora(doc, currentY, bitacora);
-        currentY += 20;
+        currentY += 7;
 
-        const firmaTecnico = bitacora.firmaTecnico_id ? await prisma.firma.findUnique({ where: { id: bitacora.firmaTecnico_id } }): null;
+        const firmaTecnico = bitacora.firmaTecnico_id ? await prisma.firma.findUnique({ where: { id: bitacora.firmaTecnico_id } }): null;        
         const firmaCliente = bitacora.firmaCLiente_id ? await prisma.firma.findUnique({ where: { id: bitacora.firmaCLiente_id } }): null;
         currentY = await this.renderFirmas(doc, currentY, firmaTecnico, firmaCliente, bitacora);
         
@@ -47,15 +51,15 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("REPORTE DE SERVICIO", 20, 20);
         
-        doc.setFontSize(12);
+        doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
-        doc.text(`Bitácora #${bitacora.id}`, 20, 30);
+        doc.text(`Bitácora #${bitacora.id}`, 20, 28);
         
         doc.setFontSize(10);
-        doc.text(`Generado: ${new Date().toLocaleDateString('es-ES')} ${new Date().toLocaleTimeString('es-ES')}`, 20, 35);
+        doc.text(`Generado: ${new Date().toLocaleDateString('es-ES')} ${new Date().toLocaleTimeString('es-ES')}`, 20, 33);
         
         doc.setLineWidth(0.5);
-        doc.line(20, 45, 190, 45);
+        doc.line(20, 38, 190, 38);
 
     }
 
@@ -72,27 +76,17 @@ export class FirmaReporteService {
         doc.setFontSize(10);
         
         const leftX = 20;
-        const rightX = 110;
+        const rightX = 130; 
+        const labelAlignment = 40; 
+        const rightLabelAlignment = 145; 
         
         doc.setFont("helvetica", "bold");
-        const clienteWidth = doc.getTextWidth("Cliente:");
         doc.text("Cliente:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.cliente?.empresa || "N/A"), leftX + clienteWidth, currentY);
+        doc.text(bitacora.cliente?.empresa || "N/A", labelAlignment, currentY);
 
-        currentY += 6;
-        
         doc.setFont("helvetica", "bold");
-        const correoWidth = doc.getTextWidth("Correo:");
-        doc.text("Correo:", leftX, currentY);
-        doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.cliente?.correo || "N/A"), leftX + correoWidth, currentY);
-
-        currentY += 6;
-        
-        doc.setFont("helvetica", "bold");
-        const telefonoWidth = doc.getTextWidth("Teléfono:");
-        doc.text("Teléfono:", leftX, currentY);
+        doc.text("Tel:", rightX, currentY);
         doc.setFont("helvetica", "normal");
         
         let telefonoFormateado = "N/A";
@@ -107,55 +101,44 @@ export class FirmaReporteService {
 
         }
 
-        doc.text(" " + telefonoFormateado, leftX + telefonoWidth, currentY);
-        const direccionLarga = bitacora.cliente?.direccion && bitacora.cliente.direccion.length > 50;
-
-        if (!direccionLarga) {
-            doc.setFont("helvetica", "bold");
-            const rtnWidth = doc.getTextWidth("RTN:");
-            doc.text("RTN:", rightX, currentY);
-            doc.setFont("helvetica", "normal");
-            doc.text(" " + (bitacora.cliente?.rtn || "N/A"), rightX + rtnWidth, currentY);
-        }
+        doc.text(telefonoFormateado, rightLabelAlignment, currentY);
 
         currentY += 6;
         
-        if (direccionLarga) {
-            doc.setFont("helvetica", "bold");
-            const rtnWidth = doc.getTextWidth("RTN:");
-            doc.text("RTN:", leftX, currentY);
-            doc.setFont("helvetica", "normal");
-            doc.text(" " + (bitacora.cliente?.rtn || "N/A"), leftX + rtnWidth, currentY);
+        doc.setFont("helvetica", "bold");
+        doc.text("Correo:", leftX, currentY);
+        doc.setFont("helvetica", "normal");
+        doc.text(bitacora.cliente?.correo || "N/A", labelAlignment, currentY);
 
-            currentY += 6;
-        }
+        doc.setFont("helvetica", "bold");
+        doc.text("RTN:", rightX, currentY);
+        doc.setFont("helvetica", "normal");
+        doc.text(bitacora.cliente?.rtn || "N/A", rightLabelAlignment, currentY);
+
+        currentY += 6;
         
         if (bitacora.cliente?.direccion) {
             doc.setFont("helvetica", "bold");
-            const direccionWidth = doc.getTextWidth("Dirección:");
             doc.text("Dirección:", leftX, currentY);
             doc.setFont("helvetica", "normal");
             
-            const direccionCompleta = " " + bitacora.cliente.direccion;
-            const maxWidth = 170 - direccionWidth;
+            const direccionCompleta = bitacora.cliente.direccion;
+            const maxWidth = 170 - (labelAlignment - leftX);
             const lines = doc.splitTextToSize(direccionCompleta, maxWidth);
-            doc.text(lines[0], leftX + direccionWidth, currentY);
+            doc.text(lines[0], labelAlignment, currentY);
 
             if (lines.length > 1) {
-              
                 for (let i = 1; i < lines.length; i++) {
                     currentY += 4;
-                    doc.text(lines[i], leftX + direccionWidth, currentY);
+                    doc.text(lines[i], labelAlignment, currentY);
                 }
-
             }
 
         } else {
             doc.setFont("helvetica", "bold");
-            const direccionWidth = doc.getTextWidth("Dirección:");
             doc.text("Dirección:", leftX, currentY);
             doc.setFont("helvetica", "normal");
-            doc.text(" N/A", leftX + direccionWidth, currentY);
+            doc.text("N/A", labelAlignment, currentY);
         }
 
         currentY += 6;
@@ -167,6 +150,8 @@ export class FirmaReporteService {
         let currentY = startY;
         const leftX = 20;
         const rightX = 110;
+        const labelAlignment = 47; 
+        const rightLabelAlignment = 130;
         
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
@@ -175,104 +160,110 @@ export class FirmaReporteService {
         currentY += 8;
         
         doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
         
         doc.setFont("helvetica", "bold");
-        const ticketWidth = doc.getTextWidth("Ticket:");
         doc.text("Ticket:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.no_ticket || "N/A"), leftX + ticketWidth, currentY);
+        doc.text(bitacora.no_ticket || "N/A", labelAlignment, currentY);
         
         doc.setFont("helvetica", "bold");
-        const fechaWidth = doc.getTextWidth("Fecha:");
         doc.text("Fecha:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + new Date(bitacora.fecha_servicio).toLocaleDateString('es-ES'), rightX + fechaWidth, currentY);
+        doc.text(new Date(bitacora.fecha_servicio).toLocaleDateString('es-ES'), rightLabelAlignment, currentY);
 
         currentY += 6;
         
         doc.setFont("helvetica", "bold");
-        const servicioWidth = doc.getTextWidth("Servicio:");
         doc.text("Servicio:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.tipo_servicio || "N/A"), leftX + servicioWidth, currentY);
+        doc.text(tipo_servicio || "N/A", labelAlignment, currentY);
         
         doc.setFont("helvetica", "bold");
-        const tecnicoWidth = doc.getTextWidth("Técnico:");
         doc.text("Técnico:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.usuario?.nombre || "N/A"), rightX + tecnicoWidth, currentY);
+        doc.text(bitacora.usuario?.nombre || "N/A", rightLabelAlignment, currentY);
 
         currentY += 6;
-        
+
         doc.setFont("helvetica", "bold");
-        const tipoHoraWidth = doc.getTextWidth("Tipo Hora:");
         doc.text("Tipo Hora:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.tipo_horas || "N/A"), leftX + tipoHoraWidth, currentY);
+        doc.text(bitacora.tipo_horas || "N/A", labelAlignment, currentY);
         
         doc.setFont("helvetica", "bold");
-        const montoWidth = doc.getTextWidth("Monto:");
         doc.text("Monto:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.monto ? `Lps. ${bitacora.monto}.00` : "N/A"), rightX + montoWidth, currentY);
+        doc.text(bitacora.monto ? `Lps. ${bitacora.monto}.00` : "N/A", rightLabelAlignment, currentY);
 
         currentY += 6;
-        
+
         doc.setFont("helvetica", "bold");
-        const sistemaWidth = doc.getTextWidth("Sistema:");
         doc.text("Sistema:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.sistema?.sistema || "N/A"), leftX + sistemaWidth, currentY);
+        doc.text(bitacora.sistema?.sistema || "N/A", labelAlignment, currentY);
         
         doc.setFont("helvetica", "bold");
-        const horaLlegadaWidth = doc.getTextWidth("Hora llegada:");
         doc.text("Hora llegada:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.hora_llegada ? new Date(bitacora.hora_llegada).toLocaleTimeString('es-ES') : "N/A"), rightX + horaLlegadaWidth, currentY);
+        doc.text(bitacora.hora_llegada ? new Date(bitacora.hora_llegada).toLocaleTimeString('es-ES') : "N/A", rightLabelAlignment+8, currentY);
         
         currentY += 6;
         
         doc.setFont("helvetica", "bold");
-        const equipoWidth = doc.getTextWidth("Equipo:");
         doc.text("Equipo:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.equipo?.equipo || "N/A"), leftX + equipoWidth, currentY);
+        doc.text(bitacora.equipo?.equipo || "N/A", labelAlignment, currentY);
         
         doc.setFont("helvetica", "bold");
-        const horaSalidaWidth = doc.getTextWidth("Hora salida:");
         doc.text("Hora salida:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.hora_salida ? new Date(bitacora.hora_salida).toLocaleTimeString('es-ES') : "N/A"), rightX + horaSalidaWidth, currentY);
+        doc.text(bitacora.hora_salida ? new Date(bitacora.hora_salida).toLocaleTimeString('es-ES') : "N/A", rightLabelAlignment+9, currentY);
         
         currentY += 6;
         
         doc.setFont("helvetica", "bold");
-        const capacitadosWidth = doc.getTextWidth("Capacitados:");
         doc.text("Capacitados:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(" " + (bitacora.capacitados || "N/A"), leftX + capacitadosWidth, currentY);
+        doc.text(bitacora.capacitados || "N/A", labelAlignment, currentY);
+        
+        currentY += 6;
+
+        if (bitacora.ventas) {
+            doc.setFont("helvetica", "bold");
+            doc.text("Ventas:", leftX, currentY);
+            doc.setFont("helvetica", "normal");
+            
+            const descripcionCompleta = bitacora.ventas;
+            const maxWidth = 170 - (labelAlignment - leftX);
+            const lines = doc.splitTextToSize(descripcionCompleta, maxWidth);
+            doc.text(lines[0], labelAlignment, currentY);
+
+            if (lines.length > 1) {
+                for (let i = 1; i < lines.length; i++) {
+                    currentY += 4;
+                    doc.text(lines[i], leftX, currentY);
+                }
+            }
+
+        }
         
         currentY += 6;
         
         if (bitacora.descripcion_servicio) {
             doc.setFont("helvetica", "bold");
-            const descripcionWidth = doc.getTextWidth("Descripción del servicio:");
-            doc.text("Descripción del servicio:", leftX, currentY);
+            doc.text("Descripción:", leftX, currentY);
             doc.setFont("helvetica", "normal");
             
-            const descripcionCompleta = " " + bitacora.descripcion_servicio;
-            const maxWidth = 170 - descripcionWidth;
+            const descripcionCompleta = bitacora.descripcion_servicio;
+            const maxWidth = 170 - (labelAlignment - leftX);
             const lines = doc.splitTextToSize(descripcionCompleta, maxWidth);
-            doc.text(lines[0], leftX + descripcionWidth, currentY);
+            doc.text(lines[0], labelAlignment, currentY);
 
             if (lines.length > 1) {
-
                 for (let i = 1; i < lines.length; i++) {
                     currentY += 4;
                     doc.text(lines[i], leftX, currentY);
                 }
-
             }
 
             currentY += 6;
@@ -280,22 +271,19 @@ export class FirmaReporteService {
         
         if (bitacora.comentarios) {
             doc.setFont("helvetica", "bold");
-            const comentariosWidth = doc.getTextWidth("Comentarios:");
             doc.text("Comentarios:", leftX, currentY);
             doc.setFont("helvetica", "normal");
             
-            const comentariosCompleto = " " + bitacora.comentarios;
-            const maxWidth = 170 - comentariosWidth;
+            const comentariosCompleto = bitacora.comentarios;
+            const maxWidth = 170 - (labelAlignment - leftX);
             const lines = doc.splitTextToSize(comentariosCompleto, maxWidth);
-            doc.text(lines[0], leftX + comentariosWidth, currentY);
+            doc.text(lines[0], labelAlignment, currentY);
 
             if (lines.length > 1) {
-
                 for (let i = 1; i < lines.length; i++) {
                     currentY += 4;
                     doc.text(lines[i], leftX, currentY);
                 }
-
             }
 
             currentY += 6;
@@ -312,7 +300,7 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("FIRMAS DE AUTORIZACIÓN", 20, currentY);
 
-        currentY += 15;
+        currentY += 10;
         
         const firmaWidth = 60;
         const firmaHeight = 30;
@@ -403,7 +391,7 @@ export class FirmaReporteService {
         doc.text(nombreTecnico, leftX + (firmaWidth - nombreTecnicoWidth) / 2, currentY);
         doc.text(nombreResponsable, rightX + (firmaWidth - nombreResponsableWidth) / 2, currentY);
         
-        currentY += 5;
+        currentY += 3;
         
         doc.setLineWidth(0.3);
         doc.line(leftX, currentY, leftX + firmaWidth, currentY);
@@ -421,7 +409,7 @@ export class FirmaReporteService {
         doc.text(nombreTextoTecnico, leftX + (firmaWidth - nombreTextoTecnicoWidth) / 2, currentY);
         doc.text(nombreTextoResponsable, rightX + (firmaWidth - nombreTextoResponsableWidth) / 2, currentY);
         
-        currentY += 15;
+        currentY += 8;
         
         doc.setFontSize(8);
         doc.setFont("helvetica", "normal");

@@ -10,20 +10,20 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url);
         const fechaInicio = searchParams.get('fechaInicio');
         const fechaFinal = searchParams.get('fechaFinal');
-        const usuarioId = searchParams.get('usuarioId');
+        const nombre = searchParams.get('nombre');
 
-        if (!fechaInicio || !fechaFinal || !usuarioId) {
-            return NextResponse.json({ message: "Se requieren fechas y usuarioId" }, { status: 400 });
+        if (!fechaInicio || !fechaFinal || !nombre) {
+            return NextResponse.json({ message: "Se requieren fechas y el nombre del tecnico" }, { status: 400 });
         }
 
-        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(parseInt(usuarioId), fechaInicio, fechaFinal);
+        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(nombre, fechaInicio, fechaFinal);
         const buffer = await generarPDFPorTecnico(bitacoras, fechaInicio, fechaFinal);
 
         return new NextResponse(buffer, {
             status: 200,
             headers: {
                 "Content-Type": "application/pdf",
-                "Content-Disposition": `attachment; filename="usuario_${usuarioId}_${fechaInicio}_a_${fechaFinal}.pdf"`,
+                "Content-Disposition": `attachment; filename="usuario_${nombre}_${fechaInicio}_a_${fechaFinal}.pdf"`,
             },
         });
 

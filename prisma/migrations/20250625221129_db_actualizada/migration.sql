@@ -24,12 +24,12 @@ CREATE TABLE "bitacoras" (
     "hora_salida" TIMESTAMP(3) NOT NULL,
     "sistema_id" INTEGER,
     "equipo_id" INTEGER,
-    "tipo_servicio" VARCHAR(100) NOT NULL,
+    "tipo_servicio_id" INTEGER NOT NULL,
     "modalidad" VARCHAR(100) NOT NULL,
     "responsable" VARCHAR(100) NOT NULL,
     "nombres_capacitados" TEXT,
     "descripcion_servicio" TEXT NOT NULL,
-    "fase_implementacion" VARCHAR(50) NOT NULL,
+    "fase_implementacion_id" INTEGER NOT NULL,
     "comentarios" TEXT NOT NULL,
     "calificacion" INTEGER,
     "ventas" TEXT NOT NULL,
@@ -128,6 +128,30 @@ CREATE TABLE "equipos" (
 );
 
 -- CreateTable
+CREATE TABLE "tipos_servicios" (
+    "id" SERIAL NOT NULL,
+    "tipo_servicio" VARCHAR(200) NOT NULL,
+    "descripcion" TEXT NOT NULL,
+    "activo" BOOLEAN NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "tipos_servicios_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "fases_implementacion" (
+    "id" SERIAL NOT NULL,
+    "fase" VARCHAR(200) NOT NULL,
+    "descripcion" TEXT NOT NULL,
+    "activa" BOOLEAN NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "fases_implementacion_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "pagos_clientes" (
     "id" SERIAL NOT NULL,
     "cliente_id" INTEGER NOT NULL,
@@ -201,6 +225,12 @@ ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_sistema_id_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_equipo_id_fkey" FOREIGN KEY ("equipo_id") REFERENCES "equipos"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_fase_implementacion_id_fkey" FOREIGN KEY ("fase_implementacion_id") REFERENCES "fases_implementacion"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_tipo_servicio_id_fkey" FOREIGN KEY ("tipo_servicio_id") REFERENCES "tipos_servicios"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_usuario_id_fkey" FOREIGN KEY ("usuario_id") REFERENCES "usuarios"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
