@@ -34,6 +34,10 @@ interface Equipo {
   id: number;
   equipo: string;
 }
+interface TipoServicio {
+  id: number;
+  tipo_servicio: string;
+}
 
 const BuscarCliente: React.FC = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -48,6 +52,7 @@ const BuscarCliente: React.FC = () => {
   const [modalDetalleOpen, setModalDetalleOpen] = useState(false);
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
+  const [tipo_servicio, setTipoServicio] = useState<TipoServicio[]>([]);
 
   // Para paginación de clientes
   const [paginaActualClientes, setPaginaActualClientes] = useState(1);
@@ -340,6 +345,7 @@ const BuscarCliente: React.FC = () => {
             bitacora={bitacoraSeleccionada}
             sistemas={sistemas}
             equipos={equipos}
+            tipo_servicios={tipo_servicio}
           />
 
           {showNewBitacora && (
@@ -387,7 +393,13 @@ const BuscarCliente: React.FC = () => {
                   {bitacorasMostrar.map((b: any) => (
                     <tr key={b.id} className="hover:bg-gray-50">
                       <td className="px-4 py-3 border-b">{b.no_ticket}</td>
-                      <td className="px-4 py-3 border-b">{new Date(b.fecha_servicio).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 border-b">{new Date(b.fecha_servicio).toLocaleDateString("es-HN", {
+                        timeZone: "UTC",
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      })
+                      }</td>
                       <td className="px-4 py-3 border-b">
                         {b.horas_consumidas} ({b.tipo_horas})
                       </td>

@@ -13,12 +13,18 @@ interface Equipo {
   equipo: string;
 }
 
+interface TipoServicio {
+  id: number;
+  tipo_servicio: string;
+}
+
 interface ModalDetalleBitacoraProps {
   isOpen: boolean;
   onClose: () => void;
   bitacora: any | null;
   sistemas: Sistema[];
   equipos: Equipo[];
+  tipo_servicios: TipoServicio[];
 }
 
 export default function ModalDetalleBitacora({
@@ -27,6 +33,7 @@ export default function ModalDetalleBitacora({
   bitacora,
   sistemas,
   equipos,
+  tipo_servicios,
 }: ModalDetalleBitacoraProps) {
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
   const [firmaClienteImg, setFirmaClienteImg] = useState<string | null>(null);
@@ -69,15 +76,20 @@ export default function ModalDetalleBitacora({
 
   if (!isOpen || !bitacora) return null;
 
-  const sistemaNombre =
-    sistemas.find((s) => s.id === bitacora.sistema_id)?.sistema || "";
+  const sistemaNombre = sistemas.find((s) => s.id === bitacora.sistema_id)?.sistema || "";
   const equipoNombre = equipos.find((e) => e.id === bitacora.equipo_id)?.equipo || "";
+  const tipoServicioNombre = tipo_servicios.find((t) => t.id === bitacora.tipo_servicio_id)?.tipo_servicio || "";
 
   const campos = [
     { label: "Ticket", value: bitacora.no_ticket },
     {
       label: "Fecha del Servicio",
-      value: new Date(bitacora.fecha_servicio).toLocaleDateString(),
+      value: new Date(bitacora.fecha_servicio).toLocaleDateString("es-HN", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
     },
     {
       label: "Hora de Llegada",

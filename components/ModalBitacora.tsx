@@ -20,6 +20,16 @@ interface Equipo {
   equipo: string;
 }
 
+interface FaseImplementacion {
+  id: number;
+  fase: string;
+}
+
+interface TipoServicio {
+  id: number;
+  tipo_servicio: string;
+}
+
 const InputField = ({
   label,
   type = "text",
@@ -158,10 +168,12 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [sistemaId, setSistemaId] = useState<number | null>(null);
   const [equipoId, setEquipoId] = useState<number | null>(null);
-  const [tipoServicio, setTipoServicio] = useState("");
   const [nombresCapacitados, setNombresCapacitados] = useState("");
   const [descripcionServicio, setDescripcionServicio] = useState("");
-  const [faseImplementacion, setFaseImplementacion] = useState("");
+  const [fasesImplementacion, setFasesImplementacion] = useState<FaseImplementacion[]>([]);
+  const [faseImplementacionId, setFaseImplementacionId] = useState<number | null>(null);
+  const [tipoServicio, setTipoServicio] = useState<TipoServicio[]>([]);
+  const [tipoServicioId, setTipoServicioId] = useState<number | null>(null);
   const [comentarios, setComentarios] = useState("");
   const [horasConsumidas, setHorasConsumidas] = useState(0);
   const [tipoHoras, setTipoHoras] = useState("Paquete");
@@ -170,8 +182,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [firmaClienteRemotaId, setFirmaClienteRemotaId] = useState<number | null>(null);
   const [urlFirmaRemota, setUrlFirmaRemota] = useState<string | null>(null);
   const [esperandoFirmaCliente, setEsperandoFirmaCliente] = useState(false);
-
-
   const sigCanvas = useRef<SignatureCanvas>(null);
   const sigCanvasCliente = useRef<SignatureCanvas>(null);
 
@@ -196,23 +206,32 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   };
 
   useEffect(() => {
-    // Cargar sistemas y equipos activos
-    const fetchData = async () => {
-      try {
-        const [resSistemas, resEquipos] = await Promise.all([
-          fetch("/api/sistemas/activos"),
-          fetch("/api/equipos/activos"),
-        ]);
-        const dataSistemas = await resSistemas.json();
-        const dataEquipos = await resEquipos.json();
-        setSistemas(dataSistemas.results || []);
-        setEquipos(dataEquipos.results || []);
-      } catch (err) {
-        console.error("Error cargando sistemas o equipos", err);
-      }
-    };
-    fetchData();
-  }, []);
+  // Cargar sistemas, equipos, tipo de servicio y fases activas
+  const fetchData = async () => {
+    try {
+      const [resSistemas, resEquipos, resFases, resServicios] = await Promise.all([
+        fetch("/api/sistemas/activos"),
+        fetch("/api/equipos/activos"),
+        fetch("/api/fase-implementacion/activas"),
+        fetch("/api/tipo-servicio/activos"),
+      ]);
+
+      const dataSistemas = await resSistemas.json();
+      const dataEquipos = await resEquipos.json();
+      const dataFases = await resFases.json();
+      const dataServicios = await resServicios.json();
+
+      setSistemas(dataSistemas.results || []);
+      setEquipos(dataEquipos.results || []);
+      setFasesImplementacion(dataFases.results || []);
+      setTipoServicio(dataServicios.results || []);
+    } catch (err) {
+      console.error("Error cargando sistemas, equipos, tipo de servicio o fases", err);
+    }
+  };
+
+  fetchData();
+}, []);
 
   useEffect(() => {
     // Calcular horas consumidas
@@ -305,14 +324,8 @@ useEffect(() => {
       if (!responsable) throw new Error("Responsable es obligatorio");
       if (!tipoServicio) throw new Error("Tipo de servicio es obligatorio");
       if (!descripcionServicio) throw new Error("Descripción del servicio es obligatoria");
-      if (!faseImplementacion) throw new Error("Fase de implementación es obligatoria");
+      if (!fasesImplementacion) throw new Error("Fase de implementación es obligatoria");
       if (!tipoHoras) throw new Error("Tipo de horas es obligatorio");
-
-      // Validar que sistema o equipo esté seleccionado según tipo de servicio
-      if (tipoServicio === "Soporte Sistema" && !sistemaId)
-        throw new Error("Debe seleccionar un sistema");
-      if (tipoServicio === "Soporte Equipo" && !equipoId)
-        throw new Error("Debe seleccionar un equipo");
 
       // Firma técnico obligatoria
       if (sigCanvas.current?.isEmpty()) {
@@ -367,16 +380,15 @@ useEffect(() => {
         cliente_id: clienteId,
         usuario_id: 1, //
         no_ticket: noTicket,
-        fecha_servicio: new Date(fechaServicio).toISOString(),
+        fecha_servicio: fechaServicio,
         hora_llegada: new Date(`${fechaServicio}T${horaLlegada}`).toISOString(),
         hora_salida: new Date(`${fechaServicio}T${horaSalida}`).toISOString(),
         sistema_id: sistemaId || undefined,
         equipo_id: equipoId || undefined,
-        tipo_servicio: 1, //
         nombres_capacitados: nombresCapacitados,
         descripcion_servicio: descripcionServicio,
-        tipo_servicio_id: 1, //
-        fase_implementacion_id: 1, //
+        tipo_servicio_id: tipoServicioId,
+        fase_implementacion_id: faseImplementacionId,
         comentarios,
         calificacion: 1, //
         ventas: "N/A", //
@@ -458,38 +470,27 @@ useEffect(() => {
             onChange={setResponsable}
             required
           />
-
-          <SelectSimple
+          <SelectField
             label="Tipo de Servicio"
-            value={tipoServicio}
-            onChange={(val) => {
-              setTipoServicio(val);
-              setSistemaId(null);
-              setEquipoId(null);
-            }}
-            options={["Soporte Equipo", "Soporte Sistema"]}
+            value={tipoServicioId}
+            onChange={setTipoServicioId}
+            options={tipoServicio.map((s) => ({ id: s.id, sistema: s.tipo_servicio }))}
             required
           />
-
-          {tipoServicio === "Soporte Sistema" && (
-            <SelectField
-              label="Sistema"
-              value={sistemaId}
-              options={sistemas}
-              onChange={setSistemaId}
-              required
-            />
-          )}
-          {tipoServicio === "Soporte Equipo" && (
-            <SelectField
-              label="Equipo"
-              value={equipoId}
-              options={equipos}
-              onChange={setEquipoId}
-              required
-            />
-          )}
-
+          <SelectField
+            label="Equipo"
+            value={equipoId}
+            onChange={setEquipoId}
+            options={equipos.map((e) => ({ id: e.id, sistema: e.equipo }))}
+            
+          />
+          <SelectField
+            label="Sistema"
+            value={sistemaId}
+            onChange={setSistemaId}
+            options={sistemas.map((s) => ({ id: s.id, sistema: s.sistema }))}
+            
+          />
           <SelectSimple
             label="Modalidad"
             value={modalidad}
@@ -497,7 +498,6 @@ useEffect(() => {
             options={["Presencial", "Remoto"]}
             required
           />
-
           <InputField
             label="Nombres Capacitados"
             value={nombresCapacitados}
@@ -509,11 +509,11 @@ useEffect(() => {
             onChange={setDescripcionServicio}
             required
           />
-          <SelectSimple
+          <SelectField
             label="Fase de Implementación"
-            value={faseImplementacion}
-            onChange={setFaseImplementacion}
-            options={["Inicio", "Desarrollo", "Finalización"]}
+            value={faseImplementacionId}
+            onChange={setFaseImplementacionId}
+            options={fasesImplementacion.map((f) => ({ id: f.id, sistema: f.fase }))}
             required
           />
           <TextAreaField
