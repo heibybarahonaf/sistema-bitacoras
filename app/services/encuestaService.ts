@@ -32,15 +32,39 @@ export class EncuestaService {
     }
 
 
-    public static async obtenerEncuestaActiva(): Promise<Encuesta> {
-        const encuestaActiva = await prisma.encuesta.findFirst({ where: { activa: true }});
+    public static async obtenerEncuestaActiva(): Promise<EncuestaPreguntas> {
+  const encuesta = await prisma.encuesta.findFirst({
+    where: { activa: true },
+    include: {
+      preguntas: {
+        include: {
+          pregunta: true,
+        },
+      },
+    },
+  });
 
-        if(!encuestaActiva){
-            throw new ResponseDto(404, "No se encontraron encuestas activas");
-        }
+  if (!encuesta) {
+    throw new ResponseDto(404, "No se encontraron encuestas activas");
+  }
 
-        return encuestaActiva;
-    }
+  const preguntasMapeadas = encuesta.preguntas.map((p) => ({
+    id: p.pregunta.id,
+    texto: p.pregunta.pregunta,
+  }));
+
+
+  const encuestaConPreguntas = {
+    id: encuesta.id,
+    titulo: encuesta.titulo,
+    descripcion: encuesta.descripcion,
+    activa: encuesta.activa,
+    preguntas: preguntasMapeadas,
+  };
+
+  return encuestaConPreguntas;
+}
+
 
 
     public static async obtenerEncuestasPreguntas(): Promise<EncuestaPreguntas[]> {
@@ -90,83 +114,75 @@ export class EncuestaService {
 
 
     public static async crearEncuesta(encuestaData: CrearEncuestaDto): Promise<Encuesta> {
-
-        const encuestaExistente = await prisma.encuesta.findFirst({ where: { titulo : encuestaData.titulo }});
-        if (encuestaExistente) {
-            throw new ResponseDto(409, "La encuesta ya está registrada");
-        }
-
-        const encuestaActiva = await prisma.encuesta.findFirst({ where: { activa: true }});
-        if (encuestaActiva && encuestaData.activa==true) {
-            throw new ResponseDto(409, "Ya hay una encuesta activa, solo se permite una activa a la vez");
-        }
-
-        await this.validarPreguntasEncuesta(encuestaData.preguntas);
-
-        try {
-
-            const encuesta = await prisma.encuesta.create({
-                data: {
-                    titulo: encuestaData.titulo,
-                    descripcion: encuestaData.descripcion,
-                    activa: encuestaData.activa
-                }
-            });
-            
-
-            const encuestaPreguntas = encuestaData.preguntas.map(preguntaId => ({
-                encuesta_id: encuesta.id,
-                pregunta_id: preguntaId
-            }));
-
-            await prisma.encuestaPregunta.createMany({data: encuestaPreguntas});
-            return encuesta;
-
-        } catch (error) {
-
-            throw new ResponseDto(500, "Error al crear la encuesta con preguntas");
-
-        }
-
+    const encuestaExistente = await prisma.encuesta.findFirst({ where: { titulo: encuestaData.titulo } });
+    if (encuestaExistente) {
+        throw new ResponseDto(409, "La encuesta ya está registrada");
     }
 
+    // Desactivar cualquier encuesta activa existente
+    await prisma.encuesta.updateMany({
+        where: { activa: true },
+        data: { activa: false }
+    });
 
-    public static async editarEncuesta(id: number, encuestaData: EditarEncuestaDto): Promise<Encuesta> {
-        await this.obtenerEncuestaPorId(id);
+    await this.validarPreguntasEncuesta(encuestaData.preguntas);
 
-        const encuestaExistente = await prisma.encuesta.findFirst({ where: { titulo: encuestaData.titulo, NOT: { id: id } }});
-        if (encuestaExistente) {
-            throw new ResponseDto(409, "La encuesta ya está registrada");
-        }
-
-        const encuestaActiva = await prisma.encuesta.findFirst({ where: { activa: true }});
-        if (encuestaActiva && encuestaData.activa==true) {
-            throw new ResponseDto(409, "Ya hay una encuesta activa, solo se permite una activa a la vez");
-        }        
-
-        if (encuestaData.preguntas) {
-            await this.validarPreguntasEncuesta(encuestaData.preguntas);
-            await prisma.encuestaPregunta.deleteMany({ where: { encuesta_id: id } });
-
-            const nuevas = encuestaData.preguntas.map(pregunta_id => ({
-                encuesta_id: id,
-                pregunta_id
-            }));
-
-            await prisma.encuestaPregunta.createMany({ data: nuevas });
-        }
-
-        const encuestaActualizada = await prisma.encuesta.update({
-            where: { id },
+    try {
+        const encuesta = await prisma.encuesta.create({
             data: {
                 titulo: encuestaData.titulo,
                 descripcion: encuestaData.descripcion,
-                activa: encuestaData.activa
+                activa: true // Siempre activa al crear
             }
         });
 
-        return encuestaActualizada;
+        const encuestaPreguntas = encuestaData.preguntas.map(preguntaId => ({
+            encuesta_id: encuesta.id,
+            pregunta_id: preguntaId
+        }));
+
+        await prisma.encuestaPregunta.createMany({ data: encuestaPreguntas });
+        return encuesta;
+
+    } catch (error) {
+        throw new ResponseDto(500, "Error al crear la encuesta con preguntas");
     }
+}
+
+
+    public static async editarEncuesta(id: number, encuestaData: EditarEncuestaDto): Promise<Encuesta> {
+    await this.obtenerEncuestaPorId(id);
+
+    const encuestaExistente = await prisma.encuesta.findFirst({
+        where: { titulo: encuestaData.titulo, NOT: { id: id } }
+    });
+    if (encuestaExistente) {
+        throw new ResponseDto(409, "La encuesta ya está registrada");
+    }
+
+    if (encuestaData.preguntas) {
+        await this.validarPreguntasEncuesta(encuestaData.preguntas);
+        await prisma.encuestaPregunta.deleteMany({ where: { encuesta_id: id } });
+
+        const nuevas = encuestaData.preguntas.map(pregunta_id => ({
+            encuesta_id: id,
+            pregunta_id
+        }));
+
+        await prisma.encuestaPregunta.createMany({ data: nuevas });
+    }
+
+    const encuestaActualizada = await prisma.encuesta.update({
+        where: { id },
+        data: {
+            titulo: encuestaData.titulo,
+            descripcion: encuestaData.descripcion,
+            // activa no se toca al actualizar
+        }
+    });
+
+    return encuestaActualizada;
+}
 
 
     public static async validarPreguntasEncuesta(preguntas: number[]) {

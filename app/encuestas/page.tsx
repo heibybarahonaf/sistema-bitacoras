@@ -14,83 +14,119 @@ interface EncuestaActiva {
   titulo: string;
   descripcion: string;
   activa: boolean;
-  preguntas: { id: number; texto?: string }[];
+  preguntas: { id: number; texto: string }[];
 }
 
 export default function CrearEncuestaPage() {
   const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
-  const [seleccionadas, setSeleccionadas] = useState<number[]>([]);
+  const [preguntasAsociadas, setPreguntasAsociadas] = useState<Pregunta[]>([]);
+  const [preguntasDisponibles, setPreguntasDisponibles] = useState<Pregunta[]>([]);
+
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [activa, setActiva] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [encuestaId, setEncuestaId] = useState<number | null>(null);
+
+  // Estado para mostrar toast
+  const [toast, setToast] = useState<{ tipo: "exito" | "error"; texto: string } | null>(null);
 
   useEffect(() => {
     const fetchDatosIniciales = async () => {
       try {
-        // Traer todas las preguntas
-        const resPreguntas = await axios.get("/api/preguntas");
-        const dataPreguntas = resPreguntas.data.results[0];
-        if (Array.isArray(dataPreguntas)) {
-          setPreguntas(dataPreguntas);
-        }
+        const [resPreguntas, resEncuesta] = await Promise.all([
+          axios.get("/api/preguntas"),
+          axios.get("/api/encuestas/activa"),
+        ]);
 
-        // Traer encuesta activa
-        const resEncuesta = await axios.get("/api/encuestas/activa");
+        const preguntasData: Pregunta[] = resPreguntas.data.results[0];
         const encuesta: EncuestaActiva = resEncuesta.data.results[0];
+
+        if (!Array.isArray(preguntasData)) return;
+
         if (encuesta) {
+          setEncuestaId(encuesta.id);
           setTitulo(encuesta.titulo);
           setDescripcion(encuesta.descripcion);
-          setActiva(encuesta.activa);
-          setSeleccionadas(encuesta.preguntas.map((p) => p.id));
+
+          if (!encuesta.preguntas || encuesta.preguntas.length === 0) {
+            setMensaje("⚠️ La encuesta activa no tiene preguntas asociadas.");
+          }
+
+          const asociadas: Pregunta[] = (encuesta.preguntas || []).map((p) => ({
+            id: p.id,
+            pregunta: p.texto,
+          }));
+
+          setPreguntasAsociadas(asociadas);
+
+          const idsAsociadas = new Set(asociadas.map((a) => a.id));
+          const disponibles = preguntasData.filter((p) => !idsAsociadas.has(p.id));
+          setPreguntasDisponibles(disponibles);
+          setPreguntas(preguntasData);
+        } else {
+          setPreguntas(preguntasData);
+          setPreguntasAsociadas([]);
+          setPreguntasDisponibles(preguntasData);
         }
       } catch (error) {
         console.error("Error al cargar datos iniciales", error);
+        setMensaje("Error al cargar datos iniciales");
       }
     };
 
     fetchDatosIniciales();
   }, []);
 
-  const toggleSeleccion = (id: number) => {
-    if (seleccionadas.includes(id)) {
-      setSeleccionadas(seleccionadas.filter((pid) => pid !== id));
-    } else {
-      setSeleccionadas([...seleccionadas, id]);
-    }
+  const mostrarToast = (tipo: "exito" | "error", texto: string) => {
+    setToast({ tipo, texto });
+    setTimeout(() => setToast(null), 4000);
   };
 
-  const crearEncuesta = async () => {
-    if (!titulo.trim() || !descripcion.trim() || seleccionadas.length === 0) {
-      setMensaje("Todos los campos son obligatorios.");
+  const guardarCambios = async () => {
+    if (!titulo.trim() || !descripcion.trim()) {
+      mostrarToast("error", "Título y descripción son obligatorios.");
       return;
     }
 
     setCargando(true);
     try {
-      await axios.post("/api/encuestas", {
-        titulo,
-        descripcion,
-        activa,
-        preguntas: seleccionadas,
-      });
-      setMensaje("Encuesta creada con éxito");
-      // Limpiar solo si quieres crear nueva, sino dejar para edición
-      // setTitulo("");
-      // setDescripcion("");
-      // setSeleccionadas([]);
-      // setActiva(false);
+      if (encuestaId) {
+        await axios.patch(`/api/encuestas/${encuestaId}`, {
+          titulo,
+          descripcion,
+          preguntas: preguntasAsociadas.map((p) => p.id),
+        });
+        mostrarToast("exito", "Encuesta actualizada con éxito");
+      } else {
+        const res = await axios.post("/api/encuestas", {
+          titulo,
+          descripcion,
+          activa: true,
+          preguntas: preguntasAsociadas.map((p) => p.id),
+        });
+        setEncuestaId(res.data.id);
+        mostrarToast("exito", "Encuesta creada con éxito");
+      }
     } catch (error: any) {
-      setMensaje(error?.response?.data?.message || "Error al crear la encuesta");
+      mostrarToast("error", error?.response?.data?.message || "Error al guardar encuesta");
     } finally {
       setCargando(false);
-      setTimeout(() => setMensaje(""), 3000);
     }
   };
 
+  const agregarPregunta = (pregunta: Pregunta) => {
+    setPreguntasAsociadas((prev) => [...prev, pregunta]);
+    setPreguntasDisponibles((prev) => prev.filter((p) => p.id !== pregunta.id));
+  };
+
+  const quitarPregunta = (pregunta: Pregunta) => {
+    setPreguntasDisponibles((prev) => [...prev, pregunta]);
+    setPreguntasAsociadas((prev) => prev.filter((p) => p.id !== pregunta.id));
+  };
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
+    <div className="max-w-3xl mx-auto p-6 mb-24 relative">
       <h1 className="text-2xl font-bold mb-4">Gestionar Encuesta</h1>
 
       <div className="space-y-4">
@@ -108,50 +144,77 @@ export default function CrearEncuestaPage() {
           className="w-full px-3 py-2 border rounded"
         />
         <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2">
-            <input
-            type="checkbox"
-            checked={activa}
-            onChange={(e) => setActiva(e.target.checked)}
-            />
-            Activar encuesta
-        </label>
-        <Link
+          <Link
             href="/preguntas"
             className="text-sm text-blue-600 hover:underline border px-3 py-1 rounded"
-        >
+          >
             + Crear Pregunta
-        </Link>
+          </Link>
         </div>
-
       </div>
 
       <hr className="my-6" />
 
-      <h2 className="text-lg font-semibold mb-2">Selecciona las preguntas</h2>
-      <ul className="space-y-2">
-        {preguntas.map((p) => (
-          <li key={p.id} className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={seleccionadas.includes(p.id)}
-              onChange={() => toggleSeleccion(p.id)}
-            />
-            <span>{p.pregunta}</span>
-          </li>
-        ))}
-      </ul>
+      <div className="flex gap-6">
+        <div className="w-1/2">
+          <h2 className="text-lg font-semibold mb-2">Preguntas asociadas</h2>
+          {preguntasAsociadas.length === 0 && <p>No hay preguntas asociadas</p>}
+          <ul>
+            {preguntasAsociadas.map((p) => (
+              <li key={p.id} className="flex justify-between items-center border p-2 rounded mb-1">
+                <span>{p.pregunta}</span>
+                <button
+                  onClick={() => quitarPregunta(p)}
+                  disabled={cargando}
+                  className="text-red-600 hover:underline"
+                >
+                  Quitar
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="w-1/2">
+          <h2 className="text-lg font-semibold mb-2">Preguntas disponibles</h2>
+          {preguntasDisponibles.length === 0 && <p>No hay preguntas disponibles</p>}
+          <ul>
+            {preguntasDisponibles.map((p) => (
+              <li key={p.id} className="flex justify-between items-center border p-2 rounded mb-1">
+                <span>{p.pregunta}</span>
+                <button
+                  onClick={() => agregarPregunta(p)}
+                  disabled={cargando}
+                  className="text-green-600 hover:underline"
+                >
+                  Agregar
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
 
       <div className="mt-6">
         <button
-          onClick={crearEncuesta}
+          onClick={guardarCambios}
           disabled={cargando}
           className="bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700"
         >
           Guardar
         </button>
-        {mensaje && <p className="mt-2 text-blue-600">{mensaje}</p>}
       </div>
+
+      {/* Toast personalizado */}
+      {toast && (
+        <div
+          className={`fixed top-6 right-6 z-50 px-4 py-3 rounded shadow-lg text-white ${
+            toast.tipo === "exito" ? "bg-green-600" : "bg-red-600"
+          }`}
+        >
+          {toast.texto}
+        </div>
+      )}
     </div>
   );
 }
