@@ -86,17 +86,23 @@ export class BitacoraService {
     }
 
 
-    public static async obtenerBitacorasCliente(idCliente: number): Promise<Bitacora[]> {
-        const bitacoras = await prisma.bitacora.findMany({ 
-            where: { cliente_id: idCliente },
-            orderBy: { createdAt: "desc" }
-        });
+    public static async obtenerBitacorasCliente(idCliente: number): Promise<any[]> {
+    const bitacoras = await prisma.bitacora.findMany({
+        where: { cliente_id: idCliente },
+        orderBy: { createdAt: "desc" },
+        include: {
+        fase_implementacion: true,
+        tipo_servicio: true,
+        sistema: true,
+        equipo: true,
+        },
+    });
 
-        if(bitacoras.length === 0){
-            throw new ResponseDto(404, "No se encontraron bitacoras registradas con el cliente");
-        }
+    if (bitacoras.length === 0) {
+        throw new ResponseDto(404, "No se encontraron bitácoras registradas con el cliente");
+    }
 
-        return bitacoras;
+    return bitacoras;
     }
 
 

@@ -18,13 +18,19 @@ interface TipoServicio {
   tipo_servicio: string;
 }
 
+interface FaseImplementacion {
+  id: number;
+  fase: string;
+}
+
 interface ModalDetalleBitacoraProps {
   isOpen: boolean;
   onClose: () => void;
   bitacora: any | null;
   sistemas: Sistema[];
   equipos: Equipo[];
-  tipo_servicios: TipoServicio[];
+  tipo_servicio: TipoServicio[];
+  fase_implementacion: FaseImplementacion[];
 }
 
 export default function ModalDetalleBitacora({
@@ -33,7 +39,8 @@ export default function ModalDetalleBitacora({
   bitacora,
   sistemas,
   equipos,
-  tipo_servicios,
+  tipo_servicio,
+  fase_implementacion,
 }: ModalDetalleBitacoraProps) {
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
   const [firmaClienteImg, setFirmaClienteImg] = useState<string | null>(null);
@@ -78,7 +85,8 @@ export default function ModalDetalleBitacora({
 
   const sistemaNombre = sistemas.find((s) => s.id === bitacora.sistema_id)?.sistema || "";
   const equipoNombre = equipos.find((e) => e.id === bitacora.equipo_id)?.equipo || "";
-  const tipoServicioNombre = tipo_servicios.find((t) => t.id === bitacora.tipo_servicio_id)?.tipo_servicio || "";
+  const tipoServicioNombre = tipo_servicio.find((t) => t.id === bitacora.tipo_servicio_id)?.tipo_servicio || "";
+  const faseImplementacionNombre = fase_implementacion.find((f) => f.id === bitacora.fase_implementacion_id)?.fase || "";
 
   const campos = [
     { label: "Ticket", value: bitacora.no_ticket },
@@ -108,14 +116,14 @@ export default function ModalDetalleBitacora({
     { label: "Horas Consumidas", value: bitacora.horas_consumidas },
     { label: "Tipo de Horas", value: bitacora.tipo_horas },
     { label: "Responsable", value: bitacora.responsable },
-    { label: "Tipo de Servicio", value: bitacora.tipo_servicio },
+    { label: "Tipo de Servicio", value: tipoServicioNombre},
     ...(sistemaNombre ? [{ label: "Sistema", value: sistemaNombre }] : []),
     ...(equipoNombre ? [{ label: "Equipo", value: equipoNombre }] : []),
     { label: "Modalidad", value: bitacora.modalidad },
     ...(bitacora.nombres_capacitados
       ? [{ label: "Nombres Capacitados", value: bitacora.nombres_capacitados }]
       : []),
-    { label: "Fase de Implementación", value: bitacora.fase_implementacion },
+    { label: "Fase de Implementación", value: faseImplementacionNombre },
   ];
 
   return (
