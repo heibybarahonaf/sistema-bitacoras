@@ -3,7 +3,7 @@ import { FirmaService } from "@/app/services/firmaService";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const idParams = (await params).id;
     
     try {

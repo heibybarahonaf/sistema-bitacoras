@@ -1,6 +1,7 @@
 import { ZodError } from "zod";
-import { ResponseDto } from "../dtos/response.dto";
+import { randomBytes } from 'crypto';
 import { NextResponse } from "next/server";
+import { ResponseDto } from "../dtos/response.dto";
 
 export class GeneralUtils {
 
@@ -38,6 +39,25 @@ export class GeneralUtils {
 
     public static filtrarCamposActualizables<T extends object>(datos: T): Partial<T> {
         return Object.fromEntries(Object.entries(datos).filter(([_, value]) => value !== undefined)) as Partial<T>;
+    }
+
+
+    public static generarCodigo(longitud: number): string {
+        let codigo = '';
+        
+        while (codigo.length < longitud) {
+            const bytes = randomBytes(longitud);
+
+            for (const byte of bytes) {
+                const digito = byte % 10;
+                codigo += digito.toString();
+                if (codigo.length === longitud) break;
+            }
+
+        }
+
+        return codigo;
+
     }
 
 }
