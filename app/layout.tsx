@@ -1,7 +1,10 @@
+"use client";
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/NavBar";
+import { usePathname } from "next/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,16 +16,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Bitácoras POS",
-  description: "Gestión y seguimiento de bitácoras técnicas para POS de Honduras",
-};
+// Rutas que no deben mostrar el layout
+const authRoutes = ['/login', '/register', '/forgot-password'];
 
+export default function RootLayout({ 
+  children 
+}: { 
+  children: React.ReactNode 
+}) {
+  const pathname = usePathname();
+  const isAuthRoute = authRoutes.includes(pathname);
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+  if (isAuthRoute) {
+    return (
+      <html lang="es">
+        <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen`}>
+          {children}
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="es">
-      <body className="min-h-screen flex flex-col">
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen flex flex-col`}>
         <Navbar />
         <main className="flex-1 p-4 pt-20">
           {children}
@@ -34,7 +51,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
-
-
-
-

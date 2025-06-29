@@ -29,10 +29,24 @@ export default function FirmaClientePage() {
         });
         return;
         }
-
-
+        
         const firma = data.results?.[0];
+
+        if (!firma || !firma.id) {
+          Swal.fire({
+            icon: "error",
+            title: "Enlace inválido",
+            text: "El enlace ya expiró o no existe.",
+            confirmButtonText: "OK",
+          }).then(() => {
+            window.location.href = "https://www.posdehonduras.com";
+          });
+          return;
+        }
+
         setFirmaId(firma.id);
+
+        
       } catch (error) {
         console.error("Error al validar token", error);
       } finally {
@@ -44,43 +58,49 @@ export default function FirmaClientePage() {
   }, [token, router]);
 
   const handleSubmit = async () => {
-    if (!sigCanvas.current) {
+  if (!sigCanvas.current) {
     Swal.fire("Error", "El canvas de firma no está listo. Intenta recargar la página.", "error");
     return;
-    }
+  }
 
-    const base64 = sigCanvas.current.getCanvas().toDataURL("image/png");
+  const canvas = sigCanvas.current;
+  
+  if (canvas.isEmpty()) {
+    Swal.fire("Error", "Por favor firme antes de enviar", "warning");
+    return;
+  }
 
-    if (!firmaId || sigCanvas.current?.isEmpty()) {
-      Swal.fire("Error", "Por favor firme antes de enviar", "warning");
-      return;
-    }
+  const base64 = canvas.getCanvas().toDataURL("image/png");
 
-    try {
-      const res = await fetch("/api/firmas/finalizar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: firmaId, firma_base64: base64 }),
+  if (!firmaId) {
+    Swal.fire("Error", "No se encontró un ID válido de firma", "error");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/firmas/finalizar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: firmaId, firma_base64: base64 }),
+    });
+
+    if (res.ok) {
+      Swal.fire({
+        icon: "success",
+        title: "¡Gracias!",
+        text: "Tu firma ha sido registrada.",
+        confirmButtonText: "OK",
+      }).then(() => {
+        window.location.href = "https://www.posdehonduras.com"; //encuesta? o mostrar de una vez
       });
-
-      if (res.ok) {
-        Swal.fire({
-            icon: "success",
-            title: "¡Gracias!",
-            text: "Tu firma ha sido registrada.",
-            confirmButtonText: "OK",
-        }).then(() => {
-            window.location.href = "https://www.posdehonduras.com"; // Redirigir a encuesta
-        });
-        return;
-        } else {
-        Swal.fire("Error", "No se pudo guardar la firma", "error");
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "Error al enviar firma", "error");
+    } else {
+      Swal.fire("Error", "No se pudo guardar la firma", "error");
     }
-  };
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Error", "Error al enviar firma", "error");
+  }
+};
 
   if (loading) return <div className="p-8 text-center">Validando enlace...</div>;
 

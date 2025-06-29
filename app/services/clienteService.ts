@@ -34,7 +34,7 @@ export class ClienteService {
 
 
     public static async obtenerClientePorEmpresa(empresa: string): Promise<Cliente> {
-        const cliente = await prisma.cliente.findFirst({ where: { empresa: empresa }});
+        const cliente = await prisma.cliente.findFirst({ where: { empresa: { contains: empresa, mode: "insensitive" } }});
 
         if(!cliente){
             throw new ResponseDto(404, "Cliente no encontrado");
@@ -81,7 +81,9 @@ export class ClienteService {
             return cliente;
 
         } catch (error) {
+
             throw new ResponseDto(500, "Error al crear el cliente");
+
         }
 
     }
@@ -128,7 +130,9 @@ export class ClienteService {
             return clienteActualizado;
 
         } catch (error) {
+
             throw new ResponseDto(500, "Error al actualizar el cliente");
+
         }
 
     }
@@ -143,10 +147,11 @@ export class ClienteService {
             return clienteEliminado;
 
         } catch (error) {
+
             throw new ResponseDto(500, "Error al eliminar el cliente");
+
         }
 
     }
-
 
 }

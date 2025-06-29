@@ -1,4 +1,20 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { ResponseDto } from "../dtos/response.dto";
+
+export interface ITokenCodigoPayload {
+    correo: string;
+    codigo: string;
+    iat: number;
+    exp: number;
+}
+
+export interface ISesionPayload {
+    correo: string;
+    rol: string;
+    iat: number;
+    exp: number;
+}
 
 export class AuthUtils {
 
@@ -9,6 +25,56 @@ export class AuthUtils {
 
     public static async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
         return await bcrypt.compare(password, hashedPassword);
+    }
+
+    //600
+    public static generarTokenCodigo(correo: string, codigo: string, duracionSegundos: number): string {
+
+        const payload: Omit<ITokenCodigoPayload, "iat" | "exp"> = { correo, codigo };
+        return jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: duracionSegundos });
+
+    }
+
+
+    public static verificarTokenCodigo(token: string): ITokenCodigoPayload {
+
+        try {
+
+            return jwt.verify(token, process.env.JWT_SECRET!) as ITokenCodigoPayload;
+
+        } catch {
+
+            throw new ResponseDto(401, "Código inválido o expirado");
+        
+        }
+        
+    }
+
+    //3600?
+    public static generarTokenSesion(payload: { correo: string; rol: string }, duracionSegundos: number): string {
+
+        const datos: Omit<ISesionPayload, "iat" | "exp"> = {
+            correo: payload.correo,
+            rol: payload.rol,
+        };
+
+        return jwt.sign(datos, process.env.JWT_SECRET!, { expiresIn: duracionSegundos });
+
+    }
+
+
+    public static verificarTokenSesion(token: string): ISesionPayload {
+
+        try {
+
+            return jwt.verify(token, process.env.JWT_SECRET!) as ISesionPayload;
+
+        } catch {
+
+            throw new ResponseDto(401, "Sesión inválida o expirada");
+
+        }
+
     }
 
 }
