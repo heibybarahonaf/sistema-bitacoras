@@ -183,7 +183,7 @@ export default function LoginInterface() {
             });
 
             setTimeout(() => {
-                window.location.href = '/dashboard'; // redirección real
+                window.location.href = '/';
             }, 1500);
 
         } catch {
@@ -217,9 +217,7 @@ export default function LoginInterface() {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
             <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-                <LogIn className="w-8 h-8 text-indigo-600" />
-            </div>
+
             <h1 className="text-2xl font-bold text-gray-900">Inicio de Sesión</h1>
             <p className="text-gray-600 mt-2">
                 {step === 1 ? 'Ingresa tu correo para recibir el código' : 'Completa tu información para ingresar'}
@@ -243,7 +241,7 @@ export default function LoginInterface() {
                     className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
                         errors.correo ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    placeholder="tu@ejemplo.com"
+                    placeholder="correo@gmail.com"
                     disabled={isLoading}
                     />
                 </div>

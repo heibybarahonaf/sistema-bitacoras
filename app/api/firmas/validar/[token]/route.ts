@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/libs/prisma";
 import { v4 as uuidv4 } from "uuid";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
-export async function GET( _req: Request, { params }: { params: { token: string } }) {
+export async function GET( req: Request, { params }: { params: Promise<{ token: string }> }) {
 
     try {
+
+        const tokenI = (await params).token;
         const firma = await prisma.firma.findFirst({
             where: {
-              token: params.token,
+              token: tokenI,
               usada: false,
             },
         });
@@ -23,13 +26,12 @@ export async function GET( _req: Request, { params }: { params: { token: string 
         const ahora = new Date();
         const minutosPasados = (ahora.getTime() - creada.getTime()) / 60000;
 
-        if (minutosPasados > 1) {
+        if (minutosPasados > 120) {
             // Marcar la firma como usada (vencida)
             await prisma.firma.update({
                 where: { id: firma.id },
                 data: { usada: true },
             });
-
             // Crear nueva firma con token y url
             const nuevoToken = uuidv4();
             const nuevaUrl = `${process.env.NEXT_PUBLIC_URL}/firmar/${nuevoToken}`;
@@ -41,7 +43,7 @@ export async function GET( _req: Request, { params }: { params: { token: string 
                     url: nuevaUrl,
                 },
             });
-
+            
             return NextResponse.json({
                 firmada: false,
                 vencida: true,
@@ -52,13 +54,12 @@ export async function GET( _req: Request, { params }: { params: { token: string 
             });
 
         }
-
-        return NextResponse.json({ firmada: firma.usada, vencida: false });
+        
+        return NextResponse.json({ results: [firma], firmada: firma.usada, vencida: false });
       
     } catch (error) {
 
-        console.error(error);
-        return NextResponse.json({ error: "Error al validar firma" }, { status: 500 });
+        return GeneralUtils.generarErrorResponse(error);
 
     }
 

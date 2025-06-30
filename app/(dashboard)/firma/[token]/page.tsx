@@ -31,6 +31,7 @@ export default function FirmaClientePage() {
         }
         
         const firma = data.results?.[0];
+        
 
         if (!firma || !firma.id) {
           Swal.fire({
@@ -78,6 +79,7 @@ export default function FirmaClientePage() {
   }
 
   try {
+
     const res = await fetch("/api/firmas/finalizar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -91,7 +93,7 @@ export default function FirmaClientePage() {
         text: "Tu firma ha sido registrada.",
         confirmButtonText: "OK",
       }).then(() => {
-        window.location.href = "https://www.posdehonduras.com"; //encuesta? o mostrar de una vez
+        window.location.href = "https://www.posdehonduras.com"; // O redirige a la encuesta
       });
     } else {
       Swal.fire("Error", "No se pudo guardar la firma", "error");
