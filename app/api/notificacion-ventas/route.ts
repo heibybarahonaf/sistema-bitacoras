@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../common/dtos/response.dto";
-import { EmailService } from "../../services/emailService";
-import { GeneralUtils } from "../../common/utils/general.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { EmailService } from "@/app/services/emailService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { ConfiguracionService } from "@/app/services/configService";
 import { ClienteService } from "@/app/services/clienteService";
 

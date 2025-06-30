@@ -1,18 +1,18 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { UsuarioService } from "../../../services/usuarioService";
-import { ResponseDto } from "../../../common/dtos/response.dto";
-import { CrearUsuarioDto } from "../../../dtos/usuario.dto";
-import { GeneralUtils } from "../../../common/utils/general.utils";
+import { UsuarioService } from "@/app/services/usuarioService";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { CrearUsuarioDto } from "@/app/dtos/usuario.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 const EditarUsuarioDto = CrearUsuarioDto.omit({ password: true }).partial();
 type EditarUsuarioDto = z.infer<typeof EditarUsuarioDto>;
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const usuario = await UsuarioService.obtenerUsuarioPorId(id);
 
@@ -27,11 +27,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const body = await req.json();
         const parsed = EditarUsuarioDto.safeParse(body);
@@ -52,11 +52,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const usuarioEliminado = await UsuarioService.eliminarUsuario(id);
         

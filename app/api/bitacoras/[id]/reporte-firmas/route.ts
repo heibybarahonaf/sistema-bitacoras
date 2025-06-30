@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { GeneralUtils } from "../../../../common/utils/general.utils";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { FirmaReporteService } from "@/app/services/firmaReporteService";
 import { TipoServicioService } from "@/app/services/tipoServicioService";
 import { BitacoraService } from "@/app/services/bitacoraService";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const bitacora = await BitacoraService.obtenerBitacoraPorId(id);
         const tipo_servicio = await TipoServicioService.obtenerTipoServicioPorId(bitacora.tipo_servicio_id);

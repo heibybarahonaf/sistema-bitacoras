@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { ClienteService } from "../../services/clienteService";
-import { ResponseDto } from "../../common/dtos/response.dto";
-import { CrearClienteDto } from "../../dtos/cliente.dto";
-import { GeneralUtils } from "../../common/utils/general.utils";
+import { ClienteService } from "@/app/services/clienteService";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { CrearClienteDto } from "@/app/dtos/cliente.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function GET(request: Request) {
 

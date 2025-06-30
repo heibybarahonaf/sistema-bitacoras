@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { NextResponse } from 'next/server';
-import { ResponseDto } from '../../../common/dtos/response.dto';
-import { ConfiguracionService } from '../../../services/configService';
+import { ResponseDto } from '@/app/common/dtos/response.dto';
+import { ConfiguracionService } from '@/app/services/configService';
 import { GeneralUtils } from '@/app/common/utils/general.utils';
-import { CrearConfigDto } from "../../../dtos/config.dto";
+import { CrearConfigDto } from "@/app/dtos/config.dto";
 
 const EditarConfigDto = CrearConfigDto.partial();
 type EditarConfigDto = z.infer<typeof EditarConfigDto>;
@@ -17,21 +17,17 @@ export async function GET() {
 
     } catch (error) {
         
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
-
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
+        return GeneralUtils.generarErrorResponse(error);
     }
 
 }
 
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
-
+        
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const body = await req.json();
         const parsed = EditarConfigDto.safeParse(body);

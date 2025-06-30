@@ -1,4 +1,4 @@
-import { jwtVerify, SignJWT } from 'jose';
+import { jwtVerify } from 'jose';
 import { ISesionPayload } from './auth.utils';
 import { ResponseDto } from '../dtos/response.dto';
 

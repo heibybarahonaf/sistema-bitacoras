@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../common/dtos/response.dto";
-import { SistemaService } from "../../services/sistemaService";
-import { GeneralUtils } from "../../common/utils/general.utils";
-import { CrearSistemaDto } from "../../dtos/sistema.dto";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { SistemaService } from "@/app/services/sistemaService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { CrearSistemaDto } from "@/app/dtos/sistema.dto";
 
 export async function GET() {
 
@@ -11,7 +11,7 @@ export async function GET() {
         const sistemas = await SistemaService.obtenerSistemas();
         return NextResponse.json(new ResponseDto(200, "Sistemas obtenidos correctamente", sistemas));
 
-    }catch (error) {
+    } catch (error) {
 
         return GeneralUtils.generarErrorResponse(error);
 

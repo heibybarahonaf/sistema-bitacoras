@@ -69,8 +69,7 @@ export default function CrearEncuestaPage() {
           setPreguntasAsociadas([]);
           setPreguntasDisponibles(preguntasData);
         }
-      } catch (error) {
-        console.error("Error al cargar datos iniciales", error);
+      } catch {
         setMensaje("Error al cargar datos iniciales");
       }
     };

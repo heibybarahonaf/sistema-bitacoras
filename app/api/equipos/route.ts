@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../common/dtos/response.dto";
-import { EquipoService } from "../../services/equipoService";
-import { GeneralUtils } from "../../common/utils/general.utils";
-import { CrearEquipoDto } from "../../dtos/equipo.dto";
-import { obtenerPayloadSesion } from "../../common/utils/session.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { EquipoService } from "@/app/services/equipoService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { CrearEquipoDto } from "@/app/dtos/equipo.dto";
+import { obtenerPayloadSesion } from "@/app/common/utils/session.utils";
 
 export async function GET() {
 

@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import FormNuevaBitacora from "@/components/ModalBitacora";
-import ModalPago from "@/components/ModalPago";
-import { Eye, Notebook, Download } from "lucide-react";
-import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
 import Swal from "sweetalert2";
 import { Bitacora } from "@prisma/client";
+import ModalPago from "@/components/ModalPago";
+import React, { useEffect, useState } from "react";
+import { Eye, Notebook, Download } from "lucide-react";
+import FormNuevaBitacora from "@/components/ModalBitacora";
+import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
 
 interface Cliente {
   id: number;
@@ -49,7 +49,7 @@ const BuscarCliente: React.FC = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [filtro, setFiltro] = useState("");
   const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
-  const [bitacoras, setBitacoras] = useState<any[]>([]);
+  const [bitacoras, setBitacoras] = useState<Bitacora[]>([]);
   const [loadingBitacoras, setLoadingBitacoras] = useState(false);
   const [isDownloading, setIsDownloading] = useState<number | null>(null);
   const [showNewBitacora, setShowNewBitacora] = useState(false);
@@ -224,7 +224,7 @@ const BuscarCliente: React.FC = () => {
       window.URL.revokeObjectURL(url);
 
       mostrarAlertaExito("PDF descargado exitosamente");
-    } catch (error) {
+    } catch {
       mostrarAlertaError("Error de conexión al generar el PDF");
     } finally {
       setIsDownloading(null);

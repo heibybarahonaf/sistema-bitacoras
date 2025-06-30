@@ -1,8 +1,8 @@
 "use client";
 
+import Swal from 'sweetalert2';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Swal from 'sweetalert2';
 import type { ISesionPayload } from '../app/common/utils/auth.utils';
 
 export function useAuth() {
@@ -42,7 +42,7 @@ export function useAuth() {
             });
 
             router.replace('/login');
-            
+
         } finally {
           setLoading(false);
         }

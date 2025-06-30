@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/libs/prisma";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function GET( _req: Request, { params }: { params: Promise<{ id: string }> }) {
-    const idP = (await params).id;
-    const id = Number(idP);
-
-    if (isNaN(id)) {
-        return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-    }
-
+    
     try {
+        const idP = (await params).id;
+        const id = GeneralUtils.validarIdParam(idP);
         const firma = await prisma.firma.findUnique({
             where: { id },
         });
@@ -19,7 +16,6 @@ export async function GET( _req: Request, { params }: { params: Promise<{ id: st
 
     } catch (error) {
 
-        console.error("Error verificando firma:", error);
         return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
 
     }

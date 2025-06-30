@@ -6,7 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   User, Users, NotebookText, BarChart, LogOut,
-  ClipboardList, Settings, Cpu, HardDrive, Receipt, MonitorDot
+  ClipboardList, Settings, HardDrive, Receipt, MonitorDot
 } from "lucide-react";
 
 export default function Navbar() {
@@ -19,32 +19,39 @@ export default function Navbar() {
   const isActive = (path: string) => pathname === path;
   
   const menuItems = [
-    { href: "/usuarios", label: "Usuarios", icon: User },
     { href: "/clientes", label: "Clientes", icon: Users },
     { href: "/bitacoras", label: "Bitácoras", icon: NotebookText },
-    { href: "/sistemas", label: "Sistemas", icon: HardDrive },
-    { href: "/equipos", label: "Equipos", icon: MonitorDot },
     { href: "/pagos", label: "Pagos", icon: Receipt },
+    { href: "/equipos", label: "Equipos", icon: MonitorDot },
+    { href: "/sistemas", label: "Sistemas", icon: HardDrive },
+    { href: "/usuarios", label: "Usuarios", icon: User },
     { href: "/reportes", label: "Reportes", icon: BarChart },
     { href: "/encuestas", label: "Encuestas", icon: ClipboardList },
     { href: "/configuracion", label: "Configuración", icon: Settings }
   ];
 
   useEffect(() => {
-  const obtenerUsuario = async () => {
-    try {
-      const res = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        setUserName("@"+data.results?.[0] || "@j");
-      }
-    } catch (error) {
-      console.error("Error al obtener nombre del usuario:", error);
-    }
-  };
+    const obtenerUsuario = async () => {
 
-  obtenerUsuario();
-}, []);
+      try {
+
+        const res = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
+
+        if (res.ok) {
+          const data = await res.json();
+          setUserName("@"+data.results?.[0] || "@j");
+        }
+
+      } catch (error) {
+
+        console.error("Error al obtener nombre del usuario:", error);
+
+      }
+
+    };
+
+    obtenerUsuario();
+  }, []);
 
   const handleLogout = async () => {
 

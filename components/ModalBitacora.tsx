@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
-import SignatureCanvas from "react-signature-canvas";
 import Swal from "sweetalert2";
+import SignatureCanvas from "react-signature-canvas";
+import React, { useEffect, useState, useRef } from "react";
 
 interface FormNuevaBitacoraProps {
   clienteId: number;
@@ -199,8 +199,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         setUrlFirmaRemota(firma.url);
         setEsperandoFirmaCliente(true);
       }
-    } catch (error) {
-      console.error("Error generando nuevo enlace de firma:", error);
+    } catch {
       Swal.fire("Error", "No se pudo generar un nuevo enlace de firma.", "error");
     }
   };

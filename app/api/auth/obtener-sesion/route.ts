@@ -1,8 +1,8 @@
 export const runtime = 'nodejs'; 
 
 import { NextRequest, NextResponse } from 'next/server';
-import { obtenerPayloadSesion } from '../../../common/utils/session.utils';
-import { GeneralUtils } from '../../../common/utils/general.utils';
+import { obtenerPayloadSesion } from '@/app/common/utils/session.utils';
+import { GeneralUtils } from '@/app/common/utils/general.utils';
 import { UsuarioService } from '@/app/services/usuarioService';
 import { ResponseDto } from '@/app/common/dtos/response.dto';
 

@@ -1,18 +1,18 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { GeneralUtils } from "../../../common/utils/general.utils";
-import { ResponseDto } from "../../../common/dtos/response.dto";
-import { SistemaService } from "../../../services/sistemaService";
-import { CrearSistemaDto } from "../../../dtos/sistema.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { SistemaService } from "@/app/services/sistemaService";
+import { CrearSistemaDto } from "@/app/dtos/sistema.dto";
 
 const EditarSistemaDto = CrearSistemaDto.partial();
 type EditarSistemaDto = z.infer<typeof EditarSistemaDto>;
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const sistema = await SistemaService.obtenerSistemaPorId(id);
 
@@ -27,11 +27,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const body = await req.json();
         const parsed = EditarSistemaDto.safeParse(body);
@@ -52,11 +52,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const sistemaEliminado = await SistemaService.eliminarSistema(id);
         

@@ -1,18 +1,18 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../../common/dtos/response.dto";
-import { PagoService } from "../../../services/pagoService";
-import { CrearPagoDto } from "../../../dtos/pago.dto";
-import { GeneralUtils } from "../../../common/utils/general.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { PagoService } from "@/app/services/pagoService";
+import { CrearPagoDto } from "@/app/dtos/pago.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 const EditarPagoDto = CrearPagoDto.partial();
 type EditarPagoDto = z.infer<typeof EditarPagoDto>;
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const pago = await PagoService.obtenerPagoPorId(id);
 

@@ -1,17 +1,45 @@
-import path from "path";
 import fs from "fs";
+import path from "path";
 import { jsPDF } from "jspdf";
 import { prisma } from "../libs/prisma";
-import { BitacoraService } from "./bitacoraService";
+import { Firma, Bitacora, Prisma } from "@prisma/client";
 
 let tipo_servicio = "";
+
+type BitacoraConRelaciones = Prisma.BitacoraGetPayload<{
+  include: {
+    cliente: true;
+    usuario: true;
+    tipo_servicio: true;
+    servicio: true;
+    equipo: true;
+    sistema: true;
+    firmaCliente: true;
+    firmaTecnico: true;
+    capacitados: true;
+  };
+}>;
 
 export class FirmaReporteService {
   
     public static async generarReporteFirma(bitacoraId: number, tipo_servicio_in: string): Promise<Buffer> {
         tipo_servicio = tipo_servicio_in;
 
-        const bitacora = await BitacoraService.obtenerBitacorasConFirma(bitacoraId);
+        const bitacora = await prisma.bitacora.findUnique({
+            where: { id: bitacoraId },
+            include: {
+                cliente: true,
+                usuario: true,
+                tipo_servicio: true,
+                equipo: true,
+                sistema: true,
+                firmaCliente: true,
+                firmaTecnico: true,
+            },
+        }) as BitacoraConRelaciones;
+        if (!bitacora) {
+            throw new Error("Bitácora no encontrada");
+        }
         const doc = new jsPDF('p', 'mm', 'a4');
         this.configurarEncabezado(doc, bitacora);
         
@@ -24,14 +52,14 @@ export class FirmaReporteService {
 
         const firmaTecnico = bitacora.firmaTecnico_id ? await prisma.firma.findUnique({ where: { id: bitacora.firmaTecnico_id } }): null;        
         const firmaCliente = bitacora.firmaCLiente_id ? await prisma.firma.findUnique({ where: { id: bitacora.firmaCLiente_id } }): null;
-        currentY = await this.renderFirmas(doc, currentY, firmaTecnico, firmaCliente, bitacora);
+        await this.renderFirmas(doc, currentY, firmaTecnico, firmaCliente, bitacora);
         
         return Buffer.from(doc.output('arraybuffer'));
 
     }
 
 
-    private static configurarEncabezado(doc: jsPDF, bitacora: any) {
+    private static configurarEncabezado(doc: jsPDF, bitacora: Bitacora) {
       
         try {
             const logoPath = path.join(process.cwd(), "public", "logo-PosdeHonduras.png");
@@ -43,7 +71,7 @@ export class FirmaReporteService {
                 doc.addImage(imgData, "PNG", 160, 18, 30, 15);
             }
 
-        } catch (error) {
+        } catch {
             console.log("Logo no encontrado, continuando sin logo");
         }
 
@@ -64,7 +92,7 @@ export class FirmaReporteService {
     }
 
 
-    private static renderInfoCliente(doc: jsPDF, startY: number, bitacora: any): number {
+    private static renderInfoCliente(doc: jsPDF, startY: number, bitacora: BitacoraConRelaciones): number {
         let currentY = startY;
         
         doc.setFontSize(14);
@@ -146,7 +174,7 @@ export class FirmaReporteService {
     }
 
 
-    private static renderInfoBitacora(doc: jsPDF, startY: number, bitacora: any): number {
+    private static renderInfoBitacora(doc: jsPDF, startY: number, bitacora: BitacoraConRelaciones): number {
         let currentY = startY;
         const leftX = 20;
         const rightX = 110;
@@ -293,7 +321,7 @@ export class FirmaReporteService {
     }
 
 
-    private static async renderFirmas(doc: jsPDF, startY: number, firmaTecnico: any, firmaCliente: any, bitacora: any): Promise<number> {
+    private static async renderFirmas(doc: jsPDF, startY: number, firmaTecnico: Firma | null, firmaCliente: Firma | null, bitacora: BitacoraConRelaciones): Promise<number> {
         let currentY = startY;
         
         doc.setFontSize(14);
@@ -318,7 +346,7 @@ export class FirmaReporteService {
                 
                 doc.addImage(firmaBase64, 'PNG', leftX, currentY, firmaWidth, firmaHeight);
 
-            } catch (error) {
+            } catch {
 
                 doc.setFontSize(20);
                 doc.setFont("helvetica", "normal");
@@ -345,7 +373,7 @@ export class FirmaReporteService {
                 
                 doc.addImage(firmaBase64, 'PNG', rightX, currentY, firmaWidth, firmaHeight);
 
-            } catch (error) {
+            } catch {
 
                 doc.setFontSize(20);
                 doc.setFont("helvetica", "normal");
@@ -415,14 +443,14 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "normal");
 
         let fechaTecnico = firmaTecnico?.firma_base64;
-        if(fechaTecnico && fechaTecnico.length > 10) {
+        if (firmaTecnico && fechaTecnico && fechaTecnico.length > 10) {
             fechaTecnico = `${new Date(firmaTecnico.createdAt).toLocaleDateString('es-ES')} - ${new Date(firmaTecnico.createdAt).toLocaleTimeString('es-ES')}`;
         } else {
             fechaTecnico = " - ";
         }
 
         let fechaCliente = firmaCliente?.firma_base64;
-        if(fechaCliente && fechaCliente.length > 10) {
+        if (fechaCliente && fechaCliente.length > 10 && firmaTecnico && firmaTecnico.createdAt) {
             fechaCliente = `${new Date(firmaTecnico.createdAt).toLocaleDateString('es-ES')} - ${new Date(firmaTecnico.createdAt).toLocaleTimeString('es-ES')}`;
         } else {
             fechaCliente = " - ";

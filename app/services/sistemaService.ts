@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { Sistema } from "@prisma/client";
 import { prisma } from "../libs/prisma";
-import { ResponseDto } from "../common/dtos/response.dto";
+import { Sistema } from "@prisma/client";
 import { CrearSistemaDto } from "../dtos/sistema.dto";
+import { ResponseDto } from "../common/dtos/response.dto";
 import { GeneralUtils } from "../common/utils/general.utils";
 
 const EditarSistemaDto = CrearSistemaDto.partial();
@@ -69,7 +69,7 @@ export class SistemaService {
 
             return sistemaCreado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al crear el sistema");
 
@@ -104,7 +104,7 @@ export class SistemaService {
 
             return sistemaActualizado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al actualizar el sistema");
 
@@ -123,7 +123,7 @@ export class SistemaService {
 
             return sistemaEliminado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al eliminar el sistema");
 

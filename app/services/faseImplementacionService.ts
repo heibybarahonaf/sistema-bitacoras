@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { Fase_Implementacion } from "@prisma/client";
 import { prisma } from "../libs/prisma";
+import { Fase_Implementacion } from "@prisma/client";
 import { ResponseDto } from "../common/dtos/response.dto";
-import { CrearFaseImplementacionDto } from "../dtos/faseImplementacion.dto";
 import { GeneralUtils } from "../common/utils/general.utils";
+import { CrearFaseImplementacionDto } from "../dtos/faseImplementacion.dto";
 
 const EditarFaseImplementacionDto = CrearFaseImplementacionDto.partial();
 type EditarFaseImplementacionDto = z.infer<typeof EditarFaseImplementacionDto>;
@@ -60,7 +60,7 @@ export class FaseImplementacionService {
 
             return faseCreada;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al crear la fase de implementacion");
 
@@ -95,7 +95,7 @@ export class FaseImplementacionService {
 
             return faseActualizada;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al actualizar la fase de implementacion");
 
@@ -114,7 +114,7 @@ export class FaseImplementacionService {
 
             return faseEliminada;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al eliminar la fase de implementacion");
 

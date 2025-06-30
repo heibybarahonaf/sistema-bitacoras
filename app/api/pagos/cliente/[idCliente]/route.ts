@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../../../common/dtos/response.dto";
-import { PagoService } from "../../../../services/pagoService";
-import { GeneralUtils } from "../../../../common/utils/general.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { PagoService } from "@/app/services/pagoService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
-export async function GET(req: Request, { params }: { params: { idCliente: string } }) {
-    const idParams = (await params).idCliente;
-
+export async function GET(req: Request, { params }: { params: Promise<{ idCliente: string }> }) {
+    
     try {
-
+        
+        const idParams = (await params).idCliente;
         const id = GeneralUtils.validarIdParam(idParams);
         const pagosCliente = await PagoService.obtenerPagosPorCliente(id);
 

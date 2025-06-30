@@ -1,24 +1,20 @@
 import { NextResponse } from 'next/server';
-import { ResponseDto } from '../../common/dtos/response.dto';
-import { EncuestaService } from '../../services/encuestaService';
-import { CrearEncuestaDto } from '../../dtos/encuesta.dto';
-import { GeneralUtils } from '../../common/utils/general.utils';
+import { ResponseDto } from '@/app/common/dtos/response.dto';
+import { EncuestaService } from '@/app/services/encuestaService';
+import { CrearEncuestaDto } from '@/app/dtos/encuesta.dto';
+import { GeneralUtils } from '@/app/common/utils/general.utils';
 
 export async function GET() {
 
     try {
 
-        //const encuestas = await EncuestaService.obtenerEncuestas();
         const encuestas = await EncuestaService.obtenerEncuestasPreguntas();
         return NextResponse.json(new ResponseDto(200, "Encuestas recuperados con éxito", [encuestas]));
 
     } catch (error) {
         
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
+        return GeneralUtils.generarErrorResponse(error);
 
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
     }
 
 }
@@ -37,11 +33,9 @@ export async function POST(req: Request) {
         return NextResponse.json(new ResponseDto(201, "Encuesta creada con éxito", [encuestaCreada]));
 
     } catch (error) {
-        if (error instanceof ResponseDto) {
-            return NextResponse.json(error, { status: error.code });
-        }
+        
+        return GeneralUtils.generarErrorResponse(error);
 
-        return NextResponse.json(new ResponseDto(500, "Error interno del servidor"));
     }
 
 }

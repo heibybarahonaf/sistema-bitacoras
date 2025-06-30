@@ -4,10 +4,10 @@ import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-    const idParams = (await params).id;
     
     try {
-            
+        
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const firma = await FirmaService.obtenerFirmaPorId(id);
 
