@@ -1,3 +1,5 @@
+export const runtime = 'nodejs';
+
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { UsuarioService } from "../../../services/usuarioService";
@@ -42,10 +44,10 @@ export async function POST(req: Request) {
 
         const tokenSesion = AuthUtils.generarTokenSesion({ correo: usuario.correo, rol: usuario.rol }, 3600);
         const response = NextResponse.json(new ResponseDto(200, "Inicio de sesión exitoso"));
-
+        
         response.cookies.set("session_token", tokenSesion, {
             httpOnly: true,
-            secure: true,
+            secure: false,
             maxAge: 3600, 
             path: "/",
             sameSite: "lax",

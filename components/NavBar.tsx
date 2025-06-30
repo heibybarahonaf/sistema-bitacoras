@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   User, Users, NotebookText, BarChart, LogOut,
   ClipboardList, Settings, Cpu, HardDrive, Receipt, MonitorDot
@@ -11,11 +11,13 @@ import {
 
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const userName = "@Usuario";
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [userName, setUserName] = useState("@");
   const pathname = usePathname();
-
+  const router = useRouter();
+  
   const isActive = (path: string) => pathname === path;
-
+  
   const menuItems = [
     { href: "/usuarios", label: "Usuarios", icon: User },
     { href: "/clientes", label: "Clientes", icon: Users },
@@ -28,6 +30,53 @@ export default function Navbar() {
     { href: "/configuracion", label: "Configuración", icon: Settings }
   ];
 
+  useEffect(() => {
+  const obtenerUsuario = async () => {
+    try {
+      const res = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setUserName("@"+data.results?.[0] || "@j");
+      }
+    } catch (error) {
+      console.error("Error al obtener nombre del usuario:", error);
+    }
+  };
+
+  obtenerUsuario();
+}, []);
+
+  const handleLogout = async () => {
+
+    try {
+      setIsLoggingOut(true);
+      
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', 
+      });
+
+      if (response.ok) {
+
+        setSidebarOpen(false);
+        router.push('/login');
+
+      } else {
+
+        console.error('Error al cerrar sesión');
+
+      }
+
+    } catch (error) {
+
+      console.error('Error al cerrar sesión:', error);
+
+    } finally {
+      setIsLoggingOut(false);
+    }
+
+  };
+
   return (
     <>
       {/* Barra superior */}
@@ -35,18 +84,15 @@ export default function Navbar() {
         <div className="flex items-center space-x-4">
           <button
             className="text-white text-2xl"
-            onClick={() => setSidebarOpen(!sidebarOpen)} // ← toggle abierto/cerrado
+            onClick={() => setSidebarOpen(!sidebarOpen)}
           >
             ☰
           </button>
-
           <Link href="/">
             <Image src="/logo-white.png" alt="Logo POS" width={40} height={40} className="cursor-pointer" />
           </Link>
-
           <span className="text-lg font-semibold hidden sm:block">SISTEMA DE BITÁCORAS</span>
         </div>
-
         <div className="flex items-center space-x-4">
           <span className="text-sm hidden sm:inline">{userName}</span>
         </div>
@@ -70,12 +116,11 @@ export default function Navbar() {
           {menuItems.map((item) => {
             const IconComponent = item.icon;
             const active = isActive(item.href);
-
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  onClick={() => setSidebarOpen(false)} // ← se cierra al navegar
+                  onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     active
                       ? "bg-red-700 text-white border-l-4 border-red-500 shadow-md"
@@ -91,11 +136,19 @@ export default function Navbar() {
             );
           })}
         </ul>
-
+        
         <div className="absolute bottom-4 right-4">
-          <button className="flex items-center gap-2 text-sm hover:text-red-500 transition-colors duration-200">
+          <button 
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className={`flex items-center gap-2 text-sm transition-colors duration-200 ${
+              isLoggingOut 
+                ? "text-gray-400 cursor-not-allowed" 
+                : "hover:text-red-500"
+            }`}
+          >
             <LogOut className="w-4 h-4" />
-            Salir
+            {isLoggingOut ? "Saliendo..." : "Salir"}
           </button>
         </div>
       </aside>

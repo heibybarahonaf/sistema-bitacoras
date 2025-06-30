@@ -6,10 +6,10 @@ import { EmailService } from "../../../services/emailService";
 import { UsuarioService } from "@/app/services/usuarioService";
 
 export async function POST(req: Request) {
-    const { correo } = await req.json();
-
+    
     try {
-
+        
+        const { correo } = await req.json();
         if (!correo) {
             throw new ResponseDto(400, "El Correo es requerido");
         }
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
         const response = NextResponse.json(new ResponseDto(200, "Código enviado con éxito"));
         response.cookies.set("codigo_token", token, {
             httpOnly: true,
-            secure: true,
+            secure: false,
             maxAge: 200,
             path: "/",
             sameSite: "lax",

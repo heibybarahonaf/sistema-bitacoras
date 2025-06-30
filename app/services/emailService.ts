@@ -96,7 +96,7 @@ export class EmailService {
                         </div>
                         <div style="background-color: #f8f9fa; padding: 20px 30px; text-align: center; border-top: 1px solid #e2e8f0;">
                         <p style="margin: 0; color: #a0aec0; font-size: 12px;">
-                            © 2025 POS de Honduras. Todos los derechos reservados.
+                            © {new Date().getFullYear()} POS de Honduras. Todos los derechos reservados.
                         </p>
                         </div>
                     </div>
@@ -246,7 +246,7 @@ export class EmailService {
                                 Sistema POS - Notificaciones Automáticas
                             </p>
                             <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                                © 2025 POS de Honduras. Todos los derechos reservados.
+                                © {new Date().getFullYear()} POS de Honduras. Todos los derechos reservados.
                             </p>
                         </div>
                     </div>

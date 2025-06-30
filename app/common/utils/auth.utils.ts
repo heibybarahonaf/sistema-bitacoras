@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import bcrypt from 'bcryptjs'
 import jwt from "jsonwebtoken";
 import { ResponseDto } from "../dtos/response.dto";
 
@@ -27,6 +27,7 @@ export class AuthUtils {
         return await bcrypt.compare(password, hashedPassword);
     }
 
+    
     //600
     public static generarTokenCodigo(correo: string, codigo: string, duracionSegundos: number): string {
 
@@ -52,22 +53,21 @@ export class AuthUtils {
 
     //3600?
     public static generarTokenSesion(payload: { correo: string; rol: string }, duracionSegundos: number): string {
-
         const datos: Omit<ISesionPayload, "iat" | "exp"> = {
             correo: payload.correo,
             rol: payload.rol,
         };
 
-        return jwt.sign(datos, process.env.JWT_SECRET!, { expiresIn: duracionSegundos });
-
+        return jwt.sign(datos, process.env.JWT_SECRET!, { expiresIn: duracionSegundos }); 
     }
-
+    
 
     public static verificarTokenSesion(token: string): ISesionPayload {
 
         try {
 
-            return jwt.verify(token, process.env.JWT_SECRET!) as ISesionPayload;
+            const decoded = jwt.verify(token, process.env.JWT_SECRET!) as ISesionPayload; 
+            return decoded;
 
         } catch {
 

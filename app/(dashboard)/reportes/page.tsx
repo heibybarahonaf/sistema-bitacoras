@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart, X } from "lucide-react";
 import Swal from "sweetalert2";
-import CardReporte from "../../components/CardReporte";
+import CardReporte from "../../../components/CardReporte";
 
 interface BitacoraData {
   fecha: string;

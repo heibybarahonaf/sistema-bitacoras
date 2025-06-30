@@ -5,8 +5,8 @@ import { ResponseDto } from "../dtos/response.dto";
 export async function obtenerPayloadSesion(): Promise<ISesionPayload> {
 
     try {
-        const cookieStore = cookies();
-        const token = (await cookieStore).get("session_token")?.value;
+        const cookieStore = await cookies();
+        const token = cookieStore.get("session_token")?.value;
 
         if (!token) {
             throw new ResponseDto(401, "Usuario no autenticado, Inicia Sesión!");
