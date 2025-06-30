@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../../common/dtos/response.dto";
-import { ConfiguracionService } from "../../../services/configService";
-import { GeneralUtils } from "../../../common/utils/general.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { ConfiguracionService } from "@/app/services/configService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function POST(req: Request) {
 

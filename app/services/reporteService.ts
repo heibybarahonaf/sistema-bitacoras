@@ -1,9 +1,9 @@
-import path from "path";
 import fs from "fs";
-import autoTable from "jspdf-autotable";
+import path from "path";
 import { jsPDF } from "jspdf";
-import { Bitacora, Sistema, Equipo, Usuario, Cliente, Tipo_Servicio } from "@prisma/client";
+import autoTable from "jspdf-autotable";
 import { ConfiguracionService } from "../services/configService";
+import { Bitacora, Sistema, Equipo, Usuario, Cliente, Tipo_Servicio } from "@prisma/client";
 
 export type BitacoraCompleta = Bitacora & {
     sistema?: Sistema | null;
@@ -11,6 +11,19 @@ export type BitacoraCompleta = Bitacora & {
     cliente?: Cliente | null;
     usuario?: Usuario | null;
     tipo_servicio?: Tipo_Servicio | null;
+};
+
+type DatosExtrasReporte = {
+    tecnico?: string;
+    cliente?: string;
+    responsable?: string;
+    rtn?: string;
+    direccion?: string;
+    telefono_cliente?: string;
+    correoCliente?: string;
+    correoUsuario?: string;
+    telefono_usuario?: string;
+    zona?: string;
 };
 
 const campo_vacio = "-";
@@ -21,22 +34,9 @@ function generarReporte(
     fechaInicio: string,
     fechaFinal: string,
     columnas: string[],
-    datos: (any)[][],
+    datos: (string | number | null)[][],
     valores_final?: { total?: string; comision?: string },
-    nombresExtras?: { 
-        tecnico?: string; 
-        cliente?: string;
-        // cliente
-        responsable?: string;
-        rtn?: string;
-        direccion?: string;
-        telefono_cliente?: string;
-        correoCliente?: string;
-        // tecnico
-        correoUsuario?: string;
-        telefono_usuario?: string;
-        zona?: string;
-    }
+    nombresExtras?: DatosExtrasReporte
 ): jsPDF {
     const doc = new jsPDF('l', 'mm', 'a4');
     const logoPath = path.join(process.cwd(), "public", "logo-PosdeHonduras.png");
@@ -74,7 +74,9 @@ function generarReporte(
         headStyles: { fillColor: [165, 42, 42] },
     });
 
-    let finalY = (doc as any).lastAutoTable.finalY + 10;
+    let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10; 
+
+    //let finalY = (doc as any).lastAutoTable.finalY + 10;
     const pageHeight = doc.internal.pageSize.height;
     const espacioFooter = 18; 
 
@@ -110,16 +112,16 @@ export function generarPDFBitacoras(bitacoras: BitacoraCompleta[], fechaInicio: 
 
     const datos = bitacoras.map(b => [
         formatearFecha(b.fecha_servicio),
-        b.no_ticket,
+        b.no_ticket || campo_vacio,
         b.cliente?.empresa || `ID: ${b.cliente_id}`,
         b.usuario?.nombre || `ID: ${b.usuario_id}`,
         formatearHora(b.hora_llegada),
         formatearHora(b.hora_salida),
         b.tipo_servicio?.descripcion || campo_vacio,
-        b.modalidad,
-        b.horas_consumidas,
-        b.tipo_horas,
-        b.descripcion_servicio,
+        b.modalidad || campo_vacio,
+        b.horas_consumidas || campo_vacio,
+        b.tipo_horas || campo_vacio,
+        b.descripcion_servicio || campo_vacio,
     ]);
 
     const doc = generarReporte("Reporte de Bitácoras", bitacoras, fechaInicio, fechaFinal, columnas, datos);
@@ -148,17 +150,17 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
 
         return [
             formatearFecha(b.fecha_servicio),
-            b.no_ticket,
-            b.cliente?.empresa || `ID: ${b.cliente_id}`,
-            b.tipo_servicio?.descripcion,
-            b.modalidad,
+            b.no_ticket ?? campo_vacio,
+            b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
+            b.tipo_servicio?.descripcion ?? campo_vacio,
+            b.modalidad ?? campo_vacio,
             horas,
-            b.tipo_horas,
+            b.tipo_horas ?? campo_vacio,
             monto.toFixed(2),
             comision.toFixed(2),
-            b.descripcion_servicio
-        ];
-    });
+            b.descripcion_servicio ?? campo_vacio
+        ].map(v => v === undefined ? null : v);
+    }) as (string | number | null)[][];
 
     const comision = total * (porcentajeComision / 100);
     const usuario = bitacoras[0]?.usuario ?? null;
@@ -200,7 +202,7 @@ export function generarPDFPorCliente(bitacoras: BitacoraCompleta[], fechaInicio:
         b.tipo_horas,
         b.usuario?.nombre || campo_vacio,
         b.descripcion_servicio
-    ]);
+    ].map(v => v === undefined ? null : v));
 
     const cliente = bitacoras.length > 0 ? bitacoras[0].cliente : null;
     const doc = generarReporte(
@@ -235,7 +237,7 @@ function formatearHora(fecha: Date) {
 }
 
 
-function renderInfoTecnico(doc: jsPDF, y: number, info: any): number {
+function renderInfoTecnico(doc: jsPDF, y: number, info: DatosExtrasReporte): number {
     const leftX = 10;
     const rightX = 150;
     const offset = 2;
@@ -274,7 +276,7 @@ function renderInfoTecnico(doc: jsPDF, y: number, info: any): number {
 }
 
 
-function renderInfoCliente(doc: jsPDF, y: number, info: any): number {
+function renderInfoCliente(doc: jsPDF, y: number, info: DatosExtrasReporte): number {
     const leftX = 10;
     const rightX = 150;
     const offset = 2; 

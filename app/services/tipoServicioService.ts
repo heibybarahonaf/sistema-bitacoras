@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { Tipo_Servicio } from "@prisma/client";
 import { prisma } from "../libs/prisma";
+import { Tipo_Servicio } from "@prisma/client";
 import { ResponseDto } from "../common/dtos/response.dto";
-import { CrearTipoServicioDto } from "../dtos/tipoServicio.dto";
 import { GeneralUtils } from "../common/utils/general.utils";
+import { CrearTipoServicioDto } from "../dtos/tipoServicio.dto";
 
 const EditarTipoServicioDto = CrearTipoServicioDto.partial();
 type EditarTipoServicioDto = z.infer<typeof EditarTipoServicioDto>;
@@ -58,7 +58,7 @@ export class TipoServicioService {
 
             return tipoCreado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al crear el tipo de servicio");
 
@@ -93,7 +93,7 @@ export class TipoServicioService {
 
             return tipoActualizado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al actualizar el tipo de servicio");
 
@@ -112,7 +112,7 @@ export class TipoServicioService {
 
             return tipoEliminado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al eliminar el tipo de servicio");
 

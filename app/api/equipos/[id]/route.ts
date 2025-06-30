@@ -1,18 +1,18 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { GeneralUtils } from "../../../common/utils/general.utils";
-import { ResponseDto } from "../../../common/dtos/response.dto";
-import { EquipoService } from "../../../services/equipoService";
-import { CrearEquipoDto } from "../../../dtos/equipo.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { EquipoService } from "@/app/services/equipoService";
+import { CrearEquipoDto } from "@/app/dtos/equipo.dto";
 
 const EditarEquipoDto = CrearEquipoDto.partial();
 type EditarEquipoDto = z.infer<typeof EditarEquipoDto>;
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-   const idParams = (await params).id;
-
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const equipo = await EquipoService.obtenerEquipoPorId(id);
 
@@ -27,11 +27,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const body = await req.json();
         const parsed = EditarEquipoDto.safeParse(body);
@@ -52,11 +52,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const equipoEliminado = await EquipoService.eliminarEquipo(id);
 

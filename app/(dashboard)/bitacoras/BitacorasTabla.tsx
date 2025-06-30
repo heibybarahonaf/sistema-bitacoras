@@ -1,8 +1,16 @@
 "use client";
 import React, { useEffect, useState } from "react";
 
+type BitacoraTabla = {
+  id: number;
+  no_ticket: string;
+  fecha_servicio: string; 
+  tipo_servicio: string;
+  descripcion_servicio: string;
+};
+
 export function BitacorasTabla({ clienteId }: { clienteId: number }) {
-  const [bitacoras, setBitacoras] = useState<any[]>([]);
+  const [bitacoras, setBitacoras] = useState<BitacoraTabla[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

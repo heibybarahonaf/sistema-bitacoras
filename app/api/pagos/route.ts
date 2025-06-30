@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { ResponseDto } from '../../common/dtos/response.dto';
-import { PagoService } from '../../services/pagoService';
-import { CrearPagoDto } from '../../dtos/pago.dto';
-import { GeneralUtils } from '../../common/utils/general.utils';
+import { ResponseDto } from '@/app/common/dtos/response.dto';
+import { PagoService } from '@/app/services/pagoService';
+import { CrearPagoDto } from '@/app/dtos/pago.dto';
+import { GeneralUtils } from '@/app/common/utils/general.utils';
 
 export async function GET() {
 

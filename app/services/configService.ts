@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { Configuracion } from "@prisma/client";
-import { ResponseDto } from "../common/dtos/response.dto";
 import { prisma } from "../libs/prisma";
+import { Configuracion } from "@prisma/client";
 import { CrearConfigDto } from "../dtos/config.dto";
+import { ResponseDto } from "../common/dtos/response.dto";
 import { GeneralUtils } from "../common/utils/general.utils";
 
 const EditarConfigDto = CrearConfigDto.partial();
@@ -38,7 +38,7 @@ export class ConfiguracionService {
 
             return configuracionActualizada;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al actualizar la configuracion");
             

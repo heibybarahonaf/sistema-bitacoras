@@ -12,6 +12,15 @@ interface Equipo {
   activo: boolean;
 }
 
+interface ErrorDeValidacion {
+  code: number;
+  message?: string;
+  results?: {
+    campo: string;
+    mensajes: string[];
+  }[];
+}
+
 // Componente de carga
 const LoadingSpinner = () => (
   <div className="flex flex-col items-center justify-center py-12">
@@ -40,10 +49,10 @@ export default function EquiposPage() {
   }, [isEquipo]);
 
   // Mostrar errores de validación
-  function mostrarErroresValidacion(data: any) {
-    if (data.code !== 200 && data.code !== 201 && data.results?.length > 0) {
-      const erroresHtml = data.results
-        .map((error: any) => `
+  function mostrarErroresValidacion(data: ErrorDeValidacion) {
+    if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
+      const erroresHtml = (data.results ?? [])
+        .map((error) => `
           <div class="mb-2">
             <ul class="ml-4 mt-1">
               ${error.mensajes?.map((msg: string) => `<li>• ${msg}</li>`).join("") || "<li>Error inesperado!</li>"}

@@ -19,7 +19,7 @@ export async function POST() {
         
         return response;
 
-    }catch (error) {
+    } catch (error) {
 
         return GeneralUtils.generarErrorResponse(error);
 

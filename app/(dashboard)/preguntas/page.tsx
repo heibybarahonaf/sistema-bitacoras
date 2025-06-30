@@ -24,7 +24,8 @@ export default function PreguntasPage() {
         setPreguntas(data);
         }
 
-    } catch (error) {
+    } catch {
+      console.error("Error al obtener las preguntas");
     }
   };
 

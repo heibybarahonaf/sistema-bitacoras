@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { AuthUtils } from "../../../common/utils/auth.utils";
-import { GeneralUtils } from "../../../common/utils/general.utils";
-import { ResponseDto } from "../../../common/dtos/response.dto";
-import { EmailService } from "../../../services/emailService";
+import { AuthUtils } from "@/app/common/utils/auth.utils";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { EmailService } from "@/app/services/emailService";
 import { UsuarioService } from "@/app/services/usuarioService";
 
 export async function POST(req: Request) {

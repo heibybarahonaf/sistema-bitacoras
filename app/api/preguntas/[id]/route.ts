@@ -1,18 +1,18 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../../common/dtos/response.dto";
-import { PreguntaService } from "../../../services/preguntaService";
-import { CrearPreguntaDto } from "../../../dtos/pregunta.dto";
-import { GeneralUtils } from "../../../common/utils/general.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { PreguntaService } from "@/app/services/preguntaService";
+import { CrearPreguntaDto } from "@/app/dtos/pregunta.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 const EditarPreguntaDto = CrearPreguntaDto;
 type EditarPreguntaDto = z.infer<typeof CrearPreguntaDto>;
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
-
+        
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const pregunta = await PreguntaService.obtenerPreguntaPorId(id);
 
@@ -27,11 +27,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
-
+        
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const body = await req.json();
         const parsed = EditarPreguntaDto.safeParse(body);

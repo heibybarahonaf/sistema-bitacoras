@@ -10,7 +10,7 @@ export async function GET() {
         const sistemas = await SistemaService.obtenerSistemasActivos();
         return NextResponse.json(new ResponseDto(200, "Sistemas activos obtenidos correctamente", sistemas));
 
-    }catch (error) {
+    } catch (error) {
 
         return GeneralUtils.generarErrorResponse(error);
 

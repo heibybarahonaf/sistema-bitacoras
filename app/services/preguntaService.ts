@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { Pregunta } from "@prisma/client";
-import { ResponseDto } from "../common/dtos/response.dto";
 import { prisma } from "../libs/prisma";
+import { Pregunta } from "@prisma/client";
 import { CrearPreguntaDto } from "../dtos/pregunta.dto";
+import { ResponseDto } from "../common/dtos/response.dto";
 import { GeneralUtils } from "../common/utils/general.utils";
 
 type CrearPreguntaDto = z.infer<typeof CrearPreguntaDto>;
@@ -45,7 +45,7 @@ export class PreguntaService {
             const pregunta = await prisma.pregunta.create({ data: preguntaData });
             return pregunta;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al crear la pregunta");
 
@@ -78,7 +78,7 @@ export class PreguntaService {
 
             return preguntaActualizada;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al actualizar la pregunta");
 

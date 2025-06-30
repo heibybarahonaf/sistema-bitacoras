@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { Cliente } from "@prisma/client";
-import { ResponseDto } from "../common/dtos/response.dto";
 import { prisma } from "../libs/prisma";
 import { CrearClienteDto } from "../dtos/cliente.dto";
+import { ResponseDto } from "../common/dtos/response.dto";
 import { GeneralUtils } from "../common/utils/general.utils";
 
 const EditarClienteDto = CrearClienteDto.partial();
@@ -80,7 +80,7 @@ export class ClienteService {
 
             return cliente;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al crear el cliente");
 
@@ -129,7 +129,7 @@ export class ClienteService {
 
             return clienteActualizado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al actualizar el cliente");
 
@@ -146,7 +146,7 @@ export class ClienteService {
 
             return clienteEliminado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al eliminar el cliente");
 

@@ -44,7 +44,7 @@ export class EmailService {
                 html,
             });
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al enviar el correo");
         
@@ -129,7 +129,7 @@ export class EmailService {
                 html,
             });
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al enviar la notificación de venta");
 

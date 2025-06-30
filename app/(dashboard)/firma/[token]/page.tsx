@@ -98,8 +98,7 @@ export default function FirmaClientePage() {
     } else {
       Swal.fire("Error", "No se pudo guardar la firma", "error");
     }
-  } catch (error) {
-    console.error(error);
+  } catch {
     Swal.fire("Error", "Error al enviar firma", "error");
   }
 };

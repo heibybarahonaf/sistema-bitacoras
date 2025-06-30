@@ -1,9 +1,9 @@
 import { z } from "zod";
+import { prisma } from "../libs/prisma";
 import { Usuario } from "@prisma/client";
 import { CrearUsuarioDto } from "../dtos/usuario.dto";
-import { ResponseDto } from "../common/dtos/response.dto";
-import { prisma } from "../libs/prisma";
 import { AuthUtils } from "../common/utils/auth.utils";
+import { ResponseDto } from "../common/dtos/response.dto";
 import { GeneralUtils } from "../common/utils/general.utils";
 
 const EditarUsuarioDto = CrearUsuarioDto.omit({ password: true }).partial();
@@ -82,8 +82,10 @@ export class UsuarioService {
 
             return usuario;
 
-        } catch (error) {
+        } catch {
+
             throw new ResponseDto(500, "Error al crear el usuario");
+
         }
     
     }
@@ -114,8 +116,10 @@ export class UsuarioService {
 
             return usuarioActualizado;
 
-        } catch (error) {
+        } catch {
+
             throw new ResponseDto(500, "Error al actualizar el usuario");
+
         }
 
     }
@@ -129,8 +133,10 @@ export class UsuarioService {
 
             return usuarioEliminado;
 
-        } catch (error) {
+        } catch {
+
             throw new ResponseDto(500, "Error al eliminar el usuario");
+
         }
 
     }

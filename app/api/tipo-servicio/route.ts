@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../common/dtos/response.dto";
-import { TipoServicioService } from "../../services/tipoServicioService";
-import { GeneralUtils } from "../../common/utils/general.utils";
-import { CrearTipoServicioDto } from "../../dtos/tipoServicio.dto";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { TipoServicioService } from "@/app/services/tipoServicioService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { CrearTipoServicioDto } from "@/app/dtos/tipoServicio.dto";
 
 export async function GET() {
 
@@ -11,7 +11,7 @@ export async function GET() {
         const tipos_servicio = await TipoServicioService.obtenerTiposServicio();
         return NextResponse.json(new ResponseDto(200, "Tipos servicio obtenidos correctamente", tipos_servicio));
 
-    }catch (error) {
+    } catch (error) {
 
         return GeneralUtils.generarErrorResponse(error);
 

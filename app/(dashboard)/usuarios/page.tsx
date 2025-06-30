@@ -16,6 +16,15 @@ interface Usuario {
   zona_asignada: string;
 }
 
+interface ErrorDeValidacion {
+  code: number;
+  message?: string;
+  results?: {
+    campo: string;
+    mensajes: string[];
+  }[];
+}
+
 // Componente Spinner carga
 const LoadingSpinner = () => (
   <div className="flex flex-col items-center justify-center py-12">
@@ -62,11 +71,11 @@ export default function UsuariosPage() {
   };
 
   // Mostrar errores validación con SweetAlert
-  function mostrarErroresValidacion(data: any) {
+  function mostrarErroresValidacion(data: ErrorDeValidacion) {
     if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
       const erroresHtml = data.results
         .map(
-          (error: any) =>
+          (error) =>
             `<div class="mb-2"><ul class="ml-4 mt-1">${
               error.mensajes && Array.isArray(error.mensajes)
                 ? error.mensajes.map((msg: string) => `<li>• ${msg}</li>`).join("")
@@ -176,7 +185,7 @@ export default function UsuariosPage() {
 
       fetchUsuarios();
       setModalOpen(false);
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
@@ -223,7 +232,7 @@ export default function UsuariosPage() {
       });
 
       fetchUsuarios();
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
@@ -284,7 +293,7 @@ export default function UsuariosPage() {
       fetchUsuarios();
       setModalOpen(false);
       setUsuarioEditar(null);
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error de conexión",

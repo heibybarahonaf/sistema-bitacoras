@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../../../common/dtos/response.dto";
-import { GeneralUtils } from "../../../../common/utils/general.utils";
-import { ClienteService } from "../../../../services/clienteService";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { ClienteService } from "@/app/services/clienteService";
 
-export async function GET(req: Request, { params }: { params: { rtn: string } }) {
-    const rtnParams = (await params).rtn;
+export async function GET(req: Request, { params }: { params: Promise<{ rtn: string }> }) {
     
     try {
-
+        
+        const rtnParams = (await params).rtn;
         if (rtnParams.length!=14) {
             throw new ResponseDto(400, "RTN inválido"); 
         }

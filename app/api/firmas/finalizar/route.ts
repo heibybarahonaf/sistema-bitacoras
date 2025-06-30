@@ -1,7 +1,8 @@
+import { z } from "zod";
 import { NextResponse } from "next/server";
 import prisma from "@/app/libs/prisma";
-import { z } from "zod";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 const FinalizarFirmaDto = z.object({
     id: z.number(),
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
 
     } catch (error) {
 
-        return NextResponse.json({ error: "Error al finalizar firma" }, { status: 500 });
+        return GeneralUtils.generarErrorResponse(error);
 
     }
 

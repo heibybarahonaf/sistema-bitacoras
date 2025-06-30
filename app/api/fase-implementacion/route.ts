@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../common/dtos/response.dto";
-import { FaseImplementacionService } from "../../services/faseImplementacionService";
-import { GeneralUtils } from "../../common/utils/general.utils";
-import { CrearFaseImplementacionDto } from "../../dtos/faseImplementacion.dto";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { FaseImplementacionService } from "@/app/services/faseImplementacionService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { CrearFaseImplementacionDto } from "@/app/dtos/faseImplementacion.dto";
 
 export async function GET() {
 
@@ -11,7 +11,7 @@ export async function GET() {
         const fases_implementacion = await FaseImplementacionService.obtenerFasesImplementacion();
         return NextResponse.json(new ResponseDto(200, "Fases de implementación obtenidas correctamente", fases_implementacion));
 
-    }catch (error) {
+    } catch (error) {
 
         return GeneralUtils.generarErrorResponse(error);
 

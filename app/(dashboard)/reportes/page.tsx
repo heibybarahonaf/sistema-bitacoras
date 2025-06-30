@@ -163,7 +163,7 @@ export default function ReportesPage() {
         mostrarAlertaError(errorData.message || "Error al generar el reporte");
       }
 
-    } catch (error) {
+    } catch {
       mostrarAlertaError("Error de conexión al generar el reporte");
     } finally {
       setIsGenerating((prev) => ({ ...prev, [tipo]: false }));

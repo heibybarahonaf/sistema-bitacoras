@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { Bitacora } from "@prisma/client";
-import { ResponseDto } from "../common/dtos/response.dto";
 import { prisma } from "../libs/prisma";
+import { Bitacora } from "@prisma/client";
 import { CrearBitacoraDto } from "../dtos/bitacora.dto";
-import { ClienteService } from "../services/clienteService";
 import { EquipoService } from "../services/equipoService";
+import { ResponseDto } from "../common/dtos/response.dto";
+import { ClienteService } from "../services/clienteService";
 import { SistemaService } from "../services/sistemaService";
-import { EncuestaService } from "../services/encuestaService";
 import { UsuarioService } from "../services/usuarioService";
+import { EncuestaService } from "../services/encuestaService";
 import { ConfiguracionService } from "../services/configService";
 
 type CrearBitacoraDto = z.infer<typeof CrearBitacoraDto>;
@@ -86,23 +86,23 @@ export class BitacoraService {
     }
 
 
-    public static async obtenerBitacorasCliente(idCliente: number): Promise<any[]> {
-    const bitacoras = await prisma.bitacora.findMany({
-        where: { cliente_id: idCliente },
-        orderBy: { createdAt: "desc" },
-        include: {
-        fase_implementacion: true,
-        tipo_servicio: true,
-        sistema: true,
-        equipo: true,
-        },
-    });
+    public static async obtenerBitacorasCliente(idCliente: number): Promise<Bitacora[]> {
+        const bitacoras = await prisma.bitacora.findMany({
+            where: { cliente_id: idCliente },
+            orderBy: { createdAt: "desc" },
+            include: {
+            fase_implementacion: true,
+            tipo_servicio: true,
+            sistema: true,
+            equipo: true,
+            },
+        });
 
-    if (bitacoras.length === 0) {
-        throw new ResponseDto(404, "No se encontraron bitácoras registradas con el cliente");
-    }
+        if (bitacoras.length === 0) {
+            throw new ResponseDto(404, "No se encontraron bitácoras registradas con el cliente");
+        }
 
-    return bitacoras;
+        return bitacoras;
     }
 
 
@@ -262,7 +262,7 @@ export class BitacoraService {
             await ClienteService.editarCliente(cliente_id, datosActualizacion);
             return bitacora;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error interno del servidor al crear la bitácora");
 

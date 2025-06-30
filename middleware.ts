@@ -40,12 +40,12 @@ export async function middleware(req: NextRequest) {
                 url.searchParams.set("error", "acceso-denegado");
                 return NextResponse.redirect(url);
             }
-            
+
         }
         
         return NextResponse.next();
 
-    } catch (error) {
+    } catch {
 
         const loginUrl = new URL('/login', req.url);
         return NextResponse.redirect(loginUrl);

@@ -1,4 +1,4 @@
-export class ResponseDto<T = any> {
+export class ResponseDto<T = unknown> {
     code: number;
     message: string;
     count: number;

@@ -1,10 +1,10 @@
 
 import { z } from "zod";
+import { prisma } from "../libs/prisma";
 import { Pagos_Cliente } from "@prisma/client";
 import { CrearPagoDto } from "../dtos/pago.dto";
-import { ResponseDto } from "../common/dtos/response.dto";
-import { prisma } from "../libs/prisma";
 import { ClienteService } from "./clienteService";
+import { ResponseDto } from "../common/dtos/response.dto";
 
 type CrearPagoDto = z.infer<typeof CrearPagoDto>; 
 const EditarPagoDto = CrearPagoDto.omit({ monto: true, cant_horas: true, tipo_horas: true }).partial();
@@ -89,7 +89,7 @@ export class PagoService {
             await ClienteService.editarCliente(pagoData.cliente_id, datosActualizacion);
             return pagoCreado;
 
-        } catch (error) {
+        } catch {
             
             throw new ResponseDto(500, "Error al crear el pago");
 
@@ -114,7 +114,7 @@ export class PagoService {
 
             return pagoActualizado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al editar el pago");
 

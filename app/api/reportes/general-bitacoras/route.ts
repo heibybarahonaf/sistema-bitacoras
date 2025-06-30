@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { BitacoraService } from "../../../services/bitacoraService";
-import { generarPDFBitacoras } from "../../../services/reporteService";
-import { GeneralUtils } from "../../../common/utils/general.utils";
+import { BitacoraService } from "@/app/services/bitacoraService";
+import { generarPDFBitacoras } from "@/app/services/reporteService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function GET(request: Request) {
 

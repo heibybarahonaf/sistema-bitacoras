@@ -1,18 +1,18 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { ClienteService } from "../../../services/clienteService";
-import { ResponseDto } from "../../../common/dtos/response.dto";
-import { CrearClienteDto } from "../../../dtos/cliente.dto";
-import { GeneralUtils } from "../../../common/utils/general.utils";
+import { ClienteService } from "@/app/services/clienteService";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { CrearClienteDto } from "@/app/dtos/cliente.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 const EditarClienteDto = CrearClienteDto.partial();
 type EditarClienteDto = z.infer<typeof EditarClienteDto>;
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const cliente = await ClienteService.obtenerClientePorId(id);
 
@@ -27,11 +27,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 }
 
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const body = await req.json();
         const parsed = EditarClienteDto.safeParse(body);
@@ -52,11 +52,11 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const clienteEliminado = await ClienteService.eliminarCliente(id);
         

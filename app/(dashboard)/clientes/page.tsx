@@ -16,6 +16,26 @@ interface Cliente {
   activo: boolean;
 }
 
+interface clienteActualizado {
+  empresa: string,
+  responsable: string,
+  rtn: string,
+  direccion: string,
+  telefono: string,
+  correo: string,
+  activo: boolean,
+  updateAt: string
+};
+
+interface ErrorDeValidacion {
+  code: number;
+  message?: string;
+  results?: {
+    campo: string;
+    mensajes: string[];
+  }[];
+}
+
 function formatRTN(value: string) {
   const raw = value.replace(/\D/g, "");
   if (raw.length <= 4) return raw;
@@ -69,11 +89,11 @@ export default function ClientesPage() {
     event.target.value = valorFormateado;
   };
 
-  function mostrarErroresValidacion(data: any) {
+  function mostrarErroresValidacion(data: ErrorDeValidacion) {
     if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
       const erroresHtml = data.results
         .map(
-          (error: any) =>
+          (error) =>
             `<div class="mb-2"><ul class="ml-4 mt-1">${
               error.mensajes && Array.isArray(error.mensajes)
                 ? error.mensajes.map((msg: string) => `<li>• ${msg}</li>`).join("")
@@ -189,7 +209,7 @@ export default function ClientesPage() {
       setModalOpen(false);
       setPaginaActual(1); // Volver a página 1 al agregar
 
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
@@ -238,7 +258,7 @@ export default function ClientesPage() {
       fetchClientes();
       setPaginaActual(1); // Volver a página 1 al eliminar
 
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
@@ -260,7 +280,7 @@ export default function ClientesPage() {
     if (!clienteEditar) return;
 
     const formData = new FormData(event.currentTarget);
-    const clienteActualizado: any = {
+    const clienteActualizado: clienteActualizado = {
       empresa: formData.get("empresa") as string,
       responsable: formData.get("responsable") as string,
       rtn: formData.get("rtn") as string,
@@ -300,7 +320,7 @@ export default function ClientesPage() {
       fetchClientes();
       setModalOpen(false);
       setClienteEditar(null);
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: "error",
         title: "Error de conexión",

@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { Equipo } from "@prisma/client";
 import { prisma } from "../libs/prisma";
-import { ResponseDto } from "../common/dtos/response.dto";
 import { CrearEquipoDto } from "../dtos/equipo.dto";
+import { ResponseDto } from "../common/dtos/response.dto";
 import { GeneralUtils } from "../common/utils/general.utils";
 
 const EditarEquipoDto = CrearEquipoDto.partial();
@@ -69,7 +69,7 @@ export class EquipoService {
 
             return equipoCreado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al crear el equipo");
 
@@ -104,7 +104,7 @@ export class EquipoService {
 
             return equipoActualizado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al actualizar el equipo");
 
@@ -123,7 +123,7 @@ export class EquipoService {
 
             return equipoEliminado;
 
-        } catch (error) {
+        } catch {
 
             throw new ResponseDto(500, "Error al eliminar el equipo");
 

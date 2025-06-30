@@ -12,6 +12,15 @@ interface Sistema {
   activo: boolean;
 }
 
+interface ErrorDeValidacion {
+  code: number;
+  message?: string;
+  results?: {
+    campo: string;
+    mensajes: string[];
+  }[];
+}
+
 const LoadingSpinner = () => (
   <div className="flex flex-col items-center justify-center py-12">
     <div className="w-12 h-12 border-4 border-gray-200 border-t-[#295d0c] rounded-full animate-spin"></div>
@@ -32,9 +41,9 @@ export default function SistemasPage() {
     setIsClient(true);
   }, []);
 
-  function mostrarErroresValidacion(data: any) {
+  function mostrarErroresValidacion(data: ErrorDeValidacion) {
     if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
-      const erroresHtml = data.results.map((error: any) =>
+      const erroresHtml = data.results.map((error) =>
         `<div class="mb-2"><ul class="ml-4 mt-1">${
           error.mensajes?.map((msg: string) => `<li>• ${msg}</li>`).join("") || '<li>Error inesperado!</li>'
         }</ul></div>`
@@ -124,7 +133,7 @@ export default function SistemasPage() {
 
       fetchSistemas();
       setModalOpen(false);
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: 'error',
         title: 'Error de conexión',
@@ -170,7 +179,7 @@ export default function SistemasPage() {
       });
 
       fetchSistemas();
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: 'error',
         title: 'Error de conexión',
@@ -221,7 +230,7 @@ export default function SistemasPage() {
       fetchSistemas();
       setModalOpen(false);
       setSistemaEditar(null);
-    } catch (error) {
+    } catch {
       Swal.fire({
         icon: 'error',
         title: 'Error de conexión',
