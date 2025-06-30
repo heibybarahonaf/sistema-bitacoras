@@ -270,4 +270,25 @@ export class BitacoraService {
 
     }
 
+    public static async obtenerBitacoraPorFirmaClienteId(firmaClienteId: number): Promise<Bitacora> {
+    const bitacora = await prisma.bitacora.findFirst({
+        where: { firmaCLiente_id: firmaClienteId },
+        include: {
+            cliente: true,
+            usuario: true,
+            sistema: true,
+            equipo: true,
+            firmaTecnico: true,
+            firmaCliente: true,
+        },
+    });
+
+    if (!bitacora) {
+        throw new ResponseDto(404, "No se encontró la bitácora asociada a esta firma");
+    }
+
+    return bitacora;
+}
+
+
 }

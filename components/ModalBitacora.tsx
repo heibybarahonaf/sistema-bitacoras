@@ -327,7 +327,7 @@ useEffect(() => {
       if (!tipoHoras) throw new Error("Tipo de horas es obligatorio");
 
       // Firma técnico obligatoria
-      if (sigCanvas.current?.isEmpty()) {
+      if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
         throw new Error("Por favor, capture la firma del técnico.");
       }
 
@@ -335,7 +335,6 @@ useEffect(() => {
       if (modalidad === "Presencial" && sigCanvasCliente.current?.isEmpty()) {
         throw new Error("Por favor, capture la firma del cliente.");
       }
-
       // Obtener imágenes base64 de firmas
       const firmaTecnico = sigCanvas.current?.getCanvas().toDataURL("image/png");
       const firmaCliente =
@@ -412,15 +411,61 @@ useEffect(() => {
         throw new Error(errorData.message || "Error al guardar la bitácora");
       }
 
-      Swal.fire({
-        icon: "success",
-        title: "Bitácora guardada",
-        text: "La bitácora se ha registrado correctamente.",
-        confirmButtonText: "OK",
-      }).then(() => {
-        onGuardar();
-        onClose();
-      });
+      if (modalidad === "Remoto") {
+  Swal.fire({
+    icon: "info",
+    title: "Bitácora guardada",
+    html: `
+      La bitácora se ha guardado, pero la firma del cliente está pendiente.<br />
+      <strong>Enlace para firma remota:</strong><br />
+      <button id="copyLinkBtn" style="
+        background:none;
+        border:none;
+        color:#3085d6;
+        text-decoration:underline;
+        cursor:pointer;
+        font-size:1rem;
+        padding:0;
+        ">
+        ${urlFirmaRemota}
+      </button>
+    `,
+    confirmButtonText: "OK",
+    didOpen: () => {
+      const copyBtn = Swal.getPopup()?.querySelector('#copyLinkBtn') as HTMLButtonElement;
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(urlFirmaRemota || '').then(() => {
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: 'Enlace copiado',
+              showConfirmButton: false,
+              timer: 1500,
+              timerProgressBar: true,
+            });
+          });
+        });
+      }
+    },
+  }).then(() => {
+    onGuardar();
+    onClose();
+  });
+} else {
+  Swal.fire({
+    icon: "success",
+    title: "Bitácora guardada",
+    text: "La bitácora se ha registrado correctamente.",
+    confirmButtonText: "OK",
+  }).then(() => {
+    onGuardar();
+    onClose();
+  });
+}
+
+
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -592,28 +637,7 @@ useEffect(() => {
 
     {urlFirmaRemota ? (
       <div className="mt-2 text-sm text-gray-700">
-        <p className="mb-1">Enlace generado para firma remota:</p>
-        <a
-          href={urlFirmaRemota}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 underline break-all"
-        >
-          {urlFirmaRemota}
-        </a>
-        {esperandoFirmaCliente && (
-        <>
-          <p className="text-orange-600 mt-2 italic">Esperando firma del cliente...</p>
-          <button
-            type="button"
-            onClick={generarNuevoEnlaceFirma}
-            className="mt-2 px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Generar nuevo enlace
-          </button>
-        </>
-      )}
-
+        <p className="mb-1">ENLACE GENERADO PARA FIRMA REMOTA</p>
       </div>
     ) : (
       <p className="text-sm text-gray-500 italic">Generando enlace...</p>
@@ -634,9 +658,8 @@ useEffect(() => {
             <button
               type="submit"
               className="px-6 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a] transition"
-              disabled={modalidad === "Remoto" && esperandoFirmaCliente}
             >
-              {modalidad === "Remoto" && esperandoFirmaCliente ? "Esperando firma..." : "Guardar"}
+              Guardar
             </button>
           </div>
         </form>
