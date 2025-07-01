@@ -1,24 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileText, Download, Eye } from "lucide-react";
 
 interface CardReporteProps {
   title: string;
-  tipo: "general" | "cliente" | "usuario";
+  tipo: "general" | "cliente" | "usuario" | "ventas";
   isGenerating: boolean;
   onGenerate: (
-    tipo: "general" | "cliente" | "usuario",
+    tipo: "general" | "cliente" | "usuario" | "ventas",
     fechaInicio: string,
     fechaFinal: string,
     id?: string,
-    rtn?: string
+    rtn?: string,
+    usuario?: string
   ) => void;
   onPreview: (
-    tipo: "general" | "cliente" | "usuario",
+    tipo: "general" | "cliente" | "usuario" | "ventas",
     fechaInicio: string,
     fechaFinal: string,
     id?: string,
-    rtn?: string
+    rtn?: string,
+    usuario?: string
   ) => void;
+}
+
+interface Usuario {
+  id: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+  activo: boolean;
 }
 
 export default function CardReporte({
@@ -31,6 +41,39 @@ export default function CardReporte({
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFinal, setFechaFinal] = useState("");
   const [entidadId, setEntidadId] = useState("");
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [loadingUsuarios, setLoadingUsuarios] = useState(false);
+
+  useEffect(() => {
+    if (tipo === "usuario" || tipo === "ventas") {
+      cargarUsuariosActivos();
+    }
+  }, [tipo]);
+
+  const cargarUsuariosActivos = async () => {
+    setLoadingUsuarios(true);
+    try {
+      const response = await fetch('/api/usuarios/activos', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUsuarios(data.results || []);
+      } else {
+        console.error('Error al cargar usuarios activos');
+        setUsuarios([]);
+      }
+    } catch (error) {
+      console.error('Error de conexión al cargar usuarios:', error);
+      setUsuarios([]);
+    } finally {
+      setLoadingUsuarios(false);
+    }
+  };
 
   const handleGenerate = () => {
     onGenerate(
@@ -38,7 +81,8 @@ export default function CardReporte({
       fechaInicio,
       fechaFinal,
       tipo == "usuario" ? entidadId : undefined,
-      tipo === "cliente" ? entidadId : undefined
+      tipo === "cliente" ? entidadId : undefined,
+      tipo === "ventas" ? entidadId : undefined
     );
   };
 
@@ -48,7 +92,8 @@ export default function CardReporte({
       fechaInicio,
       fechaFinal,
       tipo === "usuario" ? entidadId : undefined,
-      tipo === "cliente" ? entidadId : undefined
+      tipo === "cliente" ? entidadId : undefined,
+      tipo === "ventas" ? entidadId : undefined
     );
   };
 
@@ -57,7 +102,9 @@ export default function CardReporte({
       case "cliente":
         return "RTN Cliente";
       case "usuario":
-        return "Nombre Técnico";
+        return "Técnico";
+      case "ventas":
+        return "Técnico";
       default:
         return "";
     }
@@ -68,10 +115,63 @@ export default function CardReporte({
       case "cliente":
         return "Ingresa el RTN del cliente";
       case "usuario":
-        return "Ingresa el nombre del técnico";
+        return "Selecciona un técnico";
+      case "ventas":
+        return "Selecciona un técnico";
       default:
         return "";
     }
+  };
+
+  const renderEntidadInput = () => {
+    if (tipo === "usuario" || tipo === "ventas") {
+      return (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {getIdLabel()}
+          </label>
+          <select
+            value={entidadId}
+            onChange={(e) => setEntidadId(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            disabled={isGenerating || loadingUsuarios}
+          >
+            <option value="">{loadingUsuarios ? "Cargando..." : getIdPlaceholder()}</option>
+            {usuarios.map((usuario) => (
+              <option key={usuario.id} value={usuario.nombre}>
+                {usuario.nombre} {usuario.apellido}
+              </option>
+            ))}
+          </select>
+          {loadingUsuarios && (
+            <p className="text-xs text-gray-500 mt-1">Cargando...</p>
+          )}
+          {!loadingUsuarios && usuarios.length === 0 && (
+            <p className="text-xs text-red-500 mt-1">No se encontraron técnicos activos</p>
+          )}
+        </div>
+      );
+    }
+
+    if (tipo === "cliente") {
+      return (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            {getIdLabel()}
+          </label>
+          <input
+            type="text"
+            value={entidadId}
+            onChange={(e) => setEntidadId(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={isGenerating}
+            placeholder={getIdPlaceholder()}
+          />
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -108,21 +208,7 @@ export default function CardReporte({
           />
         </div>
 
-        {tipo !== "general" && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {getIdLabel()}
-            </label>
-            <input
-              type="text"
-              value={entidadId}
-              onChange={(e) => setEntidadId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isGenerating}
-              placeholder={getIdPlaceholder()}
-            />
-          </div>
-        )}
+        {tipo !== "general" && renderEntidadInput()}
       </div>
 
       <div className="flex gap-2">
@@ -136,7 +222,7 @@ export default function CardReporte({
           } text-white`}
         >
           <Download className="w-4 h-4" />
-          {isGenerating ? "Generando..." : ""}
+          {isGenerating ? "generando..." : ""}
         </button>
 
         <button

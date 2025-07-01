@@ -77,8 +77,8 @@ export default function LoginInterface() {
 
         if (errors[name as keyof FormErrors]) {
             setErrors(prev => ({
-            ...prev,
-            [name]: '',
+                ...prev,
+                [name]: '',
             }));
         }
 
@@ -90,9 +90,9 @@ export default function LoginInterface() {
 
         try {
             const response = await fetch('/api/auth/enviar-codigo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ correo: formData.correo })
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ correo: formData.correo })
             });
 
             const data = await response.json();
@@ -163,9 +163,9 @@ export default function LoginInterface() {
                     setErrors(prev => ({ ...prev, codigo: data.message }));
                 } else {
                     Swal.fire({
-                    icon: 'error',
-                    title: 'Error de autenticación',
-                    text: data.message || 'Error al iniciar sesión'
+                        icon: 'error',
+                        title: 'Error de autenticación',
+                        text: data.message || 'Error al iniciar sesión'
                     });
                 }
 
@@ -178,13 +178,13 @@ export default function LoginInterface() {
                 icon: "success",
                 title: data.message || 'Inicio de sesión exitoso',
                 showConfirmButton: false,
-                timer: 3000,
+                timer: 2000,
                 timerProgressBar: true,
             });
 
             setTimeout(() => {
                 window.location.href = '/';
-            }, 1500);
+            }, 2000);
 
         } catch {
 
