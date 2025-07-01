@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { DollarSign, Eye, Edit } from "lucide-react";
+import ModalPago from "@/components/ModalPago"; 
 
 interface Pago {
   id: number;
@@ -47,6 +48,10 @@ export default function PagosPage() {
   const [loading, setLoading] = useState(false);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
 
+  const [modalPago, setModalPago] = useState<{ open: boolean; pago?: Pago }>({
+    open: false,
+  });
+
   // Filtros
   const [filtroFactura, setFiltroFactura] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
@@ -90,7 +95,7 @@ export default function PagosPage() {
   }
 
   const pagosFiltrados = pagos.filter((pago) => {
-    const fechaPagoStr = pago.createdAt.split("T")[0]; // YYYY-MM-DD
+    const fechaPagoStr = pago.createdAt.split("T")[0];
     const inicioStr = fechaInicio ? new Date(fechaInicio).toISOString().split("T")[0] : null;
     const finStr = fechaFin ? new Date(fechaFin).toISOString().split("T")[0] : null;
 
@@ -191,7 +196,7 @@ export default function PagosPage() {
                         <Eye className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => mostrarDetallePago(pago)}
+                        onClick={() => setModalPago({ open: true, pago })}
                         className="flex items-center px-2 py-1 bg-[#4d152c] text-white rounded hover:bg-[#3e1024]"
                         title="Editar"
                       >
@@ -204,6 +209,16 @@ export default function PagosPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Modal de edición */}
+      {modalPago.open && modalPago.pago && (
+        <ModalPago
+          clienteId={modalPago.pago.cliente_id}
+          pago={modalPago.pago}
+          onClose={() => setModalPago({ open: false })}
+          onGuardar={fetchPagos}
+        />
       )}
     </div>
   );

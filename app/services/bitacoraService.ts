@@ -336,4 +336,33 @@ export class BitacoraService {
         return bitacora;
     }
 
+    static async obtenerEncuestaDeBitacora(bitacoraId: number) {
+    const bitacora = await prisma.bitacora.findUnique({
+      where: { id: bitacoraId },
+      include: {
+        encuestaBitacoras: {
+          include: {
+            encuesta: {
+              include: {
+                preguntas: {
+                  include: {
+                    pregunta: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return bitacora?.encuestaBitacoras?.[0]?.encuesta;
+  }
+
+  static async actualizarCalificacion(bitacoraId: number, calificacion: number) {
+    return await prisma.bitacora.update({
+      where: { id: bitacoraId },
+      data: { calificacion },
+    });
+  }
 }

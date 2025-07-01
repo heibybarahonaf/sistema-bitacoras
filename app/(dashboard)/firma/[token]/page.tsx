@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Swal from "sweetalert2";
 
 interface Bitacora {
+  id: number;  // ← Asegúrate que venga este campo desde el backend
   no_ticket: string;
   fecha_servicio: string;
   responsable: string;
@@ -16,7 +17,6 @@ interface Bitacora {
 
 export default function FirmaClientePage() {
   const { token } = useParams();
-  const router = useRouter();
   const sigCanvas = useRef<SignatureCanvas>(null);
   const [firmaId, setFirmaId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,12 +43,12 @@ export default function FirmaClientePage() {
         const firma = data.results[0];
         setFirmaId(firma.id);
 
-        // Obtener la bitácora relacionada a esta firma
+        // Obtener la bitácora relacionada
         const resBitacora = await fetch(`/api/bitacoras/por-firma/${firma.id}`);
-        if (resBitacora.ok) {
-          const dataBitacora = await resBitacora.json();
-          console.log("Bitacora data:", dataBitacora);
-          setBitacora(dataBitacora.result || null);
+        const dataBitacora = await resBitacora.json();
+
+        if (resBitacora.ok && dataBitacora?.result) {
+          setBitacora(dataBitacora.result);
         } else {
           setBitacora(null);
         }
@@ -61,7 +61,7 @@ export default function FirmaClientePage() {
     };
 
     if (token) validarToken();
-  }, [token, router]);
+  }, [token]);
 
   const handleSubmit = async () => {
     if (!sigCanvas.current) {
@@ -97,7 +97,11 @@ export default function FirmaClientePage() {
           text: "Tu firma ha sido registrada.",
           confirmButtonText: "OK",
         }).then(() => {
-          window.location.href = "https://www.posdehonduras.com";
+          if (bitacora?.id) {
+            window.location.href = `/encuesta/${bitacora.id}`;
+          } else {
+            window.location.href = "/encuesta";
+          }
         });
       } else {
         Swal.fire("Error", "No se pudo guardar la firma", "error");
@@ -111,18 +115,12 @@ export default function FirmaClientePage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      {/* Mostrar detalles de la bitácora */}
       <div className="bg-white shadow-lg rounded-md p-6 w-full max-w-md mb-6">
         <h2 className="text-xl font-bold mb-4 text-center">Detalles de la Bitácora</h2>
         {bitacora ? (
           <div className="space-y-2 text-gray-800">
             <p><strong>No. Ticket:</strong> {bitacora.no_ticket}</p>
-            <p><strong>Fecha del Servicio:</strong> {new Date(bitacora.fecha_servicio).toLocaleDateString("es-HN", {
-                            timeZone: "UTC",
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                          })}</p>
+            <p><strong>Fecha del Servicio:</strong> {new Date(bitacora.fecha_servicio).toLocaleDateString("es-HN")}</p>
             <p><strong>Responsable:</strong> {bitacora.responsable}</p>
             <p><strong>Descripción:</strong> {bitacora.descripcion_servicio}</p>
             <p><strong>Modalidad:</strong> {bitacora.modalidad}</p>
@@ -133,7 +131,6 @@ export default function FirmaClientePage() {
         )}
       </div>
 
-      {/* Canvas para firma */}
       <div className="bg-white shadow-lg rounded-md p-6 w-full max-w-md">
         <h2 className="text-xl font-bold mb-4 text-center">Firma del Cliente</h2>
         <SignatureCanvas

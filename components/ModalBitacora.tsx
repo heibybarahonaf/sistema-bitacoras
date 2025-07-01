@@ -108,7 +108,7 @@ const SelectSimple = ({
   options: string[];
   required?: boolean;
 }) => (
-  <label className="block md:col-span-2">
+  <label className="block">
     <span className="text-gray-700 font-semibold">
       {label} {required && <span className="text-red-600">*</span>}
     </span>
@@ -175,6 +175,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [tipoServicio, setTipoServicio] = useState<TipoServicio[]>([]);
   const [tipoServicioId, setTipoServicioId] = useState<number | null>(null);
   const [comentarios, setComentarios] = useState("");
+  const [ventas, setVentas] = useState("");
   const [horasConsumidas, setHorasConsumidas] = useState(0);
   const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [responsable, setResponsable] = useState("");
@@ -389,7 +390,7 @@ useEffect(() => {
         fase_implementacion_id: faseImplementacionId,
         comentarios,
         calificacion: 1, //
-        ventas: "N/A", //
+        ventas,
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
         firmaTecnico_id: firmaTecnicoId,
@@ -454,15 +455,43 @@ useEffect(() => {
     onClose();
   });
 } else {
-  Swal.fire({
-    icon: "success",
-    title: "Bitácora guardada",
-    text: "La bitácora se ha registrado correctamente.",
-    confirmButtonText: "OK",
-  }).then(() => {
-    onGuardar();
-    onClose();
-  });
+  const data = await res.json();
+const nuevaBitacora = data.results?.[0];
+const encuestaUrl = `http://localhost:3000/encuesta/${nuevaBitacora?.id}`;
+
+Swal.fire({
+  icon: "success",
+  title: "Bitácora guardada",
+  html: `
+    La bitácora se ha registrado correctamente.<br><br>
+    <strong>Enlace para encuesta:</strong><br>
+    <input id="encuestaLink" type="text" value="${encuestaUrl}" readonly style="width: 100%; padding: 6px; margin-top: 8px; border: 1px solid #ccc; border-radius: 4px;" onclick="this.select()" />
+  `,
+  confirmButtonText: "OK",
+  didOpen: () => {
+    const input = Swal.getPopup()?.querySelector('#encuestaLink') as HTMLInputElement;
+    if (input) {
+      input.addEventListener('click', () => {
+        input.select();
+        navigator.clipboard.writeText(input.value).then(() => {
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Enlace copiado al portapapeles',
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true,
+          });
+        });
+      });
+    }
+  }
+}).then(() => {
+  onGuardar();
+  onClose();
+});
+
 }
 
 
@@ -542,22 +571,27 @@ useEffect(() => {
             options={["Presencial", "Remoto"]}
             required
           />
-          <InputField
-            label="Nombres Capacitados"
-            value={nombresCapacitados}
-            onChange={setNombresCapacitados}
-          />
-          <TextAreaField
-            label="Descripción del Servicio"
-            value={descripcionServicio}
-            onChange={setDescripcionServicio}
-            required
-          />
           <SelectField
             label="Fase de Implementación"
             value={faseImplementacionId}
             onChange={setFaseImplementacionId}
             options={fasesImplementacion.map((f) => ({ id: f.id, sistema: f.fase }))}
+            required
+          />
+          <InputField
+            label="Nombres Capacitados"
+            value={nombresCapacitados}
+            onChange={setNombresCapacitados}
+          />
+          <InputField
+            label="Ventas"
+            value={ventas}
+            onChange={setVentas}
+          />
+          <TextAreaField
+            label="Descripción del Servicio"
+            value={descripcionServicio}
+            onChange={setDescripcionServicio}
             required
           />
           <TextAreaField

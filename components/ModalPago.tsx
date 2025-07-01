@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
 
+interface ModalPagoProps {
+  clienteId: number;
+  onClose: () => void;
+  onGuardar: () => void;
+  pago?: any; // opcional, si se va a editar
+}
+
 export default function ModalPago({
   clienteId,
   onClose,
   onGuardar,
-}: {
-  clienteId: number;
-  onClose: () => void;
-  onGuardar: () => void;
-}) {
+  pago,
+}: ModalPagoProps) {
   const [cantHoras, setCantHoras] = useState(0);
   const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [monto, setMonto] = useState(0);
@@ -20,6 +24,19 @@ export default function ModalPago({
     valor_hora_individual: 0,
   });
 
+  // Pre-cargar datos si es edición
+  useEffect(() => {
+    if (pago) {
+      setNoFactura(pago.no_factura || "");
+      setFormaPago(pago.forma_pago || "Efectivo");
+      setDetallePago(pago.detalle_pago || "");
+      setTipoHoras(pago.tipo_horas || "Paquete");
+      setCantHoras(pago.cant_horas || 0);
+      setMonto(pago.monto || 0);
+    }
+  }, [pago]);
+
+  // Obtener configuración de precios
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -40,6 +57,7 @@ export default function ModalPago({
     fetchConfig();
   }, []);
 
+  // Recalcular monto si cambia cantidad o tipo
   useEffect(() => {
     const precioPorHora =
       tipoHoras === "Paquete"
@@ -51,7 +69,7 @@ export default function ModalPago({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const nuevoPago = {
+    const datosPago = {
       cliente_id: clienteId,
       no_factura: noFactura,
       forma_pago: formaPago,
@@ -61,17 +79,20 @@ export default function ModalPago({
       cant_horas: cantHoras,
     };
 
-    const res = await fetch("/api/pagos", {
-      method: "POST",
+    const url = pago ? `/api/pagos/${pago.id}` : "/api/pagos";
+    const method = pago ? "PATCH" : "POST";
+
+    const res = await fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nuevoPago),
+      body: JSON.stringify(datosPago),
     });
 
     if (res.ok) {
       onGuardar();
       onClose();
     } else {
-      alert("Error al registrar el pago");
+      alert("Error al guardar el pago");
     }
   };
 
@@ -79,7 +100,7 @@ export default function ModalPago({
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-6 text-gray-900">
-          Registrar Pago de Horas
+          {pago ? "Editar Pago" : "Registrar Pago de Horas"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* No. Factura */}
@@ -91,11 +112,8 @@ export default function ModalPago({
               type="text"
               value={noFactura}
               onChange={(e) => setNoFactura(e.target.value)}
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2
-                         focus:outline-none focus:ring-2 focus:ring-[#295d0c] focus:border-[#295d0c]
-                         transition"
               required
-              aria-required="true"
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
             />
           </label>
 
@@ -108,10 +126,7 @@ export default function ModalPago({
               value={detallePago}
               onChange={(e) => setDetallePago(e.target.value)}
               required
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 resize-y min-h-[80px]
-                         focus:outline-none focus:ring-2 focus:ring-[#295d0c] focus:border-[#295d0c]
-                         transition"
-              aria-required="true"
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 resize-y min-h-[80px] focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
             />
           </label>
 
@@ -124,10 +139,7 @@ export default function ModalPago({
               value={formaPago}
               onChange={(e) => setFormaPago(e.target.value)}
               required
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2
-                         focus:outline-none focus:ring-2 focus:ring-[#295d0c] focus:border-[#295d0c]
-                         cursor-pointer transition"
-              aria-required="true"
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
             >
               <option value="Efectivo">Efectivo</option>
               <option value="Tarjeta">Tarjeta</option>
@@ -138,37 +150,42 @@ export default function ModalPago({
           {/* Tipo de horas */}
           <label className="block">
             <span className="text-gray-800 font-semibold">
-              Tipo de Horas <span className="text-red-600">*</span>
+              Tipo de Horas {pago ? null : <span className="text-red-600">*</span>}
             </span>
             <select
               value={tipoHoras}
               onChange={(e) => setTipoHoras(e.target.value)}
-              required
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2
-                         focus:outline-none focus:ring-2 focus:ring-[#295d0c] focus:border-[#295d0c]
-                         cursor-pointer transition"
-              aria-required="true"
+              required={!pago}
+              disabled={!!pago}
+              className={`mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                pago
+                  ? "border-gray-300 bg-gray-100 cursor-not-allowed focus:ring-0"
+                  : "border-gray-300 focus:ring-[#295d0c]"
+              }`}
             >
               <option value="Paquete">Paquete</option>
               <option value="Individual">Individual</option>
             </select>
           </label>
 
+          
           {/* Cantidad de horas */}
           <label className="block">
             <span className="text-gray-800 font-semibold">
-              Cantidad de Horas <span className="text-red-600">*</span>
+              Cantidad de Horas {pago ? null : <span className="text-red-600">*</span>}
             </span>
             <input
               type="number"
               value={cantHoras}
               onChange={(e) => setCantHoras(parseInt(e.target.value) || 0)}
               min={1}
-              required
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2
-                         focus:outline-none focus:ring-2 focus:ring-[#295d0c] focus:border-[#295d0c]
-                         transition"
-              aria-required="true"
+              required={!pago}
+              disabled={!!pago}
+              className={`mt-1 w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 ${
+                pago
+                  ? "border-gray-300 bg-gray-100 text-gray-500 cursor-not-allowed focus:ring-0"
+                  : "border-gray-300 focus:ring-[#295d0c]"
+              }`}
             />
           </label>
 
@@ -180,7 +197,6 @@ export default function ModalPago({
               value={monto}
               readOnly
               className="mt-1 w-full border border-gray-300 bg-gray-100 rounded-md px-3 py-2 text-gray-700"
-              aria-readonly="true"
             />
           </label>
 
@@ -197,7 +213,7 @@ export default function ModalPago({
               type="submit"
               className="px-6 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a] transition"
             >
-              Guardar
+              {pago ? "Guardar Cambios" : "Guardar"}
             </button>
           </div>
         </form>

@@ -9,9 +9,9 @@ type Pregunta = {
 };
 
 const EncuestaPage = () => {
-  const params = useParams();
+  const { id } = useParams();
   const router = useRouter();
-  const bitacoraId = params.bitacoraId;
+  const bitacoraId = Number(id);
 
   const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
   const [respuestas, setRespuestas] = useState<Record<number, number>>({});
@@ -39,7 +39,7 @@ const EncuestaPage = () => {
   const manejarSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!bitacoraId) {
+    if (isNaN(bitacoraId)) {
       alert("No se encontró el ID de la bitácora.");
       return;
     }
@@ -49,13 +49,13 @@ const EncuestaPage = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          calificacion: Math.round(calificacionBase10), // envías la calificación en base 10, redondeada
+          calificacion: Math.round(calificacionBase10),
         }),
       });
 
       if (res.ok) {
         alert("Calificación enviada con éxito. ¡Gracias!");
-        router.push("/"); // redirige a home o donde quieras
+        window.location.href = "https://www.posdehonduras.com"; // Redirige a donde se desee
       } else {
         alert("Error al enviar la calificación.");
       }
@@ -103,12 +103,6 @@ const EncuestaPage = () => {
             </div>
           </div>
         ))}
-
-        <div className="text-right font-semibold">
-          Calificación promedio base 5: <span className="text-blue-700">{calificacionBase5.toFixed(2)}</span>
-          <br />
-          Calificación escalada base 10: <span className="text-blue-700">{calificacionBase10.toFixed(2)}</span>
-        </div>
 
         <button
           type="submit"
