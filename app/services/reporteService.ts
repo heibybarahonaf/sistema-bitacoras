@@ -188,6 +188,42 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
 }
 
 
+export async function generarPDFPorVentasTecnico(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
+    const usuario = bitacoras[0]?.usuario ?? null;
+    const columnas = [
+        "Fecha", "Cliente", "Ventas"
+    ];
+
+    const datos = bitacoras.map(b => {
+
+        return [
+            formatearFecha(b.fecha_servicio),
+            b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
+            b.ventas ?? campo_vacio
+        ].map(v => v === undefined ? null : v);
+
+    }) as (string | number | null)[][];
+
+    const doc = generarReporte(
+        "Reporte de Ventas Técnico",  
+        bitacoras,                       
+        fechaInicio,                     
+        fechaFinal,                      
+        columnas,                        
+        datos,                           
+        undefined,
+        {
+            tecnico: safe(usuario?.nombre),
+            correoUsuario: safe(usuario?.correo),
+            telefono_usuario: safe(usuario?.telefono),
+            zona: safe(usuario?.zona_asignada)
+        }
+    );
+
+    return Buffer.from(doc.output('arraybuffer'));
+}
+
+
 export function generarPDFPorCliente(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Buffer {
     const columnas = [
         "Fecha", "Ticket", "Servicio", "Modalidad", "Horas", "Tipo Horas", "Técnico", "Descripción"

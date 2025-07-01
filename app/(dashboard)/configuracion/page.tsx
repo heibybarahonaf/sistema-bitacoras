@@ -327,7 +327,7 @@ export default function ConfiguracionPage() {
 
         <div>
           <label className="block font-medium text-gray-700">
-            Valor hora individual (Lps)
+            Valor hora individual (Lps) <span className="text-red-500"><strong>* Sin ISV</strong></span>
           </label>
           <input
             type="number"
@@ -342,9 +342,11 @@ export default function ConfiguracionPage() {
         </div>
 
         <div>
-          <label className="block font-medium text-gray-700">
-            Valor hora por paquete (Lps)
-          </label>
+         <label className="block font-medium text-gray-700">
+          Valor hora por paquete (Lps) <span className="text-red-500"><strong>* Sin ISV</strong></span>
+        </label>
+
+
           <input
             type="number"
             name="valor_hora_paquete"

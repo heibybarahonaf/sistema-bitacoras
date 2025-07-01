@@ -3,8 +3,10 @@ import { NextResponse } from "next/server";
 import { BitacoraService } from "@/app/services/bitacoraService";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { ConfiguracionService } from "@/app/services/configService";
 
 type BitacoraConRelaciones = Prisma.BitacoraGetPayload<{
+    comision: string,
     include: {
         cliente: true;
         usuario: true;
@@ -35,18 +37,29 @@ export async function GET(request: Request) {
             throw new ResponseDto(404, "No se encontraron bitácoras para el técnico en el rango de fechas especificado");
         }
 
-        const bitacoras_filtradas = bitacoras.map((bitacora: BitacoraConRelaciones) => ({
-            fecha: bitacora.fecha_servicio ?? bitacora.fecha_servicio,
-            ticket: bitacora.no_ticket,
-            cliente: bitacora.cliente.empresa,
-            tecnico: bitacora.usuario.nombre,
-            hora_llegada: bitacora.hora_llegada,
-            hora_salida: bitacora.hora_salida,
-            servicio: bitacora.tipo_servicio?.descripcion,
-            modalidad: bitacora.modalidad,
-            tipo_horas: bitacora.tipo_horas,
-            descripcion: bitacora.descripcion_servicio
-        }));
+        const config = await ConfiguracionService.obtenerConfiguracionPorId(1);
+        const bitacoras_filtradas = bitacoras.map((bitacora: BitacoraConRelaciones) => {
+        
+            const esIndividual = bitacora.tipo_horas === 'Individual';
+            const precio = esIndividual ? config.valor_hora_individual : config.valor_hora_paquete;
+            const monto = bitacora.horas_consumidas * precio;
+            const comision = monto * (config.comision / 100);
+
+            return {
+                fecha: bitacora.fecha_servicio,
+                ticket: bitacora.no_ticket,
+                cliente: bitacora.cliente.empresa,
+                tecnico: bitacora.usuario.nombre,
+                hora_llegada: bitacora.hora_llegada,
+                hora_salida: bitacora.hora_salida,
+                servicio: bitacora.tipo_servicio?.descripcion,
+                modalidad: bitacora.modalidad,
+                tipo_horas: bitacora.tipo_horas,
+                monto,
+                comision,
+                descripcion: bitacora.descripcion_servicio
+            };
+        });
 
         return NextResponse.json(new ResponseDto(200, "Bitácoras recuperadas con éxito", [bitacoras_filtradas]));
 

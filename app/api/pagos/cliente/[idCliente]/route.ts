@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { PagoService } from "@/app/services/pagoService";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function GET(req: Request, { params }: { params: Promise<{ idCliente: string }> }) {

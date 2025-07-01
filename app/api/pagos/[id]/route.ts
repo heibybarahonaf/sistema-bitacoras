@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { ResponseDto } from "@/app/common/dtos/response.dto";
-import { PagoService } from "@/app/services/pagoService";
 import { CrearPagoDto } from "@/app/dtos/pago.dto";
+import { PagoService } from "@/app/services/pagoService";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { obtenerPayloadSesion } from "@/app/common/utils/session.utils";
 
 const EditarPagoDto = CrearPagoDto.partial();
 type EditarPagoDto = z.infer<typeof EditarPagoDto>;
@@ -27,11 +28,16 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 }
 
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
-    const idParams = (await params).id;
-
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    
     try {
         
+        const payload = await obtenerPayloadSesion();
+        if (payload.rol !== "admin") {
+            return NextResponse.json(new ResponseDto(403, "No tienes permiso para acceder a esta información"));
+        }
+
+        const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const body = await req.json();
         const parsed = EditarPagoDto.safeParse(body);
