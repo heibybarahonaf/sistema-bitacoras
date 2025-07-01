@@ -44,6 +44,8 @@ export default function ModalDetalleBitacora({
 }: ModalDetalleBitacoraProps) {
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
   const [firmaClienteImg, setFirmaClienteImg] = useState<string | null>(null);
+  const [firmaClienteUrl, setFirmaClienteUrl] = useState<string | null>(null);
+
 
   useEffect(() => {
     let isMounted = true;
@@ -63,7 +65,17 @@ export default function ModalDetalleBitacora({
           const res = await fetch(`/api/firmas/${bitacora.firmaCLiente_id}`);
           const data = await res.json();
           const base64 = data.results?.[0]?.firma_base64;
-          if (isMounted && base64) setFirmaClienteImg(base64);
+          const url = data.results?.[0]?.url;
+
+          if (isMounted) {
+            if (base64 && base64.trim() !== "") {
+              setFirmaClienteImg(base64);
+              setFirmaClienteUrl(null);
+            } else if (url) {
+              setFirmaClienteImg(null);
+              setFirmaClienteUrl(url);
+            }
+          }
         }
       } catch (error) {
         console.error("Error cargando firmas:", error);
@@ -163,30 +175,49 @@ export default function ModalDetalleBitacora({
           )}
         </div>
 
-        {(firmaTecnicoImg || firmaClienteImg) && (
-          <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-            {firmaTecnicoImg && (
-              <div className="flex flex-col items-center">
-                <span className="font-semibold text-gray-800 mb-2">Firma del Técnico</span>
-                <img
-                  src={firmaTecnicoImg}
-                  alt="Firma técnico"
-                  className="border-b border-gray-400 max-w-xs w-full object-contain"
-                />
-              </div>
-            )}
-            {firmaClienteImg && (
-              <div className="flex flex-col items-center">
-                <span className="font-semibold text-gray-800 mb-2">Firma del Cliente</span>
-                <img
-                  src={firmaClienteImg}
-                  alt="Firma cliente"
-                  className="border-b border-gray-400 max-w-xs w-full object-contain"
-                />
-              </div>
-            )}
-          </div>
-        )}
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+        <div className="flex flex-col items-center">
+          <span className="font-semibold text-gray-800 mb-2">Firma del Técnico</span>
+          {firmaTecnicoImg ? (
+            <img
+              src={firmaTecnicoImg}
+              alt="Firma técnico"
+              className="border-b border-gray-400 max-w-xs w-full object-contain"
+            />
+          ) : (
+            <span className="text-red-600">Firma pendiente</span>
+          )}
+        </div>
+
+        <div className="flex flex-col items-center">
+          <span className="font-semibold text-gray-800 mb-2">Firma del Cliente</span>
+          {firmaClienteImg ? (
+            <img
+              src={firmaClienteImg}
+              alt="Firma cliente"
+              className="border-b border-gray-400 max-w-xs w-full object-contain"
+            />
+          ) : firmaClienteUrl ? (
+            <div className="text-center">
+              <span className="text-red-600 font-semibold block mb-2">⚠️PENDIENTE</span>
+              <p className="text-sm text-gray-700 mb-2">El cliente aún no ha firmado.</p>
+              <button
+                className="text-blue-600 underline hover:text-blue-800 text-sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(firmaClienteUrl);
+                  alert("ENLACE COPIADO");
+                }}
+              >
+                Copiar enlace de firma
+              </button>
+            </div>
+          ) : (
+            <span className="text-red-600">⚠️ pendiente</span>
+          )}
+
+        </div>
+      </div>
+
 
         <div className="mt-8 flex justify-end">
           <button

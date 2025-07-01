@@ -282,20 +282,20 @@ useEffect(() => {
       const res = await fetch(`/api/firmas/verificar/${firmaClienteRemotaId}`);
       const json = await res.json();
 
-      if (json.vencida) {
-        clearInterval(intervalo);
-        setEsperandoFirmaCliente(false);
-        setFirmaClienteRemotaId(null);
-        setUrlFirmaRemota(null);
+      //if (json.vencida) {
+      //  clearInterval(intervalo);
+      //  setEsperandoFirmaCliente(false);
+      //  setFirmaClienteRemotaId(null);
+      //  setUrlFirmaRemota(null);
 
-        Swal.fire({
-          icon: "warning",
-          title: "El enlace ha expirado",
-          text: "Debe generar un nuevo enlace para que el cliente firme.",
-        });
+      //  Swal.fire({
+      //    icon: "warning",
+      //    title: "El enlace ha expirado",
+      //    text: "Debe generar un nuevo enlace para que el cliente firme.",
+      //  });
 
-        return;
-      }
+      //  return;
+      //}
 
       if (json.firmada) {
         setEsperandoFirmaCliente(false);

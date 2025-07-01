@@ -429,11 +429,13 @@ const BuscarCliente: React.FC = () => {
                       <th className="px-4 py-3 border-b text-left">Horas consumidas</th>
                       <th className="px-4 py-3 border-b text-left">Fase</th>
                       <th className="px-4 py-3 border-b text-left">Descripción</th>
+                      <th className="px-4 py-3 border-b text-left">Firma</th>
                       <th className="px-4 py-3 border-b text-center">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {bitacorasMostrar.map((b: any) => (
+                    {bitacorasMostrar.map((b: any) => {
+                      return (
                       <tr key={b.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3 border-b">{b.no_ticket}</td>
                         <td
@@ -452,6 +454,12 @@ const BuscarCliente: React.FC = () => {
                         </td>
                         <td className="px-4 py-3 border-b">{b.fase_implementacion?.fase || '—'}</td>
                         <td className="px-4 py-3 border-b">{b.descripcion_servicio}</td>
+                        <td className="px-4 py-3 border-b">
+                          {b.firmaCliente?.firma_base64
+                            ? <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm font-semibold">Firmada</span>
+                            : <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm font-semibold">Pendiente</span>
+                          }
+                        </td>
                         <td className="px-4 py-3 border-b text-center">
                           <button
                             onClick={() => mostrarDetalleBitacora(b)}
@@ -472,7 +480,8 @@ const BuscarCliente: React.FC = () => {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
 

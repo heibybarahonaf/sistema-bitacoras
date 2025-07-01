@@ -32,7 +32,7 @@ export default function FirmaClientePage() {
           Swal.fire({
             icon: "error",
             title: "Enlace inválido",
-            text: data.error || "El enlace ya expiró o no existe.",
+            text: data.error || "El enlace ya ha sido utilizado.",
             confirmButtonText: "OK",
           }).then(() => {
             window.location.href = "https://www.posdehonduras.com";

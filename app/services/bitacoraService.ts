@@ -95,6 +95,7 @@ export class BitacoraService {
             tipo_servicio: true,
             sistema: true,
             equipo: true,
+            firmaCliente: true,
             },
         });
 

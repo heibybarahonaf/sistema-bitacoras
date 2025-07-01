@@ -9,7 +9,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
         
         const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
-        const bitacora = await BitacoraService.obtenerBitacoraPorId(id);
+        const bitacora = await BitacoraService.obtenerBitacorasConFirma(id);
 
         return NextResponse.json(new ResponseDto(200, "Bitacora recuperada con éxito", [bitacora]));
 
