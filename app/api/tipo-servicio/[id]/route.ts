@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { NextResponse } from "next/server";
-import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
-import { TipoServicioService } from "@/app/services/tipoServicioService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { CrearTipoServicioDto } from "@/app/dtos/tipoServicio.dto";
+import { obtenerPayloadSesion } from "@/app/common/utils/session.utils";
+import { TipoServicioService } from "@/app/services/tipoServicioService";
 
 const EditarTipoServicioDto = CrearTipoServicioDto.partial();
 type EditarTipoServicioDto = z.infer<typeof EditarTipoServicioDto>;
@@ -56,6 +57,11 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     
     try {
         
+        const payload = await obtenerPayloadSesion();
+        if (payload.rol !== "admin") {
+            return NextResponse.json(new ResponseDto(403, "No tienes permiso para acceder a esta información"));
+        }
+
         const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
         const tipoServicioEliminado = await TipoServicioService.eliminarTipoServicio(id);

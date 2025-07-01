@@ -10,7 +10,14 @@ import { UsuarioService } from "../services/usuarioService";
 import { EncuestaService } from "../services/encuestaService";
 import { ConfiguracionService } from "../services/configService";
 
+export const EditarBitacoraDto = z.object({
+    id: z.number(),
+    respuestas: z.string().regex(/^(\d+(,\d+)*)?$/), //  "5,4,3" y asi
+    calificacion: z.number(),
+});
+
 type CrearBitacoraDto = z.infer<typeof CrearBitacoraDto>;
+type EditarBitacoraDto = z.infer<typeof EditarBitacoraDto>;
 
 export class BitacoraService {
 
@@ -89,12 +96,12 @@ export class BitacoraService {
     public static async obtenerBitacorasCliente(idCliente: number): Promise<Bitacora[]> {
         const bitacoras = await prisma.bitacora.findMany({
             where: { cliente_id: idCliente },
-            orderBy: { createdAt: "desc" },
+            orderBy: { fecha_servicio: "desc" },
             include: {
-            fase_implementacion: true,
-            tipo_servicio: true,
-            sistema: true,
-            equipo: true,
+                fase_implementacion: true,
+                tipo_servicio: true,
+                sistema: true,
+                equipo: true,
             },
         });
 
@@ -124,7 +131,7 @@ export class BitacoraService {
                 tipo_servicio: true,
                 fase_implementacion: true,
             },
-            orderBy: { createdAt: "asc" }
+            orderBy: { fecha_servicio: "desc" }
         });
 
         if (bitacoras.length === 0) {
@@ -152,7 +159,7 @@ export class BitacoraService {
                 equipo: true,
                 tipo_servicio: true,
             },
-            orderBy: { createdAt: "asc" }
+            orderBy: { fecha_servicio: "desc" }
         });
 
         if (bitacoras.length === 0) {
@@ -166,7 +173,7 @@ export class BitacoraService {
     public static async obtenerBitacorasTecnico(idTecnico: number): Promise<Bitacora[]> {
         const bitacoras = await prisma.bitacora.findMany({ 
             where: { usuario_id: idTecnico },
-            orderBy: { createdAt: "desc" }
+            orderBy: { fecha_servicio: "desc" }
         });
 
         if(bitacoras.length === 0){
@@ -212,12 +219,13 @@ export class BitacoraService {
         if (tipo_horas === "Individual") {
             const horasActuales = cliente.horas_individuales ?? 0;
             const montoActual = cliente.monto_individuales ?? 0;
-            const montoDebitado = horas_consumidas * configuracion.valor_hora_individual;
-            monto = montoDebitado;
+            const montoIsv = configuracion.valor_hora_individual * (configuracion.comision / 100);
+            const montoDebitado = horas_consumidas * (configuracion.valor_hora_individual + montoIsv);
+            monto = montoDebitado;   
             
-            if (horasActuales < horas_consumidas || montoActual < montoDebitado) {
+            /*if (horasActuales < horas_consumidas || montoActual < montoDebitado) {
                 throw new ResponseDto(400, "Saldo insuficiente en horas individuales.");
-            }
+            }*/
 
             datosActualizacion = {
                 horas_individuales: horasActuales - horas_consumidas,
@@ -227,12 +235,13 @@ export class BitacoraService {
         } else if (tipo_horas === "Paquete") {
             const horasActuales = cliente.horas_paquetes ?? 0;
             const montoActual = cliente.monto_paquetes ?? 0;
-            const montoDebitado = horas_consumidas * configuracion.valor_hora_paquete;
+            const montoIsv = configuracion.valor_hora_paquete * (configuracion.comision / 100);
+            const montoDebitado = horas_consumidas * (configuracion.valor_hora_paquete + montoIsv);
             monto = montoDebitado;
             
-            if (horasActuales < horas_consumidas || montoActual < montoDebitado) {
+            /*if (horasActuales < horas_consumidas || montoActual < montoDebitado) {
                 throw new ResponseDto(400, "Saldo insuficiente en horas de paquete.");
-            }
+            }*/
 
             datosActualizacion = {
                 horas_paquetes: horasActuales - horas_consumidas,
@@ -240,7 +249,9 @@ export class BitacoraService {
             };
 
         } else {
+
             throw new ResponseDto(400, "Tipo de horas inválido. Debe ser 'Paquete' o 'Individual'");
+
         }
 
         try {
@@ -251,13 +262,14 @@ export class BitacoraService {
                     monto: monto
                 }
             });
-
+            
+            /*
             await prisma.encuesta_Bitacora.create({
                 data: {
                     bitacora_id: bitacora.id,
                     encuesta_id: encuestaActiva.id,                
                 },
-            });
+            });*/
 
             await ClienteService.editarCliente(cliente_id, datosActualizacion);
             return bitacora;
@@ -270,25 +282,57 @@ export class BitacoraService {
 
     }
 
-    public static async obtenerBitacoraPorFirmaClienteId(firmaClienteId: number): Promise<Bitacora> {
-    const bitacora = await prisma.bitacora.findFirst({
-        where: { firmaCLiente_id: firmaClienteId },
-        include: {
-            cliente: true,
-            usuario: true,
-            sistema: true,
-            equipo: true,
-            firmaTecnico: true,
-            firmaCliente: true,
-        },
-    });
 
-    if (!bitacora) {
-        throw new ResponseDto(404, "No se encontró la bitácora asociada a esta firma");
+    public static async editarBitacora(bitacoraData: EditarBitacoraDto): Promise<Bitacora> {
+        const encuestaActiva = await EncuestaService.obtenerEncuestaActiva();
+        const { id, respuestas, calificacion } = bitacoraData;
+
+        const bitacora = await prisma.bitacora.findUnique({
+            where: { id },
+        });
+
+        if (!bitacora) throw new Error("Bitácora no encontrada");
+        const bitacoraActualizada = await prisma.bitacora.update({
+            where: { id },
+            data: {
+                calificacion,
+                updatedAt: new Date(),
+            },
+        });
+
+        await prisma.encuesta_Bitacora.create({
+            data: {
+            bitacora_id: id,
+            encuesta_id: encuestaActiva.id,
+            respuestas: respuestas, 
+            },
+        });
+
+        return bitacoraActualizada;
+
     }
 
-    return bitacora;
-}
 
+    public static async obtenerBitacoraPorFirmaClienteId(firmaClienteId: number): Promise<Bitacora> {
+        const bitacora = await prisma.bitacora.findFirst({
+            where: { firmaCLiente_id: firmaClienteId },
+            include: {
+                cliente: true,
+                usuario: true,
+                sistema: true,
+                equipo: true,
+                firmaTecnico: true,
+                firmaCliente: true,
+            },
+        });
+
+        if (!bitacora) {
+
+            throw new ResponseDto(404, "No se encontró la bitácora asociada a esta firma");
+
+        }
+
+        return bitacora;
+    }
 
 }

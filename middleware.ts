@@ -10,6 +10,7 @@ export async function middleware(req: NextRequest) {
         "/api/auth/login",
         "/api/auth/enviar-codigo",
         "/api/firmas/finalizar",
+        "/api/encuesta-bitacora", 
     ];
     const esApiPublica =
         rutasApiPublicas.some((ruta) => pathname.startsWith(ruta)) ||

@@ -42,7 +42,7 @@ export async function POST(req: Request) {
             throw new ResponseDto(401, "Contraseña incorrecta");
         }
 
-        const tokenSesion = AuthUtils.generarTokenSesion({ correo: usuario.correo, rol: usuario.rol }, 3600);
+        const tokenSesion = AuthUtils.generarTokenSesion({ correo: usuario.correo, rol: usuario.rol }, 360000);
         const response = NextResponse.json(new ResponseDto(200, "Inicio de sesión exitoso"));
         
         response.cookies.set("session_token", tokenSesion, {

@@ -51,9 +51,9 @@ export const CrearBitacoraDto = z.object({
         message: "El tipo de horas debe ser 'Individual' o 'Paquete'."
     }),
     tipo_servicio_id: z.number({
-    required_error: "El ID del tipo de servicio es obligatorio.",
-    invalid_type_error: "El ID del tipo de servicio debe ser un número.",
-  }),
+        required_error: "El ID del tipo de servicio es obligatorio.",
+        invalid_type_error: "El ID del tipo de servicio debe ser un número.",
+    }),
     fase_implementacion_id: z.number({
         required_error: "El ID de la fase de implementación es obligatorio.",
         invalid_type_error: "El ID de la fase de implementación debe ser un número.",

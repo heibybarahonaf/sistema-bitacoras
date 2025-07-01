@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
-import { ConfiguracionService } from "@/app/services/configService";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { ConfiguracionService } from "@/app/services/configService";
 
 export async function POST(req: Request) {
 
@@ -20,6 +20,7 @@ export async function POST(req: Request) {
             throw new ResponseDto(401, "El tipo de hora es invalido!");
         }
          
+        monto = monto + ( monto * configuracion.comision);
         return NextResponse.json(new ResponseDto(200, "Monto calculado con éxito", [monto]));
 
     } catch (error) {
