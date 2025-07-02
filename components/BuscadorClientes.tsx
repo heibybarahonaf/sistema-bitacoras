@@ -60,6 +60,8 @@ const BuscarCliente: React.FC = () => {
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [tipo_servicio, setTipoServicio] = useState<TipoServicio[]>([]);
   const [fase_implementacion, setFaseImplementacion] = useState<FaseImplementacion[]>([]);
+  const [filtroEstado, setFiltroEstado] = useState("todas");
+
 
   // Paginación clientes
   const [paginaActualClientes, setPaginaActualClientes] = useState(1);
@@ -239,11 +241,18 @@ const BuscarCliente: React.FC = () => {
   );
 
   // Paginación bitácoras
-  const totalPaginasBitacoras = Math.ceil(bitacoras.length / bitacorasPorPagina);
-  const bitacorasMostrar = bitacoras.slice(
-    (paginaActualBitacoras - 1) * bitacorasPorPagina,
-    paginaActualBitacoras * bitacorasPorPagina
-  );
+  const bitacorasFiltradas = bitacoras.filter((b: any) => {
+  if (filtroEstado === "pendientes") return !b.firmaCliente?.firma_base64;
+  if (filtroEstado === "firmadas") return !!b.firmaCliente?.firma_base64;
+  return true;
+});
+
+const totalPaginasBitacoras = Math.ceil(bitacorasFiltradas.length / bitacorasPorPagina);
+const bitacorasMostrar = bitacorasFiltradas.slice(
+  (paginaActualBitacoras - 1) * bitacorasPorPagina,
+  paginaActualBitacoras * bitacorasPorPagina
+);
+
 
   return (
     <div className="w-full p-6 pb-20 bg-white min-h-screen">
@@ -337,34 +346,51 @@ const BuscarCliente: React.FC = () => {
             </button>
           </div>
 
-          <div
-            className="w-[550px] sm:w-full mx-auto p-4 bg-gray-50 border rounded flex justify-between mb-6"
-          >
-            <div className="flex flex-col space-y-2 text-left">
-              <p><strong>DATOS DEL CLIENTE</strong></p>
-              <p><strong>Empresa:</strong> {clienteSeleccionado.empresa}</p>
-              <p><strong>Responsable:</strong> {clienteSeleccionado.responsable}</p>
-              <p><strong>RTN:</strong> {clienteSeleccionado.rtn}</p>
-              <p><strong>Dirección:</strong> {clienteSeleccionado.direccion}</p>
-              <p><strong>Teléfono:</strong> {clienteSeleccionado.telefono}</p>
-              <p><strong>Correo:</strong> {clienteSeleccionado.correo}</p>
-            </div>
+          <div className="w-full mx-auto p-4 bg-gray-50 border rounded mb-6 flex flex-col sm:flex-row justify-between gap-4">
+  {/* Datos del cliente */}
+  <div className="flex-1 space-y-2 text-left">
+    <p className="font-bold text-sm text-gray-700">DATOS DEL CLIENTE</p>
+    <p><strong>Empresa:</strong> {clienteSeleccionado.empresa}</p>
+    <p><strong>Responsable:</strong> {clienteSeleccionado.responsable}</p>
+    <p><strong>RTN:</strong> {clienteSeleccionado.rtn}</p>
+    <p><strong>Dirección:</strong> {clienteSeleccionado.direccion}</p>
+    <p><strong>Teléfono:</strong> {clienteSeleccionado.telefono}</p>
+    <p><strong>Correo:</strong> {clienteSeleccionado.correo}</p>
+  </div>
 
-            <div className="flex flex-col space-y-2 text-right">
-              <p><strong>HORAS - SALDOS</strong></p>
-              <p><strong>Paquetes:</strong> {clienteSeleccionado.horas_paquetes} - {formatoLempiras(clienteSeleccionado.monto_paquetes)}</p>
-              <p><strong>Individuales:</strong> {clienteSeleccionado.horas_individuales} - {formatoLempiras(clienteSeleccionado.monto_individuales)}</p>
-              <p className="mt-4 border-t pt-2 font-semibold">
-                <strong>Total:</strong>{" "}
-                {clienteSeleccionado.horas_paquetes + clienteSeleccionado.horas_individuales} -{" "}
-                {formatoLempiras(clienteSeleccionado.monto_paquetes + clienteSeleccionado.monto_individuales)}
-              </p>
-            </div>
-          </div>
+  {/* Horas y saldos */}
+  <div className="flex-1 space-y-2 text-left sm:text-right">
+    <p className="font-bold text-sm text-gray-700">HORAS - SALDOS</p>
+    <p><strong>Paquetes:</strong> {clienteSeleccionado.horas_paquetes} - {formatoLempiras(clienteSeleccionado.monto_paquetes)}</p>
+    <p><strong>Individuales:</strong> {clienteSeleccionado.horas_individuales} - {formatoLempiras(clienteSeleccionado.monto_individuales)}</p>
+    <p className="mt-4 border-t pt-2 font-semibold">
+      <strong>Total:</strong>{" "}
+      {clienteSeleccionado.horas_paquetes + clienteSeleccionado.horas_individuales} -{" "}
+      {formatoLempiras(clienteSeleccionado.monto_paquetes + clienteSeleccionado.monto_individuales)}
+    </p>
+  </div>
+</div>
+
 
           <div className="mt-8">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">BITÁCORAS</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <div className="flex items-center gap-4">
+                <h3 className="text-lg font-semibold">BITÁCORAS</h3>
+
+                <select
+                  value={filtroEstado}
+                  onChange={(e) => {
+                    setFiltroEstado(e.target.value);
+                    setPaginaActualBitacoras(1); // Reinicia la paginación al cambiar el filtro
+                  }}
+                  className="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+                >
+                  <option value="todas">Todas</option>
+                  <option value="pendientes">Pendientes</option>
+                  <option value="firmadas">Firmadas</option>
+                </select>
+              </div>
               <div className="space-x-2">
                 <button
                   onClick={() => setShowNewBitacora(true)}
@@ -379,6 +405,7 @@ const BuscarCliente: React.FC = () => {
                   Pago
                 </button>
               </div>
+            </div>
             </div>
 
             <ModalDetalleBitacora
@@ -421,68 +448,92 @@ const BuscarCliente: React.FC = () => {
               <p className="text-gray-500">Este cliente no tiene bitácoras registradas.</p>
             ) : (
               <>
-                <table className="min-w-full table-auto border-collapse">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="px-4 py-3 border-b text-left">Ticket</th>
-                      <th className="px-4 py-3 border-b text-left">Fecha</th>
-                      <th className="px-4 py-3 border-b text-left">Horas consumidas</th>
-                      <th className="px-4 py-3 border-b text-left">Fase</th>
-                      <th className="px-4 py-3 border-b text-left">Descripción</th>
-                      <th className="px-4 py-3 border-b text-left">Firma</th>
-                      <th className="px-4 py-3 border-b text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bitacorasMostrar.map((b: any) => {
-                      return (
-                      <tr key={b.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 border-b">{b.no_ticket}</td>
-                        <td
-                          className="px-4 py-3 border-b"
-                          title={new Date(b.fecha_servicio).toLocaleString()}
-                        >
-                          {new Date(b.fecha_servicio).toLocaleDateString("es-HN", {
-                            timeZone: "UTC",
-                            year: "numeric",
-                            month: "2-digit",
-                            day: "2-digit",
-                          })}
-                        </td>
-                        <td className="px-4 py-3 border-b">
-                          {b.horas_consumidas} ({b.tipo_horas})
-                        </td>
-                        <td className="px-4 py-3 border-b">{b.fase_implementacion?.fase || '—'}</td>
-                        <td className="px-4 py-3 border-b">{b.descripcion_servicio}</td>
-                        <td className="px-4 py-3 border-b">
-                          {b.firmaCliente?.firma_base64
-                            ? <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-sm font-semibold">Firmada</span>
-                            : <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-sm font-semibold">Pendiente</span>
-                          }
-                        </td>
-                        <td className="px-4 py-3 border-b text-center">
-                          <button
-                            onClick={() => mostrarDetalleBitacora(b)}
-                            title="Ver detalles"
-                            className="mr-2 text-[#295d0c] hover:text-[#173a01]"
-                          >
-                            <Eye size={20} />
-                          </button>
-                          <button
-                            onClick={() => handleDownload(b.id)}
-                            title="Descargar PDF"
-                            disabled={isDownloading === b.id}
-                            className={`text-[#2e3763] hover:text-[#171f40] ${
-                              isDownloading === b.id ? "opacity-50 cursor-not-allowed" : ""
-                            }`}
-                          >
-                            <Download size={20} />
-                          </button>
-                        </td>
-                      </tr>
-                      );
-                    })}
-                  </tbody>
+                <table className="w-full table-auto border-collapse">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-2 sm:px-4 py-3 border-b text-left">Ticket</th>
+                    <th className="px-2 sm:px-4 py-3 border-b text-left">Fecha</th>
+                    <th className="px-2 sm:px-4 py-3 border-b text-left hidden md:table-cell">Horas</th>
+                    <th className="px-2 sm:px-4 py-3 border-b text-left hidden lg:table-cell">Fase</th>
+                    <th className="px-2 sm:px-4 py-3 border-b text-left hidden xl:table-cell">Descripción</th>
+                    <th className="px-2 sm:px-4 py-3 border-b text-left">Firma</th>
+                    <th className="px-2 sm:px-4 py-3 border-b text-center">Acciones</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                {bitacorasMostrar.map((b: any) => (
+                  <tr key={b.id} className="hover:bg-gray-50 text-sm">
+                    {/* Ticket (siempre visible) */}
+                    <td className="px-2 sm:px-4 py-3 border-b">{b.no_ticket}</td>
+
+                    {/* Fecha (siempre visible) */}
+                    <td
+                      className="px-2 sm:px-4 py-3 border-b"
+                      title={new Date(b.fecha_servicio).toLocaleString()}
+                    >
+                      {new Date(b.fecha_servicio).toLocaleDateString("es-HN", {
+                        timeZone: "UTC",
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      })}
+                    </td>
+
+                    {/* Horas (oculta en <768px) */}
+                    <td className="px-2 sm:px-4 py-3 border-b hidden md:table-cell">
+                      {b.horas_consumidas} ({b.tipo_horas})
+                    </td>
+
+                    {/* Fase (oculta en <1024px) */}
+                    <td className="px-2 sm:px-4 py-3 border-b hidden lg:table-cell">
+                      {b.fase_implementacion?.fase || '—'}
+                    </td>
+
+                    {/* Descripción (oculta en <1280px) y truncada */}
+                    <td
+                      className="px-2 sm:px-4 py-3 border-b hidden xl:table-cell truncate max-w-[150px]"
+                      title={b.descripcion_servicio}
+                    >
+                      {b.descripcion_servicio}
+                    </td>
+
+                    {/* Firma (oculta en <768px) */}
+                    <td className="px-2 sm:px-4 py-3 border-b">
+                      {b.firmaCliente?.firma_base64 ? (
+                        <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
+                          Firmada
+                        </span>
+                      ) : (
+                        <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-semibold">
+                          Pendiente
+                        </span>
+                      )}
+                    </td>
+
+                    {/* Acciones (siempre visible) */}
+                    <td className="px-2 sm:px-4 py-3 border-b text-center">
+                      <button
+                        onClick={() => mostrarDetalleBitacora(b)}
+                        title="Ver detalles"
+                        className="mr-2 text-[#295d0c] hover:text-[#173a01]"
+                      >
+                        <Eye size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDownload(b.id)}
+                        title="Descargar PDF"
+                        disabled={isDownloading === b.id}
+                        className={`text-[#2e3763] hover:text-[#171f40] ${
+                          isDownloading === b.id ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        <Download size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
                 </table>
 
                 {/* Paginación Bitácoras */}

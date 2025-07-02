@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 interface Sistema {
   id: number;
@@ -45,7 +45,8 @@ export default function ModalDetalleBitacora({
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
   const [firmaClienteImg, setFirmaClienteImg] = useState<string | null>(null);
   const [firmaClienteUrl, setFirmaClienteUrl] = useState<string | null>(null);
-
+  const [noSoportaClipboard, setNoSoportaClipboard] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -85,6 +86,7 @@ export default function ModalDetalleBitacora({
     if (isOpen && bitacora) {
       setFirmaTecnicoImg(null);
       setFirmaClienteImg(null);
+      setNoSoportaClipboard(false);
       cargarFirmas();
     }
 
@@ -94,6 +96,20 @@ export default function ModalDetalleBitacora({
   }, [bitacora, isOpen]);
 
   if (!isOpen || !bitacora) return null;
+
+  const copiarAlPortapapeles = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(firmaClienteUrl || "");
+        alert("ENLACE COPIADO");
+      } else {
+        setNoSoportaClipboard(true);
+      }
+    } catch (error) {
+      console.error("Error al copiar:", error);
+      setNoSoportaClipboard(true);
+    }
+  };
 
   const sistemaNombre = sistemas.find((s) => s.id === bitacora.sistema_id)?.sistema || "";
   const equipoNombre = equipos.find((e) => e.id === bitacora.equipo_id)?.equipo || "";
@@ -109,7 +125,7 @@ export default function ModalDetalleBitacora({
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
-      })
+      }),
     },
     {
       label: "Hora de Llegada",
@@ -128,7 +144,7 @@ export default function ModalDetalleBitacora({
     { label: "Horas Consumidas", value: bitacora.horas_consumidas },
     { label: "Tipo de Horas", value: bitacora.tipo_horas },
     { label: "Responsable", value: bitacora.responsable },
-    { label: "Tipo de Servicio", value: tipoServicioNombre},
+    { label: "Tipo de Servicio", value: tipoServicioNombre },
     ...(sistemaNombre ? [{ label: "Sistema", value: sistemaNombre }] : []),
     ...(equipoNombre ? [{ label: "Equipo", value: equipoNombre }] : []),
     { label: "Modalidad", value: bitacora.modalidad },
@@ -141,7 +157,6 @@ export default function ModalDetalleBitacora({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white w-full max-w-3xl rounded-lg shadow-lg relative max-h-[90vh] overflow-y-auto p-6 sm:p-8">
-        {/* Botón de cierre */}
         <button
           onClick={onClose}
           aria-label="Cerrar modal"
@@ -176,48 +191,62 @@ export default function ModalDetalleBitacora({
         </div>
 
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-        <div className="flex flex-col items-center">
-          <span className="font-semibold text-gray-800 mb-2">Firma del Técnico</span>
-          {firmaTecnicoImg ? (
-            <img
-              src={firmaTecnicoImg}
-              alt="Firma técnico"
-              className="border-b border-gray-400 max-w-xs w-full object-contain"
-            />
-          ) : (
-            <span className="text-red-600">Firma pendiente</span>
-          )}
+          {/* Firma Técnico */}
+          <div className="flex flex-col items-center">
+            <span className="font-semibold text-gray-800 mb-2">Firma del Técnico</span>
+            {firmaTecnicoImg ? (
+              <img
+                src={firmaTecnicoImg}
+                alt="Firma técnico"
+                className="border-b border-gray-400 max-w-xs w-full object-contain"
+              />
+            ) : (
+              <span className="text-red-600">Firma pendiente</span>
+            )}
+          </div>
+
+          {/* Firma Cliente */}
+          <div className="flex flex-col items-center">
+            <span className="font-semibold text-gray-800 mb-2">Firma del Cliente</span>
+            {firmaClienteImg ? (
+              <img
+                src={firmaClienteImg}
+                alt="Firma cliente"
+                className="border-b border-gray-400 max-w-xs w-full object-contain"
+              />
+            ) : firmaClienteUrl ? (
+              <div className="text-center">
+                <span className="text-red-600 font-semibold block mb-2">⚠️ PENDIENTE</span>
+                <p className="text-sm text-gray-700 mb-2">El cliente aún no ha firmado.</p>
+
+                {noSoportaClipboard ? (
+                  <div className="space-y-2">
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      value={firmaClienteUrl}
+                      readOnly
+                      onFocus={() => inputRef.current?.select()}
+                      className="border px-2 py-1 rounded w-full text-sm"
+                    />
+                    <p className="text-xs text-gray-600">
+                      <strong>Copia el enlace manteniendo presionado</strong>
+                    </p>
+                  </div>
+                ) : (
+                  <button
+                    className="text-blue-600 underline hover:text-blue-800 text-sm"
+                    onClick={copiarAlPortapapeles}
+                  >
+                    Copiar enlace de firma
+                  </button>
+                )}
+              </div>
+            ) : (
+              <span className="text-red-600">⚠️ pendiente</span>
+            )}
+          </div>
         </div>
-
-        <div className="flex flex-col items-center">
-          <span className="font-semibold text-gray-800 mb-2">Firma del Cliente</span>
-          {firmaClienteImg ? (
-            <img
-              src={firmaClienteImg}
-              alt="Firma cliente"
-              className="border-b border-gray-400 max-w-xs w-full object-contain"
-            />
-          ) : firmaClienteUrl ? (
-            <div className="text-center">
-              <span className="text-red-600 font-semibold block mb-2">⚠️PENDIENTE</span>
-              <p className="text-sm text-gray-700 mb-2">El cliente aún no ha firmado.</p>
-              <button
-                className="text-blue-600 underline hover:text-blue-800 text-sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(firmaClienteUrl);
-                  alert("ENLACE COPIADO");
-                }}
-              >
-                Copiar enlace de firma
-              </button>
-            </div>
-          ) : (
-            <span className="text-red-600">⚠️ pendiente</span>
-          )}
-
-        </div>
-      </div>
-
 
         <div className="mt-8 flex justify-end">
           <button

@@ -459,19 +459,41 @@ useEffect(() => {
 const nuevaBitacora = data.results?.[0];
 const encuestaUrl = `http://localhost:3000/encuesta/${nuevaBitacora?.id}`;
 
+const clipboardSoportado = typeof navigator.clipboard !== "undefined";
+
 Swal.fire({
   icon: "success",
   title: "Bitácora guardada",
   html: `
-    La bitácora se ha registrado correctamente.<br><br>
-    <strong>Enlace para encuesta:</strong><br>
-    <input id="encuestaLink" type="text" value="${encuestaUrl}" readonly style="width: 100%; padding: 6px; margin-top: 8px; border: 1px solid #ccc; border-radius: 4px;" onclick="this.select()" />
+    <p class="mb-2 text-gray-800">La bitácora se ha registrado correctamente.</p>
+    <strong class="block text-sm mb-1 text-gray-700">Enlace para encuesta:</strong>
+    <div class="flex flex-col gap-2 text-left">
+      <input id="encuestaLinkInput"
+             type="text"
+             value="${encuestaUrl}"
+             readonly
+             onfocus="this.select()"
+             class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-700" />
+      ${
+        clipboardSoportado
+          ? `<button id="copyEncuestaBtn"
+                     class="self-start bg-blue-600 text-white px-4 py-1.5 text-sm rounded hover:bg-blue-700 transition">
+               Copiar
+             </button>`
+          : `<p class="text-xs text-gray-500">Mantenga presionado para copiar el enlace manualmente</p>`
+      }
+    </div>
+    <p class="text-xs text-gray-600 mt-2">Puede compartir este enlace con el cliente para que llene la encuesta.</p>
   `,
   confirmButtonText: "OK",
   didOpen: () => {
-    const input = Swal.getPopup()?.querySelector('#encuestaLink') as HTMLInputElement;
-    if (input) {
-      input.addEventListener('click', () => {
+    if (!clipboardSoportado) return;
+
+    const input = Swal.getPopup()?.querySelector('#encuestaLinkInput') as HTMLInputElement;
+    const copyBtn = Swal.getPopup()?.querySelector('#copyEncuestaBtn') as HTMLButtonElement;
+
+    copyBtn?.addEventListener('click', () => {
+      if (input) {
         input.select();
         navigator.clipboard.writeText(input.value).then(() => {
           Swal.fire({
@@ -484,14 +506,13 @@ Swal.fire({
             timerProgressBar: true,
           });
         });
-      });
-    }
+      }
+    });
   }
 }).then(() => {
   onGuardar();
   onClose();
 });
-
 }
 
 
