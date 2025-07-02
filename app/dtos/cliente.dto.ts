@@ -10,9 +10,8 @@ export const CrearClienteDto = z.object({
         .min(1, "El nombre de la empresa es obligatorio.")
         .transform(val => val.toUpperCase()),
     rtn: z.string()
-        .max(14, "El RTN no debe exceder los 14 caracteres.")
-        .min(1, "El RTN es obligatorio.")
-        .regex(/^\d{14}$/, "El RTN debe tener exactamente 14 dígitos."),
+        .max(14, "El RTN/ID no debe exceder los 14 caracteres.")
+        .min(1, "El RTN es obligatorio."),
     direccion: z.string()
         .max(30, "La dirección no debe exceder los 30 caracteres.")
         .min(1, "La dirección es obligatoria."),

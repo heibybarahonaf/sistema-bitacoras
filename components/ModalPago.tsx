@@ -1,10 +1,12 @@
+import Swal from "sweetalert2"
+import { Pagos_Cliente } from "@prisma/client"
 import React, { useState, useEffect } from "react";
 
 interface ModalPagoProps {
   clienteId: number;
   onClose: () => void;
   onGuardar: () => void;
-  pago?: any; // opcional, si se va a editar
+  pago?: Pagos_Cliente; // opcional, si se va a editar
 }
 
 export default function ModalPago({
@@ -22,6 +24,7 @@ export default function ModalPago({
   const [config, setConfig] = useState({
     valor_hora_paquete: 0,
     valor_hora_individual: 0,
+    comision: 0,
   });
 
   // Pre-cargar datos si es edición
@@ -47,6 +50,7 @@ export default function ModalPago({
           setConfig({
             valor_hora_paquete: conf.valor_hora_paquete,
             valor_hora_individual: conf.valor_hora_individual,
+            comision: conf.comision,
           });
         }
       } catch (error) {
@@ -61,8 +65,8 @@ export default function ModalPago({
   useEffect(() => {
     const precioPorHora =
       tipoHoras === "Paquete"
-        ? config.valor_hora_paquete
-        : config.valor_hora_individual;
+        ? config.valor_hora_paquete + (config.valor_hora_paquete*(config.comision/100))
+        : config.valor_hora_individual + (config.valor_hora_individual*(config.comision/100));
     setMonto(cantHoras * precioPorHora);
   }, [cantHoras, tipoHoras, config]);
 
@@ -91,7 +95,14 @@ export default function ModalPago({
     if (res.ok) {
       onGuardar();
       onClose();
-    } else {
+    } else if(res.status === 403){
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No tienes permiso para realizar esta acción!'
+      });
+    } 
+    else {
       alert("Error al guardar el pago");
     }
   };

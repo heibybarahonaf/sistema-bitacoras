@@ -1,49 +1,12 @@
 "use client";
 
 import Swal from "sweetalert2";
-import { Bitacora } from "@prisma/client";
 import ModalPago from "@/components/ModalPago";
 import React, { useEffect, useState } from "react";
 import { Eye, Notebook, Download } from "lucide-react";
 import FormNuevaBitacora from "@/components/ModalBitacora";
 import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
-
-interface Cliente {
-  id: number;
-  responsable: string;
-  empresa: string;
-  rtn: string;
-  direccion: string;
-  telefono: string;
-  correo: string;
-  activo: boolean;
-  horas_paquetes: number;
-  horas_individuales: number;
-  monto_paquetes: number;
-  monto_individuales: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface Sistema {
-  id: number;
-  sistema: string;
-}
-
-interface Equipo {
-  id: number;
-  equipo: string;
-}
-
-interface TipoServicio {
-  id: number;
-  tipo_servicio: string;
-}
-
-interface FaseImplementacion {
-  id: number;
-  fase: string;
-}
+import { Bitacora, Cliente, Sistema, Equipo, Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
 
 const BuscarCliente: React.FC = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -58,8 +21,8 @@ const BuscarCliente: React.FC = () => {
   const [modalDetalleOpen, setModalDetalleOpen] = useState(false);
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
-  const [tipo_servicio, setTipoServicio] = useState<TipoServicio[]>([]);
-  const [fase_implementacion, setFaseImplementacion] = useState<FaseImplementacion[]>([]);
+  const [tipo_servicio, setTipoServicio] = useState<Tipo_Servicio[]>([]);
+  const [fase_implementacion, setFaseImplementacion] = useState<Fase_Implementacion[]>([]);
   const [filtroEstado, setFiltroEstado] = useState("todas");
 
 

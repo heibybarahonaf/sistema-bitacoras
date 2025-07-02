@@ -1,7 +1,8 @@
+import { v4 as uuidv4 } from "uuid";
 import prisma from "@/app/libs/prisma";
 import { NextResponse } from "next/server";
-import { v4 as uuidv4 } from "uuid";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function POST() {
 
@@ -23,7 +24,7 @@ export async function POST() {
         
     } catch (error) {
 
-        return NextResponse.json({ error: "Error creando firma" }, { status: 500 });
+        return GeneralUtils.generarErrorResponse(error);
       
     }
 

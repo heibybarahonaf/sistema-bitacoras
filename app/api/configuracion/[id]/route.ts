@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { NextResponse } from 'next/server';
-import { ResponseDto } from '@/app/common/dtos/response.dto';
-import { ConfiguracionService } from '@/app/services/configService';
-import { GeneralUtils } from '@/app/common/utils/general.utils';
 import { CrearConfigDto } from "@/app/dtos/config.dto";
+import { ResponseDto } from '@/app/common/dtos/response.dto';
+import { GeneralUtils } from '@/app/common/utils/general.utils';
+import { ConfiguracionService } from '@/app/services/configService';
 
 const EditarConfigDto = CrearConfigDto.partial();
 type EditarConfigDto = z.infer<typeof EditarConfigDto>;

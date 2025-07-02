@@ -1,20 +1,10 @@
 "use client";
 
+import Swal from "sweetalert2";
+import { Usuario } from "@prisma/client";
 import { useEffect, useState } from "react";
 import ModalUsuario from "@/components/ModalUsuario";
-import Swal from "sweetalert2";
 import { Trash2, Users, Edit3, Plus } from "lucide-react";
-
-interface Usuario {
-  id: number;
-  nombre: string;
-  password: string;
-  correo: string;
-  rol: string;
-  telefono: string;
-  activo: boolean;
-  zona_asignada: string;
-}
 
 interface ErrorDeValidacion {
   code: number;

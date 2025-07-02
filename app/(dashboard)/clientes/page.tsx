@@ -1,8 +1,8 @@
 "use client";
 
+import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import ModalCliente from "@/components/ModalCliente";
-import Swal from "sweetalert2";
 import { Contact, Plus, Edit3, Trash2 } from "lucide-react";
 
 interface Cliente {
@@ -34,13 +34,6 @@ interface ErrorDeValidacion {
     campo: string;
     mensajes: string[];
   }[];
-}
-
-function formatRTN(value: string) {
-  const raw = value.replace(/\D/g, "");
-  if (raw.length <= 4) return raw;
-  if (raw.length <= 8) return `${raw.slice(0, 4)}-${raw.slice(4)}`;
-  return `${raw.slice(0, 4)}-${raw.slice(4, 8)}-${raw.slice(8, 13)}`;
 }
 
 // carga
@@ -129,6 +122,7 @@ export default function ClientesPage() {
     try {
       const res = await fetch("/api/clientes");
       const response = await res.json();
+      console.log(response)
 
       if (response.code === 404) {
         setClientes([]);
@@ -190,6 +184,7 @@ export default function ClientesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosCliente),
       });
+      console.log(res)
 
       const data = await res.json();
 
@@ -241,7 +236,7 @@ export default function ClientesPage() {
       if (!res.ok || data.code !== 200) {
         Swal.fire({
           icon: "error",
-          title: "Error al eliminar",
+          title: "Error",
           text: data.message || "Error al eliminar cliente",
           confirmButtonColor: "#295d0c",
         });
@@ -392,8 +387,8 @@ export default function ClientesPage() {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-2 sm:px-4 py-2 border-b text-left">Empresa</th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">Responsable</th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">RTN</th>
+                  {/*<th className="px-2 sm:px-4 py-2 border-b text-left">Responsable</th>*/}
+                  <th className="px-2 sm:px-4 py-2 border-b text-left">RTN/ID</th>
                   <th className="px-2 sm:px-4 py-2 border-b text-left">Correo</th>
                   <th className="px-2 sm:px-4 py-2 border-b text-left">Teléfono</th>
                   <th className="px-2 sm:px-4 py-2 border-b text-center">Activo</th>
@@ -404,7 +399,7 @@ export default function ClientesPage() {
                 {clientesPaginados.map((cliente) => (
                   <tr key={cliente.id} className="hover:bg-gray-50">
                     <td className="px-2 sm:px-4 py-2 border-b">{cliente.empresa}</td>
-                    <td className="px-2 sm:px-4 py-2 border-b">{cliente.responsable}</td>
+                    {/*<td className="px-2 sm:px-4 py-2 border-b">{cliente.responsable}</td>*/}
                     <td className="px-2 sm:px-4 py-2 border-b">{cliente.rtn}</td>
                     <td className="px-2 sm:px-4 py-2 border-b">{cliente.correo}</td>
                     <td className="px-2 sm:px-4 py-2 border-b">{formatearTelefono(cliente.telefono)}</td>
@@ -467,7 +462,7 @@ export default function ClientesPage() {
           {[
             { label: "Empresa", name: "empresa", type: "text", placeholder: "Nombre de la empresa" },
             { label: "Responsable", name: "responsable", type: "text", placeholder: "Responsable" },
-            { label: "RTN", name: "rtn", type: "text", placeholder: "RTN" },
+            { label: "RTN/ID", name: "rtn", type: "text", placeholder: "RTN/ID" },
             { label: "Direccion", name: "direccion", type: "text", placeholder: "Direccion" },
             { label: "Correo", name: "correo", type: "email", placeholder: "Correo" },
           ].map(({ label, name, type, placeholder }) => (

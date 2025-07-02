@@ -1,25 +1,21 @@
 import { NextResponse } from "next/server";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { BitacoraService } from "@/app/services/bitacoraService";
 
-interface Params {
-  id: string;
-}
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
 
-export async function GET(req: Request, { params }: { params: Params }) {
-  try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    try {
+
+        const idParams = (await params).id;
+        const id = GeneralUtils.validarIdParam(idParams);
+
+        const bitacora = await BitacoraService.obtenerBitacoraPorFirmaClienteId(id);
+        return NextResponse.json({ result: bitacora });
+
+    } catch (error) {
+
+        return GeneralUtils.generarErrorResponse(error);
+
     }
 
-    // Cambiar esta línea para usar buscar por firmaClienteId
-    const bitacora = await BitacoraService.obtenerBitacoraPorFirmaClienteId(id);
-
-    return NextResponse.json({ result: bitacora });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || "No se encontró la bitácora" },
-      { status: 404 }
-    );
-  }
 }

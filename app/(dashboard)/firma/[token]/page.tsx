@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import SignatureCanvas from "react-signature-canvas";
-import { useParams } from "next/navigation";
 import Swal from "sweetalert2";
+import { useParams } from "next/navigation";
+import SignatureCanvas from "react-signature-canvas";
+import { useEffect, useRef, useState } from "react";
 
 interface Bitacora {
   id: number;  // ← Asegúrate que venga este campo desde el backend
@@ -26,7 +26,7 @@ export default function FirmaClientePage() {
     const validarToken = async () => {
       try {
         const res = await fetch(`/api/firmas/validar/${token}`);
-        const data = await res.json();
+        const data = await res.json();   
 
         if (!res.ok || !data.results?.[0]) {
           Swal.fire({
@@ -84,6 +84,7 @@ export default function FirmaClientePage() {
     }
 
     try {
+      console.log("3 :::")
       const res = await fetch("/api/firmas/finalizar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

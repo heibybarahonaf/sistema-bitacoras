@@ -12,11 +12,6 @@ type EditarSistemaDto = z.infer<typeof EditarSistemaDto>;
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     
     try {
-
-        const payload = await obtenerPayloadSesion();
-        if (payload.rol !== "admin") {
-            return NextResponse.json(new ResponseDto(403, "No tienes permiso para acceder a esta información"));
-        }
         
         const idParams = (await params).id;
         const id = GeneralUtils.validarIdParam(idParams);
@@ -64,7 +59,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
         
         const payload = await obtenerPayloadSesion();
         if (payload.rol !== "admin") {
-            return NextResponse.json(new ResponseDto(403, "No tienes permiso para acceder a esta información"));
+            return NextResponse.json(new ResponseDto(403, "No tienes permiso para realizar esta acción"));
         }
 
         const idParams = (await params).id;

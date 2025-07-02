@@ -34,7 +34,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         
         const payload = await obtenerPayloadSesion();
         if (payload.rol !== "admin") {
-            return NextResponse.json(new ResponseDto(403, "No tienes permiso para acceder a esta información"));
+            return NextResponse.json(new ResponseDto(403, "No tienes permiso para realizar esta acción"), { status: 403 });
         }
 
         const idParams = (await params).id;

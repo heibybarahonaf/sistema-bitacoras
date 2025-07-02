@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { BitacoraService } from "@/app/services/bitacoraService";
 import { generarPDFPorVentasTecnico } from "@/app/services/reporteService";
-import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function GET(request: Request) {
 
@@ -13,7 +14,8 @@ export async function GET(request: Request) {
         const usuario = searchParams.get('usuario');
 
         if (!fechaInicio || !fechaFinal || !usuario) {
-            return NextResponse.json({ message: "Se requieren fechas y el nombre del tecnico" }, { status: 400 });
+            throw new ResponseDto(404, "Se requieren fechas y el nombre del tecnico");
+            //return NextResponse.json({ message: "Se requieren fechas y el nombre del tecnico" }, { status: 400 });
         }
 
         const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(usuario, fechaInicio, fechaFinal);

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { BarChart, X } from "lucide-react";
 import Swal from "sweetalert2";
+import { useState } from "react";
+import { BarChart, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import CardReporte from "../../../components/CardReporte";
 
 interface BitacoraData {
@@ -378,7 +378,7 @@ export default function ReportesPage() {
                         {modalPreview.tipo === "ventas" ? (
                           <>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Cliente</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ventas</th>
                           </>
                         ) : (
@@ -387,7 +387,7 @@ export default function ReportesPage() {
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ticket</th>
                             {modalPreview.tipo === "general" && (
                               <>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Cliente</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Técnico</th>
                               </>
                             )}
@@ -395,7 +395,7 @@ export default function ReportesPage() {
                               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Técnico</th>
                             )}
                             {modalPreview.tipo === "usuario" && (
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Cliente</th>
                             )}
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Llegada</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salida</th>
@@ -404,7 +404,7 @@ export default function ReportesPage() {
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Horas</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comisión</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-80">Descripción</th>
                           </>
                         )}
                       </tr>
@@ -416,7 +416,7 @@ export default function ReportesPage() {
                           return (
                             <tr key={index} className="hover:bg-gray-50">
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatearFecha(bitacora.fecha)}</td>
-                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.cliente}</td>
+                              <td className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate" title={bitacora.cliente}>{bitacora.cliente}</td>
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.venta}</td>
                             </tr>
                           );
@@ -428,7 +428,7 @@ export default function ReportesPage() {
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.ticket}</td>
                             {modalPreview.tipo === "general" && (
                               <>
-                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.cliente}</td>
+                                <td className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate" title={bitacora.cliente}>{bitacora.cliente}</td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.tecnico}</td>
                               </>
                             )}
@@ -436,7 +436,7 @@ export default function ReportesPage() {
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.tecnico}</td>
                             )}
                             {modalPreview.tipo === "usuario" && (
-                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.cliente}</td>
+                              <td className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate" title={bitacora.cliente}>{bitacora.cliente}</td>
                             )}
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatearHora(bitacora.hora_llegada)}</td>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatearHora(bitacora.hora_salida)}</td>
@@ -445,7 +445,7 @@ export default function ReportesPage() {
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.tipo_horas}</td>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.monto}</td>
                             <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.comision}</td>
-                            <td className="px-4 py-4 text-sm text-gray-900 whitespace-pre-line">{bitacora.descripcion}</td>
+                            <td className="px-4 py-4 text-sm text-gray-900 whitespace-pre-line max-w-80 break-words">{bitacora.descripcion}</td>
                           </tr>
                         );
                       })}

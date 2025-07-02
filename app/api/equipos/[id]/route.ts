@@ -41,8 +41,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             GeneralUtils.zodValidationError(parsed.error);
         }
 
-        const sistemaActualizado = await EquipoService.editarEquipo(id, parsed.data);
-        return NextResponse.json(new ResponseDto(200, "Equipo actualizado con éxito", [sistemaActualizado]));
+        const equipoActualizado = await EquipoService.editarEquipo(id, parsed.data);
+        return NextResponse.json(new ResponseDto(200, "Equipo actualizado con éxito", [equipoActualizado]));
 
     } catch (error) {
 
@@ -59,7 +59,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
         const payload = await obtenerPayloadSesion();
         if (payload.rol !== "admin") {
-            return NextResponse.json(new ResponseDto(403, "No tienes permiso para acceder a esta información"));
+            return NextResponse.json(new ResponseDto(403, "No tienes permiso para realizar esta acción!"));
         }
         
         const idParams = (await params).id;

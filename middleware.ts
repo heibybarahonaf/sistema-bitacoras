@@ -1,8 +1,11 @@
+
 import { NextResponse, NextRequest } from "next/server";
 import { AuthEdgeUtils } from "./app/common/utils/auth-edge.utils";
 
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;    
+    const esEncuestaIndividual = /^\/encuesta\/\d+$/.test(pathname);
+
     const rutasPublicas = ["/login"];
     const esRutaPublica = rutasPublicas.includes(pathname) || pathname.startsWith("/firma/");
 
@@ -10,13 +13,15 @@ export async function middleware(req: NextRequest) {
         "/api/auth/login",
         "/api/auth/enviar-codigo",
         "/api/firmas/finalizar",
-        "/api/encuesta-bitacora", 
+        "/api/encuesta-bitacora",
+        "/api/bitacoras/por-firma",
+        "/api/encuesta",
     ];
     const esApiPublica =
         rutasApiPublicas.some((ruta) => pathname.startsWith(ruta)) ||
         pathname.startsWith("/api/firmas/validar/");
 
-    if (esRutaPublica || esApiPublica) {
+    if (esRutaPublica || esApiPublica || esEncuestaIndividual) {
         return NextResponse.next();
     }
     

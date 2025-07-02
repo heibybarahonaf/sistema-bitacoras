@@ -8,7 +8,6 @@ export async function GET() {
     try {
 
         const usuarios = await UsuarioService.obtenerUsuariosActivos();
-        console.log(usuarios)
         return NextResponse.json(new ResponseDto(200, "Usuarios obtenidos correctamente", usuarios)); 
 
     } catch (error) {

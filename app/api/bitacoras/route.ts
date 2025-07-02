@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { BitacoraService } from "@/app/services/bitacoraService";
-import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { CrearBitacoraDto } from "@/app/dtos/bitacora.dto";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { BitacoraService } from "@/app/services/bitacoraService";
 
 export async function GET() {
 

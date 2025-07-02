@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { BitacoraService } from "@/app/services/bitacoraService";
 import { generarPDFBitacoras } from "@/app/services/reporteService";
-import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function GET(request: Request) {
 
@@ -12,7 +13,8 @@ export async function GET(request: Request) {
         const fechaFinal = searchParams.get('fechaFinal');
 
         if (!fechaInicio || !fechaFinal) {
-            return NextResponse.json({ message: "Se requieren ambas fechas" }, { status: 400 });
+            throw new ResponseDto(400, "Se requieren ambas fechas");
+            //return NextResponse.json({ message: "Se requieren ambas fechas" }, { status: 400 });
         }
 
         const bitacoras = await BitacoraService.obtenerBitacorasRangoFechas(fechaInicio, fechaFinal);

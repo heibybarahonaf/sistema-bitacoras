@@ -1,24 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { DollarSign, Eye, Edit } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Pagos_Cliente } from "@prisma/client";
 import ModalPago from "@/components/ModalPago"; 
+import { DollarSign, Eye, Edit } from "lucide-react";
 
-interface Pago {
-  id: number;
-  cliente_id: number;
-  no_factura: string;
-  forma_pago: string;
-  detalle_pago: string;
-  monto: number;
-  tipo_horas: string;
-  cant_horas: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-function mostrarDetallePago(pago: Pago) {
+function mostrarDetallePago(pago: Pagos_Cliente) {
   Swal.fire({
     title: "Detalle de Pago",
     html: `
@@ -44,11 +32,11 @@ const LoadingSpinner = () => (
 );
 
 export default function PagosPage() {
-  const [pagos, setPagos] = useState<Pago[]>([]);
+  const [pagos, setPagos] = useState<Pagos_Cliente[]>([]);
   const [loading, setLoading] = useState(false);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
 
-  const [modalPago, setModalPago] = useState<{ open: boolean; pago?: Pago }>({
+  const [modalPago, setModalPago] = useState<{ open: boolean; pago?: Pagos_Cliente }>({
     open: false,
   });
 
@@ -95,7 +83,9 @@ export default function PagosPage() {
   }
 
   const pagosFiltrados = pagos.filter((pago) => {
-    const fechaPagoStr = pago.createdAt.split("T")[0];
+    const fechaPagoStr = pago.createdAt instanceof Date
+      ? pago.createdAt.toISOString().split("T")[0]
+      : String(pago.createdAt).split("T")[0];
     const inicioStr = fechaInicio ? new Date(fechaInicio).toISOString().split("T")[0] : null;
     const finStr = fechaFin ? new Date(fechaFin).toISOString().split("T")[0] : null;
 

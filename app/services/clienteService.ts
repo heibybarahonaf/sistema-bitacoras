@@ -70,7 +70,7 @@ export class ClienteService {
         }
 
         if (rtnExistente) {
-            throw new ResponseDto(409, "El RTN ya está registrado");
+            throw new ResponseDto(409, "El RTN/ID ya está registrado");
         }
 
         try {
@@ -112,7 +112,7 @@ export class ClienteService {
             const rtnExiste = await prisma.cliente.findFirst({ where: { rtn }});
 
             if (rtnExiste) {
-                throw new ResponseDto(409, "El RTN ya está registrado");
+                throw new ResponseDto(409, "El RTN/ID ya está registrado");
             }
         }
 

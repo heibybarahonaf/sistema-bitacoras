@@ -1,8 +1,8 @@
 "use client";
 
 import Swal from 'sweetalert2';
-import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import type { ISesionPayload } from '../app/common/utils/auth.utils';
 
 export function useAuth() {
@@ -25,7 +25,7 @@ export function useAuth() {
 
             const json = await response.json();
 
-            if (!response.ok || !json.success) {
+            if (!response.ok) {
                 throw new Error('Sesión inválida');
             }
 
