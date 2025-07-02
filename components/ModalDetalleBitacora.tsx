@@ -151,7 +151,11 @@ export default function ModalDetalleBitacora({
     ...(bitacora.nombres_capacitados
       ? [{ label: "Nombres Capacitados", value: bitacora.nombres_capacitados }]
       : []),
+      ...(bitacora.ventas ? [{ label: "Posibles Ventas", value: bitacora.ventas }] : []),
     { label: "Fase de Implementación", value: faseImplementacionNombre },
+    ...(bitacora.calificacion
+    ? [{ label: "Calificación", value: bitacora.calificacion }]
+    : [{ label: "Calificación", value: "ENCUESTA NO REALIZADA" }]),
   ];
 
   return (

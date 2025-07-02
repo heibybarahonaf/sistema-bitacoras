@@ -389,7 +389,7 @@ useEffect(() => {
         tipo_servicio_id: tipoServicioId,
         fase_implementacion_id: faseImplementacionId,
         comentarios,
-        calificacion: 1, //
+        calificacion: 0, // Mientras el cliente realiza encuesta
         ventas,
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
