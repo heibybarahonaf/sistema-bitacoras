@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { ResponseDto } from '@/app/common/dtos/response.dto';
-import { PreguntaService } from '@/app/services/preguntaService';
 import { CrearPreguntaDto } from '@/app/dtos/pregunta.dto';
+import { ResponseDto } from '@/app/common/dtos/response.dto';
 import { GeneralUtils } from '@/app/common/utils/general.utils';
+import { PreguntaService } from '@/app/services/preguntaService';
 
 export async function GET() {
 
@@ -18,6 +18,7 @@ export async function GET() {
     }
 
 }
+
 
 export async function POST(req: Request) {
 

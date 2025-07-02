@@ -1,15 +1,16 @@
 export const runtime = 'nodejs'; 
 
-import { NextRequest, NextResponse } from 'next/server';
-import { obtenerPayloadSesion } from '@/app/common/utils/session.utils';
+import { NextResponse } from 'next/server';
+import { ResponseDto } from '@/app/common/dtos/response.dto';
 import { GeneralUtils } from '@/app/common/utils/general.utils';
+import { obtenerPayloadSesion } from '@/app/common/utils/session.utils';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
 
     try {
 
         const payload = await obtenerPayloadSesion();
-        return NextResponse.json({ success: true, payload});
+        return NextResponse.json(new ResponseDto(200, "Payload obtenido correctamente", [payload]));
 
     } catch (error) {
 

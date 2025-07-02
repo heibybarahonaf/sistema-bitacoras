@@ -2,26 +2,7 @@
 
 import { X } from "lucide-react";
 import React, { useEffect, useState, useRef } from "react";
-
-interface Sistema {
-  id: number;
-  sistema: string;
-}
-
-interface Equipo {
-  id: number;
-  equipo: string;
-}
-
-interface TipoServicio {
-  id: number;
-  tipo_servicio: string;
-}
-
-interface FaseImplementacion {
-  id: number;
-  fase: string;
-}
+import { Sistema, Equipo, Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
 
 interface ModalDetalleBitacoraProps {
   isOpen: boolean;
@@ -29,8 +10,8 @@ interface ModalDetalleBitacoraProps {
   bitacora: any | null;
   sistemas: Sistema[];
   equipos: Equipo[];
-  tipo_servicio: TipoServicio[];
-  fase_implementacion: FaseImplementacion[];
+  tipo_servicio: Tipo_Servicio[];
+  fase_implementacion: Fase_Implementacion[];
 }
 
 export default function ModalDetalleBitacora({

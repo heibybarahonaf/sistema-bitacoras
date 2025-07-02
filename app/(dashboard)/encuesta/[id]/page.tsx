@@ -1,7 +1,8 @@
 "use client";
 
+import Swal from "sweetalert2";
+import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
 
 type Pregunta = {
   id: number;
@@ -10,7 +11,6 @@ type Pregunta = {
 
 const EncuestaPage = () => {
   const { id } = useParams();
-  const router = useRouter();
   const bitacoraId = Number(id);
 
   const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
@@ -54,8 +54,14 @@ const EncuestaPage = () => {
       });
 
       if (res.ok) {
-        alert("Calificación enviada con éxito. ¡Gracias!");
-        window.location.href = "https://www.posdehonduras.com"; // Redirige a donde se desee
+        Swal.fire({
+          icon: "success",
+          title: "Calificación enviada con éxito",
+          text: "¡Gracias!",
+          confirmButtonText: "OK",
+        }).then(() => {
+          window.location.href = "https://www.posdehonduras.com";
+        });
       } else {
         alert("Error al enviar la calificación.");
       }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { EncuestaService } from "@/app/services/encuestaService";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
+import { EncuestaService } from "@/app/services/encuestaService";
 
 export async function GET() {
 

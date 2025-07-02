@@ -3,31 +3,12 @@
 import Swal from "sweetalert2";
 import SignatureCanvas from "react-signature-canvas";
 import React, { useEffect, useState, useRef } from "react";
+import { Sistema, Equipo, Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
 
 interface FormNuevaBitacoraProps {
   clienteId: number;
   onClose: () => void;
   onGuardar: () => void;
-}
-
-interface Sistema {
-  id: number;
-  sistema: string;
-}
-
-interface Equipo {
-  id: number;
-  equipo: string;
-}
-
-interface FaseImplementacion {
-  id: number;
-  fase: string;
-}
-
-interface TipoServicio {
-  id: number;
-  tipo_servicio: string;
 }
 
 const InputField = ({
@@ -170,9 +151,9 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [equipoId, setEquipoId] = useState<number | null>(null);
   const [nombresCapacitados, setNombresCapacitados] = useState("");
   const [descripcionServicio, setDescripcionServicio] = useState("");
-  const [fasesImplementacion, setFasesImplementacion] = useState<FaseImplementacion[]>([]);
+  const [fasesImplementacion, setFasesImplementacion] = useState<Fase_Implementacion[]>([]);
   const [faseImplementacionId, setFaseImplementacionId] = useState<number | null>(null);
-  const [tipoServicio, setTipoServicio] = useState<TipoServicio[]>([]);
+  const [tipoServicio, setTipoServicio] = useState<Tipo_Servicio[]>([]);
   const [tipoServicioId, setTipoServicioId] = useState<number | null>(null);
   const [comentarios, setComentarios] = useState("");
   const [ventas, setVentas] = useState("");
@@ -374,6 +355,16 @@ useEffect(() => {
         firmaClienteId = firmaClienteRemotaId;
       }
 
+      let usuarioId = 1;
+      try {
+        const res = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          usuarioId = data.results[0].id;
+        }
+      } catch (error) {
+        console.error("Error al obtener nombre del usuario:", error);
+      }
 
       const newBitacora = {
         cliente_id: clienteId,

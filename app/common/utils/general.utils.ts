@@ -38,7 +38,7 @@ export class GeneralUtils {
 
 
     public static filtrarCamposActualizables<T extends object>(datos: T): Partial<T> {
-        return Object.fromEntries(Object.entries(datos).filter(([_, value]) => value !== undefined)) as Partial<T>;
+        return Object.fromEntries(Object.entries(datos).filter(([value]) => value !== undefined)) as Partial<T>;
     }
 
 

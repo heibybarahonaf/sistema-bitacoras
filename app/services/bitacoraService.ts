@@ -98,11 +98,11 @@ export class BitacoraService {
             where: { cliente_id: idCliente },
             orderBy: { fecha_servicio: "desc" },
             include: {
-            fase_implementacion: true,
-            tipo_servicio: true,
-            sistema: true,
-            equipo: true,
-            firmaCliente: true,
+                fase_implementacion: true,
+                tipo_servicio: true,
+                sistema: true,
+                equipo: true,
+                firmaCliente: true,
             },
         });
 
@@ -187,7 +187,7 @@ export class BitacoraService {
 
     public static async crearBitacora(bitacoraData: CrearBitacoraDto): Promise<Bitacora> {
         const cliente = await ClienteService.obtenerClientePorId(bitacoraData.cliente_id);
-        const encuestaActiva = await EncuestaService.obtenerEncuestaActiva();
+        await EncuestaService.obtenerEncuestaActiva();
         await UsuarioService.obtenerUsuarioPorId(bitacoraData.usuario_id);
 
         if (bitacoraData.equipo_id !== undefined) {
@@ -303,9 +303,9 @@ export class BitacoraService {
 
         await prisma.encuesta_Bitacora.create({
             data: {
-            bitacora_id: id,
-            encuesta_id: encuestaActiva.id,
-            respuestas: respuestas, 
+                bitacora_id: id,
+                encuesta_id: encuestaActiva.id,
+                respuestas: respuestas, 
             },
         });
 
@@ -336,33 +336,38 @@ export class BitacoraService {
         return bitacora;
     }
 
-    static async obtenerEncuestaDeBitacora(bitacoraId: number) {
-    const bitacora = await prisma.bitacora.findUnique({
-      where: { id: bitacoraId },
-      include: {
-        encuestaBitacoras: {
-          include: {
-            encuesta: {
-              include: {
-                preguntas: {
-                  include: {
-                    pregunta: true,
-                  },
+
+    public static async obtenerEncuestaDeBitacora(bitacoraId: number) {
+        const bitacora = await prisma.bitacora.findUnique({
+        where: { id: bitacoraId },
+        include: {
+            encuestaBitacoras: {
+            include: {
+                encuesta: {
+                include: {
+                    preguntas: {
+                    include: {
+                        pregunta: true,
+                    },
+                    },
                 },
-              },
+                },
             },
-          },
+            },
         },
-      },
-    });
+        });
 
-    return bitacora?.encuestaBitacoras?.[0]?.encuesta;
+        return bitacora?.encuestaBitacoras?.[0]?.encuesta;
   }
 
-  static async actualizarCalificacion(bitacoraId: number, calificacion: number) {
-    return await prisma.bitacora.update({
-      where: { id: bitacoraId },
-      data: { calificacion },
-    });
-  }
+
+    public static async actualizarCalificacion(bitacoraId: number, calificacion: number) {
+
+        return await prisma.bitacora.update({
+            where: { id: bitacoraId },
+            data: { calificacion },
+        });
+
+    }
+
 }

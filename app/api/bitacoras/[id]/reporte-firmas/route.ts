@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
-import { FirmaReporteService } from "@/app/services/firmaReporteService";
-import { TipoServicioService } from "@/app/services/tipoServicioService";
 import { BitacoraService } from "@/app/services/bitacoraService";
+import { TipoServicioService } from "@/app/services/tipoServicioService";
+import { FirmaReporteService } from "@/app/services/firmaReporteService";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     

@@ -1,16 +1,10 @@
 "use client";
 
+import Swal from 'sweetalert2';
+import { Sistema } from "@prisma/client";
 import { useEffect, useState } from "react";
 import ModalSistema from "@/components/ModalSistema";
-import Swal from 'sweetalert2';
 import { Settings2, Plus, Edit3, Trash2 } from "lucide-react";
-
-interface Sistema {
-  id: number;
-  sistema: string;
-  descripcion: string;
-  activo: boolean;
-}
 
 interface ErrorDeValidacion {
   code: number;

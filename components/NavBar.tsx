@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   User, Users, NotebookText, BarChart, LogOut,
@@ -39,7 +39,7 @@ export default function Navbar() {
 
         if (res.ok) {
           const data = await res.json();
-          setUserName("@"+data.results?.[0] || "@j");
+          setUserName("@"+data.results?.[0].nombre || "@usuario");
         }
 
       } catch (error) {

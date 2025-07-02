@@ -111,7 +111,17 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Cliente:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.cliente?.empresa || "N/A", labelAlignment, currentY);
+
+        const nombreCliente = bitacora.cliente?.empresa || "N/A";
+        const maxNombreWidth = rightX - labelAlignment - 5;
+        const nombreLines = doc.splitTextToSize(nombreCliente, maxNombreWidth);
+
+        for (let i = 0; i < nombreLines.length; i++) {
+            doc.text(nombreLines[i], labelAlignment, currentY);
+            if (i < nombreLines.length - 1) {
+                currentY += 4;
+            }
+        }
 
         doc.setFont("helvetica", "bold");
         doc.text("Tel:", rightX, currentY);
@@ -255,7 +265,27 @@ export class FirmaReporteService {
         doc.text(bitacora.capacitados || "N/A", labelAlignment, currentY);
         
         currentY += 6;
-
+        
+        if (bitacora.descripcion_servicio) {
+            doc.setFont("helvetica", "bold");
+            doc.text("Descripción:", leftX, currentY);
+            doc.setFont("helvetica", "normal");
+            
+            const descripcionCompleta = bitacora.descripcion_servicio;
+            const maxWidth = 170 - (labelAlignment - leftX);
+            const lines = doc.splitTextToSize(descripcionCompleta, maxWidth);
+            doc.text(lines[0], labelAlignment, currentY);
+            
+            if (lines.length > 1) {
+                for (let i = 1; i < lines.length; i++) {
+                    currentY += 4;
+                    doc.text(lines[i], leftX, currentY);
+                }
+            }
+            
+            currentY += 6;
+        }
+        
         if (bitacora.ventas) {
             doc.setFont("helvetica", "bold");
             doc.text("Ventas:", leftX, currentY);
@@ -276,27 +306,7 @@ export class FirmaReporteService {
         }
         
         currentY += 6;
-        
-        if (bitacora.descripcion_servicio) {
-            doc.setFont("helvetica", "bold");
-            doc.text("Descripción:", leftX, currentY);
-            doc.setFont("helvetica", "normal");
-            
-            const descripcionCompleta = bitacora.descripcion_servicio;
-            const maxWidth = 170 - (labelAlignment - leftX);
-            const lines = doc.splitTextToSize(descripcionCompleta, maxWidth);
-            doc.text(lines[0], labelAlignment, currentY);
 
-            if (lines.length > 1) {
-                for (let i = 1; i < lines.length; i++) {
-                    currentY += 4;
-                    doc.text(lines[i], leftX, currentY);
-                }
-            }
-
-            currentY += 6;
-        }
-        
         if (bitacora.comentarios) {
             doc.setFont("helvetica", "bold");
             doc.text("Comentarios:", leftX, currentY);
@@ -306,7 +316,7 @@ export class FirmaReporteService {
             const maxWidth = 170 - (labelAlignment - leftX);
             const lines = doc.splitTextToSize(comentariosCompleto, maxWidth);
             doc.text(lines[0], labelAlignment, currentY);
-
+            
             if (lines.length > 1) {
                 for (let i = 1; i < lines.length; i++) {
                     currentY += 4;

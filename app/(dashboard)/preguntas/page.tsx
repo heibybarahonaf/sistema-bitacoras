@@ -1,13 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-
-interface Pregunta {
-  id: number;
-  pregunta: string;
-}
+import { Pregunta } from "@prisma/client";
+import { useEffect, useState } from "react";
 
 export default function PreguntasPage() {
   const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
@@ -106,7 +102,7 @@ export default function PreguntasPage() {
       <hr className="my-4" />
 
       <ul className="space-y-2">
-        {preguntas.map((p, index) => {
+        {preguntas.map((p) => {
           return (
             <li
               key={p.id}

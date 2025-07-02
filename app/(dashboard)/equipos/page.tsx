@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { useEffect, useState } from "react";
 import ModalEquipo from "@/components/ModalEquipo";
 import { MonitorSmartphone, Plus, Edit3, Trash2 } from "lucide-react";
 

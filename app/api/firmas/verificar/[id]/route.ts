@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import prisma from "@/app/libs/prisma";
+import { NextResponse } from "next/server";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function GET( _req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -16,7 +16,7 @@ export async function GET( _req: Request, { params }: { params: Promise<{ id: st
 
     } catch (error) {
 
-        return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+        return GeneralUtils.generarErrorResponse(error);
 
     }
 

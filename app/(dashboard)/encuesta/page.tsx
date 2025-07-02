@@ -1,5 +1,6 @@
 "use client";
 
+import Swal from "sweetalert2";
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
@@ -54,7 +55,11 @@ const EncuestaPage = () => {
       });
 
       if (res.ok) {
-        alert("Calificación enviada con éxito. ¡Gracias!");
+        Swal.fire({
+          icon: "success",
+          title: "Calificación enviada con éxito",
+          text: "¡Gracias!",
+        });
         router.push("/"); // redirige a home o donde quieras
       } else {
         alert("Error al enviar la calificación.");

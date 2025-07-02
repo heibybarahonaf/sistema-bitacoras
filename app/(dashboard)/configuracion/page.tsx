@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { useEffect, useState } from "react";
 
 interface Configuracion {
   correo_ventas: string;

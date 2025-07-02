@@ -1,8 +1,8 @@
 "use client";
 
+import Swal from 'sweetalert2';
 import React, { useState } from 'react';
 import { Mail, Lock, Key, Send, LogIn } from 'lucide-react';
-import Swal from 'sweetalert2';
 
 interface FormData {
   correo: string;

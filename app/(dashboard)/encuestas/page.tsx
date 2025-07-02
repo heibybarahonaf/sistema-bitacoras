@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface Pregunta {
   id: number;
