@@ -240,17 +240,17 @@ const bitacorasMostrar = bitacorasFiltradas.slice(
           <table className="min-w-full table-auto border-collapse">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-2 sm:px-4 py-2 border-b text-left">Empresa</th>
-                <th className="px-2 sm:px-4 py-2 border-b text-left">RTN</th>
-                <th className="px-2 sm:px-4 py-2 border-b text-left"></th>
+                <th className="px-2 sm:px-4 py-2 text-left ">Empresa</th>
+                <th className="px-2 sm:px-4 py-2 text-left">RTN</th>
+                <th className="px-2 sm:px-4 py-2 text-left"></th>
               </tr>
             </thead>
             <tbody>
               {clientesMostrar.map((c) => (
                 <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 border-b">{c.empresa}</td>
-                  <td className="px-4 py-2 border-b">{c.rtn}</td>
-                  <td className="px-4 py-2 text-center border-b">
+                  <td className="px-4 py-2 ">{c.empresa}</td>
+                  <td className="px-4 py-2 ">{c.rtn}</td>
+                  <td className="px-4 py-2 text-center ">
                     <button
                       onClick={() => setClienteSeleccionado(c)}
                       className="mr-2 text-[#295d0c] hover:text-[#173a01]">
@@ -309,31 +309,30 @@ const bitacorasMostrar = bitacorasFiltradas.slice(
             </button>
           </div>
 
-          <div className="w-full mx-auto p-4 bg-gray-50 border rounded mb-6 flex flex-col sm:flex-row justify-between gap-4">
-  {/* Datos del cliente */}
-  <div className="flex-1 space-y-2 text-left">
-    <p className="font-bold text-sm text-gray-700">DATOS DEL CLIENTE</p>
-    <p><strong>Empresa:</strong> {clienteSeleccionado.empresa}</p>
-    <p><strong>Responsable:</strong> {clienteSeleccionado.responsable}</p>
-    <p><strong>RTN:</strong> {clienteSeleccionado.rtn}</p>
-    <p><strong>Dirección:</strong> {clienteSeleccionado.direccion}</p>
-    <p><strong>Teléfono:</strong> {clienteSeleccionado.telefono}</p>
-    <p><strong>Correo:</strong> {clienteSeleccionado.correo}</p>
-  </div>
+          <div className="w-full mx-auto p-4 bg-gray-100 rounded mb-6 flex flex-col sm:flex-row justify-between gap-4">
+          {/* Datos del cliente */}
+          <div className="flex-1 space-y-2 text-left">
+            <p className="font-bold text-sm text-gray-700">DATOS DEL CLIENTE</p>
+            <p><strong>Empresa:</strong> {clienteSeleccionado.empresa}</p>
+            <p><strong>Responsable:</strong> {clienteSeleccionado.responsable}</p>
+            <p><strong>RTN:</strong> {clienteSeleccionado.rtn}</p>
+            <p><strong>Dirección:</strong> {clienteSeleccionado.direccion}</p>
+            <p><strong>Teléfono:</strong> {clienteSeleccionado.telefono}</p>
+            <p><strong>Correo:</strong> {clienteSeleccionado.correo}</p>
+          </div>
 
-  {/* Horas y saldos */}
-  <div className="flex-1 space-y-2 text-left sm:text-right">
-    <p className="font-bold text-sm text-gray-700">HORAS - SALDOS</p>
-    <p><strong>Paquetes:</strong> {clienteSeleccionado.horas_paquetes} - {formatoLempiras(clienteSeleccionado.monto_paquetes)}</p>
-    <p><strong>Individuales:</strong> {clienteSeleccionado.horas_individuales} - {formatoLempiras(clienteSeleccionado.monto_individuales)}</p>
-    <p className="mt-4 border-t pt-2 font-semibold">
-      <strong>Total:</strong>{" "}
-      {clienteSeleccionado.horas_paquetes + clienteSeleccionado.horas_individuales} -{" "}
-      {formatoLempiras(clienteSeleccionado.monto_paquetes + clienteSeleccionado.monto_individuales)}
-    </p>
-  </div>
-</div>
-
+          {/* Horas y saldos */}
+          <div className="flex-1 space-y-2 text-left sm:text-right">
+            <p className="font-bold text-sm text-gray-700">HORAS - SALDOS</p>
+            <p><strong>Paquetes:</strong> {clienteSeleccionado.horas_paquetes} - {formatoLempiras(clienteSeleccionado.monto_paquetes)}</p>
+            <p><strong>Individuales:</strong> {clienteSeleccionado.horas_individuales} - {formatoLempiras(clienteSeleccionado.monto_individuales)}</p>
+            <p className="mt-4 border-t pt-2 font-semibold">
+              <strong>Total:</strong>{" "}
+              {clienteSeleccionado.horas_paquetes + clienteSeleccionado.horas_individuales} -{" "}
+              {formatoLempiras(clienteSeleccionado.monto_paquetes + clienteSeleccionado.monto_individuales)}
+            </p>
+          </div>
+        </div>
 
           <div className="mt-8">
             <div className="flex justify-between items-center mb-4">
@@ -414,13 +413,13 @@ const bitacorasMostrar = bitacorasFiltradas.slice(
                 <table className="w-full table-auto border-collapse">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="px-2 sm:px-4 py-3 border-b text-left">Ticket</th>
-                    <th className="px-2 sm:px-4 py-3 border-b text-left">Fecha</th>
-                    <th className="px-2 sm:px-4 py-3 border-b text-left hidden md:table-cell">Horas</th>
-                    <th className="px-2 sm:px-4 py-3 border-b text-left hidden lg:table-cell">Fase</th>
-                    <th className="px-2 sm:px-4 py-3 border-b text-left hidden xl:table-cell">Descripción</th>
-                    <th className="px-2 sm:px-4 py-3 border-b text-left">Firma</th>
-                    <th className="px-2 sm:px-4 py-3 border-b text-center">Acciones</th>
+                    <th className="px-2 sm:px-4 py-3 text-left">Ticket</th>
+                    <th className="px-2 sm:px-4 py-3 text-left">Fecha</th>
+                    <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Horas</th>
+                    <th className="px-2 sm:px-4 py-3 text-left hidden lg:table-cell">Fase</th>
+                    <th className="px-2 sm:px-4 py-3 text-left hidden xl:table-cell">Descripción</th>
+                    <th className="px-2 sm:px-4 py-3 text-left">Firma</th>
+                    <th className="px-2 sm:px-4 py-3 text-center">Acciones</th>
                   </tr>
                 </thead>
 
@@ -428,11 +427,11 @@ const bitacorasMostrar = bitacorasFiltradas.slice(
                 {bitacorasMostrar.map((b: any) => (
                   <tr key={b.id} className="hover:bg-gray-50 text-sm">
                     {/* Ticket (siempre visible) */}
-                    <td className="px-2 sm:px-4 py-3 border-b">{b.no_ticket}</td>
+                    <td className="px-2 sm:px-4 py-3">{b.no_ticket}</td>
 
                     {/* Fecha (siempre visible) */}
                     <td
-                      className="px-2 sm:px-4 py-3 border-b"
+                      className="px-2 sm:px-4 py-3"
                       title={new Date(b.fecha_servicio).toLocaleString()}
                     >
                       {new Date(b.fecha_servicio).toLocaleDateString("es-HN", {
@@ -444,25 +443,25 @@ const bitacorasMostrar = bitacorasFiltradas.slice(
                     </td>
 
                     {/* Horas (oculta en <768px) */}
-                    <td className="px-2 sm:px-4 py-3 border-b hidden md:table-cell">
+                    <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
                       {b.horas_consumidas} ({b.tipo_horas})
                     </td>
 
                     {/* Fase (oculta en <1024px) */}
-                    <td className="px-2 sm:px-4 py-3 border-b hidden lg:table-cell">
+                    <td className="px-2 sm:px-4 py-3 hidden lg:table-cell">
                       {b.fase_implementacion?.fase || '—'}
                     </td>
 
                     {/* Descripción (oculta en <1280px) y truncada */}
                     <td
-                      className="px-2 sm:px-4 py-3 border-b hidden xl:table-cell truncate max-w-[150px]"
+                      className="px-2 sm:px-4 py-3 hidden xl:table-cell truncate max-w-[150px]"
                       title={b.descripcion_servicio}
                     >
                       {b.descripcion_servicio}
                     </td>
 
                     {/* Firma (oculta en <768px) */}
-                    <td className="px-2 sm:px-4 py-3 border-b">
+                    <td className="px-2 sm:px-4 py-3">
                       {b.firmaCliente?.firma_base64 ? (
                         <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
                           Firmada
@@ -475,7 +474,7 @@ const bitacorasMostrar = bitacorasFiltradas.slice(
                     </td>
 
                     {/* Acciones (siempre visible) */}
-                    <td className="px-2 sm:px-4 py-3 border-b text-center">
+                    <td className="px-2 sm:px-4 py-3 text-center">
                       <button
                         onClick={() => mostrarDetalleBitacora(b)}
                         title="Ver detalles"

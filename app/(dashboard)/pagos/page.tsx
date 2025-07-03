@@ -108,18 +108,25 @@ export default function PagosPage() {
 
       {/* Filtros */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
+        <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-700 whitespace-nowrap">Desde:</span>
         <input
           type="date"
           value={fechaInicio}
           onChange={(e) => setFechaInicio(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2"
         />
+      </div>
+        <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-700 whitespace-nowrap">Hasta:</span>
         <input
           type="date"
           value={fechaFin}
           onChange={(e) => setFechaFin(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2"
         />
+      </div>
+
         <input
           type="text"
           placeholder="Buscar factura..."
@@ -150,44 +157,44 @@ export default function PagosPage() {
           <p className="text-gray-600 text-lg">No hay pagos registrados.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg shadow border border-gray-300">
-          <table className="min-w-full table-auto border-collapse">
+        <div className="">
+          <table className="w-full table-auto border-collapse">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-4 py-3 border-b text-left">Factura</th>
-                <th className="px-4 py-3 border-b text-left">Forma de pago</th>
-                <th className="px-4 py-3 border-b text-left">Detalle</th>
-                <th className="px-4 py-3 border-b text-left">Monto</th>
-                <th className="px-4 py-3 border-b text-left">Horas</th>
-                <th className="px-4 py-3 border-b text-left">Tipo</th>
-                <th className="px-4 py-3 border-b text-left">Fecha</th>
-                <th className="px-4 py-3 border-b text-center">Acciones</th>
+                <th className="px-2 sm:px-4 py-3 text-left">Factura</th>
+                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Forma de pago</th>
+                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Detalle</th>
+                <th className="px-2 sm:px-4 py-3 text-left ">Monto</th>
+                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Horas</th>
+                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Tipo</th>
+                <th className="px-2 sm:px-4 py-3 text-left">Fecha</th>
+                <th className="px-2 sm:px-4 py-3 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {pagosFiltrados.map((pago) => (
                 <tr key={pago.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 border-b">{pago.no_factura}</td>
-                  <td className="px-4 py-3 border-b">{pago.forma_pago}</td>
-                  <td className="px-4 py-3 border-b">{pago.detalle_pago}</td>
-                  <td className="px-4 py-3 border-b">L.{pago.monto}</td>
-                  <td className="px-4 py-3 border-b">{pago.cant_horas}</td>
-                  <td className="px-4 py-3 border-b">{pago.tipo_horas}</td>
-                  <td className="px-4 py-3 border-b">
+                  <td className="px-2 sm:px-4 py-3">{pago.no_factura}</td>
+                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.forma_pago}</td>
+                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.detalle_pago}</td>
+                  <td className="px-2 sm:px-4 py-3">L.{pago.monto}</td>
+                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.cant_horas}</td>
+                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.tipo_horas}</td>
+                  <td className="px-2 sm:px-4 py-3">
                     {new Date(pago.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3 border-b text-center">
+                  <td className="px-2 sm:px-4 py-3 text-center">
                     <div className="flex justify-center gap-2">
                       <button
                         onClick={() => mostrarDetallePago(pago)}
-                        className="flex items-center px-2 py-1 bg-[#2e3763] text-white rounded hover:bg-[#252a50]"
+                        className="mr-2 text-[#295d0c] hover:text-[#173a01]"
                         title="Ver detalles"
                       >
-                        <Eye className="w-5 h-5" />
+                        <Eye size={22} />
                       </button>
                       <button
                         onClick={() => setModalPago({ open: true, pago })}
-                        className="flex items-center px-2 py-1 bg-[#4d152c] text-white rounded hover:bg-[#3e1024]"
+                        className="text-[#2e3763] hover:text-[#171f40]"
                         title="Editar"
                       >
                         <Edit className="w-5 h-5" />

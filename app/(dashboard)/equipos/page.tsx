@@ -296,14 +296,14 @@ export default function EquiposPage() {
           <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Equipo" para comenzar.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg shadow border border-gray-300">
-          <table className="min-w-full table-auto border-collapse">
+        <div className="">
+          <table className="w-full table-auto border-collapse">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-4 py-3 border-b text-left">Nombre</th>
-                <th className="px-4 py-3 border-b text-left">Descripción</th>
-                <th className="px-4 py-3 border-b text-center">Activo</th>
-                <th className="px-4 py-3 border-b text-center">Acciones</th>
+                <th className="px-2 sm:px-4 py-3 text-left">Nombre</th>
+                <th className="px-2 sm:px-4 py-3 text-left">Descripción</th>
+                <th className="px-2 sm:px-4 py-3 text-left">Activo</th>
+                <th className="px-2 sm:px-4 py-3 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -313,26 +313,24 @@ export default function EquiposPage() {
                 )
                 .map((eq) => (
                   <tr key={eq.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 border-b">{eq.equipo}</td>
-                    <td className="px-4 py-3 border-b">{eq.descripcion}</td>
-                    <td className="px-4 py-3 border-b text-center">
+                    <td className="px-2 sm:px-4 py-3">{eq.equipo}</td>
+                    <td className="px-2 sm:px-4 py-3">{eq.descripcion}</td>
+                    <td className="px-2 sm:px-4 py-3">
                       {eq.activo ? "✅" : "❌"}
                     </td>
-                    <td className="px-4 py-3 border-b text-center space-x-3">
+                    <td className="px-2 sm:px-4 py-3 text-center">
                       <div className="flex justify-center items-center gap-3">
                         <button
                           onClick={() => abrirEditarEquipo(eq)}
-                          className="flex px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
+                          className="mr-2 text-[#295d0c] hover:text-[#173a01]"
                         >
-                          <Edit3 className="w-5 h-5" />
-                          Editar
+                          <Edit3/>
                         </button>
                         <button
                           onClick={() => handleEliminarEquipo(eq.id)}
-                          className="flex px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
+                          className="text-[#2e3763] hover:text-[#171f40]"
                         >
-                          <Trash2 className="w-5 h-5" />
-                          Eliminar
+                          <Trash2 />
                         </button>
                       </div>
                     </td>
