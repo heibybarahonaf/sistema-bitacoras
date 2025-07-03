@@ -7,7 +7,7 @@ export async function middleware(req: NextRequest) {
     const esEncuestaIndividual = /^\/encuesta\/\d+$/.test(pathname);
 
     const rutasPublicas = ["/login"];
-    const esRutaPublica = rutasPublicas.includes(pathname) || pathname.startsWith("/firma/");
+    const esRutaPublica = rutasPublicas.includes(pathname) || pathname.startsWith("/firma/") || pathname.startsWith("/bitacoras/");
 
     const rutasApiPublicas = [
         "/api/auth/login",
@@ -17,9 +17,11 @@ export async function middleware(req: NextRequest) {
         "/api/bitacoras/por-firma",
         "/api/encuesta",
     ];
+    
     const esApiPublica =
         rutasApiPublicas.some((ruta) => pathname.startsWith(ruta)) ||
-        pathname.startsWith("/api/firmas/validar/");
+        pathname.startsWith("/api/firmas/validar/")  ||
+         /^\/api\/bitacoras\/\d+\/calificacion$/.test(pathname);
 
     if (esRutaPublica || esApiPublica || esEncuestaIndividual) {
         return NextResponse.next();

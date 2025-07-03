@@ -164,6 +164,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [firmaClienteRemotaId, setFirmaClienteRemotaId] = useState<number | null>(null);
   const [urlFirmaRemota, setUrlFirmaRemota] = useState<string | null>(null);
   const [esperandoFirmaCliente, setEsperandoFirmaCliente] = useState(false);
+  const [cargarFirmaTecnico, setCargarFirmaTecnico] = useState(false);
   const sigCanvas = useRef<SignatureCanvas>(null);
   const sigCanvasCliente = useRef<SignatureCanvas>(null);
 
@@ -309,32 +310,32 @@ useEffect(() => {
       if (!tipoHoras) throw new Error("Tipo de horas es obligatorio");
 
       // Firma técnico obligatoria
-      if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
-        throw new Error("Por favor, capture la firma del técnico.");
-      }
+      //if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
+        //throw new Error("Por favor, capture la firma del técnico.");
+      //}
 
       // Firma cliente solo si modalidad presencial
       if (modalidad === "Presencial" && sigCanvasCliente.current?.isEmpty()) {
         throw new Error("Por favor, capture la firma del cliente.");
       }
       // Obtener imágenes base64 de firmas
-      const firmaTecnico = sigCanvas.current?.getCanvas().toDataURL("image/png");
+      //const firmaTecnico = sigCanvas.current?.getCanvas().toDataURL("image/png");
       const firmaCliente =
         modalidad === "Presencial"
           ? sigCanvasCliente.current?.getCanvas().toDataURL("image/png")
           : null;
 
       // Guardar firmas en backend
-      const resFirmaTecnico = await fetch("/api/firmas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firma_base64: firmaTecnico }),
-      });
-      const dataFirmaTecnico = await resFirmaTecnico.json();
-      if (!resFirmaTecnico.ok || !dataFirmaTecnico.results?.[0]?.id) {
-        throw new Error("Error al guardar la firma del técnico");
-      }
-      const firmaTecnicoId = dataFirmaTecnico.results[0].id;
+      //const resFirmaTecnico = await fetch("/api/firmas", {
+        //method: "POST",
+        //headers: { "Content-Type": "application/json" },
+        //body: JSON.stringify({ firma_base64: firmaTecnico }),
+      //});
+      //const dataFirmaTecnico = await resFirmaTecnico.json();
+      //if (!resFirmaTecnico.ok || !dataFirmaTecnico.results?.[0]?.id) {
+        //throw new Error("Error al guardar la firma del técnico");
+      //}
+      //const firmaTecnicoId = dataFirmaTecnico.results[0].id;
 
       let firmaClienteId: number | null = null;
       if (modalidad === "Presencial" && firmaCliente) {
@@ -368,7 +369,7 @@ useEffect(() => {
 
       const newBitacora = {
         cliente_id: clienteId,
-        usuario_id: 1, //
+        usuario_id: usuarioId, //
         no_ticket: noTicket,
         fecha_servicio: fechaServicio,
         hora_llegada: new Date(`${fechaServicio}T${horaLlegada}`).toISOString(),
@@ -384,8 +385,8 @@ useEffect(() => {
         ventas,
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
-        firmaTecnico_id: firmaTecnicoId,
-        firmaCLiente_id: firmaClienteId,
+        firmaTecnico: true,
+        firmaCliente_id: firmaClienteId,
         modalidad,
         responsable,
       };
@@ -404,107 +405,106 @@ useEffect(() => {
       }
 
       if (modalidad === "Remoto") {
-  Swal.fire({
-    icon: "info",
-    title: "Bitácora guardada",
-    html: `
-      La bitácora se ha guardado, pero la firma del cliente está pendiente.<br />
-      <strong>Enlace para firma remota:</strong><br />
-      <button id="copyLinkBtn" style="
-        background:none;
-        border:none;
-        color:#3085d6;
-        text-decoration:underline;
-        cursor:pointer;
-        font-size:1rem;
-        padding:0;
-        ">
-        ${urlFirmaRemota}
-      </button>
-    `,
-    confirmButtonText: "OK",
-    didOpen: () => {
-      const copyBtn = Swal.getPopup()?.querySelector('#copyLinkBtn') as HTMLButtonElement;
-      if (copyBtn) {
-        copyBtn.addEventListener('click', () => {
-          navigator.clipboard.writeText(urlFirmaRemota || '').then(() => {
-            Swal.fire({
-              toast: true,
-              position: 'top-end',
-              icon: 'success',
-              title: 'Enlace copiado',
-              showConfirmButton: false,
-              timer: 1500,
-              timerProgressBar: true,
-            });
-          });
+        Swal.fire({
+          icon: "info",
+          title: "Bitácora guardada",
+          html: `
+            La bitácora se ha guardado, pero la firma del cliente está pendiente.<br />
+            <strong>Enlace para firma remota:</strong><br />
+            <button id="copyLinkBtn" style="
+              background:none;
+              border:none;
+              color:#3085d6;
+              text-decoration:underline;
+              cursor:pointer;
+              font-size:1rem;
+              padding:0;
+              ">
+              ${urlFirmaRemota}
+            </button>
+          `,
+          confirmButtonText: "OK",
+          didOpen: () => {
+            const copyBtn = Swal.getPopup()?.querySelector('#copyLinkBtn') as HTMLButtonElement;
+            if (copyBtn) {
+              copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(urlFirmaRemota || '').then(() => {
+                  Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Enlace copiado',
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true,
+                  });
+                });
+              });
+            }
+          },
+        }).then(() => {
+          onGuardar();
+          onClose();
         });
-      }
-    },
-  }).then(() => {
-    onGuardar();
-    onClose();
-  });
-} else {
-  const data = await res.json();
-const nuevaBitacora = data.results?.[0];
-const encuestaUrl = `http://localhost:3000/encuesta/${nuevaBitacora?.id}`;
+      } else {
+        const data = await res.json();
+      const nuevaBitacora = data.results?.[0];
+      const encuestaUrl = `http://localhost:3000/encuesta/${nuevaBitacora?.id}`;
 
-const clipboardSoportado = typeof navigator.clipboard !== "undefined";
+      const clipboardSoportado = typeof navigator.clipboard !== "undefined";
 
-Swal.fire({
-  icon: "success",
-  title: "Bitácora guardada",
-  html: `
-    <p class="mb-2 text-gray-800">La bitácora se ha registrado correctamente.</p>
-    <strong class="block text-sm mb-1 text-gray-700">Enlace para encuesta:</strong>
-    <div class="flex flex-col gap-2 text-left">
-      <input id="encuestaLinkInput"
-             type="text"
-             value="${encuestaUrl}"
-             readonly
-             onfocus="this.select()"
-             class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-700" />
-      ${
-        clipboardSoportado
-          ? `<button id="copyEncuestaBtn"
-                     class="self-start bg-blue-600 text-white px-4 py-1.5 text-sm rounded hover:bg-blue-700 transition">
-               Copiar
-             </button>`
-          : `<p class="text-xs text-gray-500">Mantenga presionado para copiar el enlace manualmente</p>`
-      }
-    </div>
-    <p class="text-xs text-gray-600 mt-2">Puede compartir este enlace con el cliente para que llene la encuesta.</p>
-  `,
-  confirmButtonText: "OK",
-  didOpen: () => {
-    if (!clipboardSoportado) return;
+      Swal.fire({
+        icon: "success",
+        title: "Bitácora guardada",
+        html: `
+          <p class="mb-2 text-gray-800">La bitácora se ha registrado correctamente.</p>
+          <strong class="block text-sm mb-1 text-gray-700">Enlace para encuesta:</strong>
+          <div class="flex flex-col gap-2 text-left">
+            <input id="encuestaLinkInput"
+                  type="text"
+                  value="${encuestaUrl}"
+                  readonly
+                  onfocus="this.select()"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-700" />
+            ${
+              clipboardSoportado
+                ? `<button id="copyEncuestaBtn"
+                          class="self-start bg-blue-600 text-white px-4 py-1.5 text-sm rounded hover:bg-blue-700 transition">
+                    Copiar
+                  </button>`
+                : `<p class="text-xs text-gray-500">Mantenga presionado para copiar el enlace manualmente</p>`
+            }
+          </div>
+          <p class="text-xs text-gray-600 mt-2">Puede compartir este enlace con el cliente para que llene la encuesta.</p>
+        `,
+        didOpen: () => {
+          if (!clipboardSoportado) return;
 
-    const input = Swal.getPopup()?.querySelector('#encuestaLinkInput') as HTMLInputElement;
-    const copyBtn = Swal.getPopup()?.querySelector('#copyEncuestaBtn') as HTMLButtonElement;
+          const input = Swal.getPopup()?.querySelector('#encuestaLinkInput') as HTMLInputElement;
+          const copyBtn = Swal.getPopup()?.querySelector('#copyEncuestaBtn') as HTMLButtonElement;
 
-    copyBtn?.addEventListener('click', () => {
-      if (input) {
-        input.select();
-        navigator.clipboard.writeText(input.value).then(() => {
-          Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'success',
-            title: 'Enlace copiado al portapapeles',
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true,
+          copyBtn?.addEventListener('click', () => {
+            if (input) {
+              input.select();
+              navigator.clipboard.writeText(input.value).then(() => {
+                Swal.fire({
+                  toast: true,
+                  position: 'top-end',
+                  icon: 'success',
+                  title: 'Enlace copiado al portapapeles',
+                  showConfirmButton: false,
+                  timer: 1500,
+                  timerProgressBar: true,
+                });
+              });
+            }
           });
-        });
+        }
+      }).then(() => {
+        onGuardar();
+        //onClose();
+      });
       }
-    });
-  }
-}).then(() => {
-  onGuardar();
-  onClose();
-});
-}
 
 
     } catch (error) {
@@ -628,70 +628,133 @@ Swal.fire({
           />
 
           {/* Firmas y enlace remoto lado a lado */}
-<div className="md:col-span-2 flex flex-col sm:flex-row gap-6 justify-center items-start">
-  {/* Firma técnico siempre visible */}
-  <div className="flex-1 shadow-md rounded-md p-4 bg-white max-w-xs">
-    <span className="text-gray-800 font-semibold block mb-1">
-      Firma del Técnico <span className="text-red-600">*</span>
-    </span>
-    <SignatureCanvas
-      ref={sigCanvas}
-      penColor="black"
-      canvasProps={{
-        width: 350,
-        height: 150,
-        className: "border border-gray-300 rounded-md w-full shadow-sm",
-      }}
-    />
-    <button
-      type="button"
-      onClick={() => sigCanvas.current?.clear()}
-      className="mt-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
-    >
-      Limpiar
-    </button>
-  </div>
+          <div className="md:col-span-2 flex flex-col sm:flex-row gap-6 justify-center items-start">
+            {/* Firma técnico siempre visible */}
+            <div className="flex-1 shadow-md rounded-md p-4 bg-white max-w-xs">
+              <span className="text-gray-800 font-semibold block mb-1">
+                Firma del Técnico <span className="text-red-600">*</span>
+              </span>
+              <SignatureCanvas
+                ref={sigCanvas}
+                penColor="black"
+                canvasProps={{
+                  width: 350,
+                  height: 150,
+                  className: "border border-gray-300 rounded-md w-full shadow-sm",
+                }}
+              />
 
-  {/* Firma cliente presencial o mensaje enlace remoto */}
-  {modalidad === "Presencial" ? (
-    <div className="flex-1 shadow-md rounded-md p-4 bg-white max-w-xs">
-      <span className="text-gray-800 font-semibold block mb-1">
-        Firma del Cliente <span className="text-red-600">*</span>
-      </span>
-      <SignatureCanvas
-        ref={sigCanvasCliente}
-        penColor="black"
-        canvasProps={{
-          width: 350,
-          height: 150,
-          className: "border border-gray-300 rounded-md w-full shadow-sm",
-        }}
-      />
-      <button
-        type="button"
-        onClick={() => sigCanvasCliente.current?.clear()}
-        className="mt-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
-      >
-        Limpiar
-      </button>
-    </div>
-  ) : (
-    <div className="flex-1 shadow-md rounded-md p-4 bg-white max-w-xs">
-    <span className="text-gray-800 font-semibold block mb-1">
-      Firma del Cliente <span className="text-red-600">*</span>
-    </span>
+              <div className="mt-2 flex items-center gap-4">
+                <label className="flex items-center space-x-2 text-sm text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={cargarFirmaTecnico}
+                    onChange={async (e) => {
+                      const checked = e.target.checked;
+                      setCargarFirmaTecnico(checked);
 
-    {urlFirmaRemota ? (
-      <div className="mt-2 text-sm text-gray-700">
-        <p className="mb-1">ENLACE GENERADO PARA FIRMA REMOTA</p>
-      </div>
-    ) : (
-      <p className="text-sm text-gray-500 italic">Generando enlace...</p>
-    )}
-  </div>
-)}
-</div>
+                      if (checked) {
+                        try {
+                          const res = await fetch("/api/auth/obtener-sesion", {
+                            credentials: "include",
+                          });
+                          if (!res.ok)
+                            throw new Error("No se pudo obtener la sesión del usuario");
+                          const data = await res.json();
+                          const tecnicoId = data.results?.[0]?.id;
 
+                          if (tecnicoId) {
+                            const firmaRes = await fetch(`/api/firmas/tecnico/${tecnicoId}`);
+                            const firmaData = await firmaRes.json();
+
+                            if (firmaData.code !== 200) {
+                              console.log("Error al cargar firma del tec")
+                              return;
+                            }
+
+                            const firma = firmaData.results?.[0];
+                            const firmaBase64 = firma?.firma_base64;
+                            
+                            if (!firmaBase64) {
+                              console.error("No signature found or firma_base64 field is missing");
+                            }
+
+                            if (firmaBase64 && sigCanvas.current) {
+                              const canvas = sigCanvas.current.getCanvas();
+                              const ctx = canvas.getContext("2d");
+                              const image = new Image();
+                              image.onload = () => {
+                                ctx?.clearRect(0, 0, canvas.width, canvas.height);
+                                ctx?.drawImage(image, 0, 0, canvas.width, canvas.height);
+                              };
+                              image.src = firmaBase64;
+                            } else {
+                              Swal.fire(
+                                "Firma no encontrada",
+                                "No hay firma guardada para el técnico.",
+                                "info"
+                              );
+                              setCargarFirmaTecnico(false);
+                            }
+                          }
+                        } catch (error) {
+                          console.error("Error al cargar firma del técnico:", error);
+                          Swal.fire(
+                            "Error",
+                            "Ocurrió un error al intentar cargar la firma del técnico.",
+                            "error"
+                          );
+                          setCargarFirmaTecnico(false);
+                        }
+                      } else {
+                        sigCanvas.current?.clear();
+                      }
+                    }}
+                  />
+                  <span>Cargar firma</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Firma cliente presencial o mensaje enlace remoto */}
+            {modalidad === "Presencial" ? (
+              <div className="flex-1 shadow-md rounded-md p-4 bg-white max-w-xs">
+                <span className="text-gray-800 font-semibold block mb-1">
+                  Firma del Cliente <span className="text-red-600">*</span>
+                </span>
+                <SignatureCanvas
+                  ref={sigCanvasCliente}
+                  penColor="black"
+                  canvasProps={{
+                    width: 350,
+                    height: 150,
+                    className: "border border-gray-300 rounded-md w-full shadow-sm",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => sigCanvasCliente.current?.clear()}
+                  className="mt-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                >
+                  Limpiar
+                </button>
+              </div>
+            ) : (
+              <div className="flex-1 shadow-md rounded-md p-4 bg-white max-w-xs">
+                <span className="text-gray-800 font-semibold block mb-1">
+                  Firma del Cliente <span className="text-red-600">*</span>
+                </span>
+
+                {urlFirmaRemota ? (
+                  <div className="mt-2 text-sm text-gray-700">
+                    <p className="mb-1">ENLACE GENERADO PARA FIRMA REMOTA</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Generando enlace...</p>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="md:col-span-2 flex justify-end space-x-4 mt-4">
             <button

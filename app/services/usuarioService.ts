@@ -73,7 +73,7 @@ export class UsuarioService {
 
 
     public static async crearUsuario(usuarioData: CrearUsuarioDto): Promise<Usuario> {
-        const { nombre, correo, password, rol, activo, zona_asignada, fecha_ingreso, telefono } = usuarioData;
+        const { nombre, correo, password, rol, activo, zona_asignada, telefono } = usuarioData;
         const emailExistente = await prisma.usuario.findFirst({ where: { correo: correo }});
 
         if (emailExistente) {
@@ -91,15 +91,15 @@ export class UsuarioService {
                     rol,
                     activo,
                     zona_asignada,
-                    fecha_ingreso,
                     telefono,
                 },
             });
 
             return usuario;
 
-        } catch {
+        } catch (error){
 
+            console.log(error)
             throw new ResponseDto(500, "Error al crear el usuario");
 
         }

@@ -33,8 +33,7 @@ export class FirmaReporteService {
                 tipo_servicio: true,
                 equipo: true,
                 sistema: true,
-                firmaCliente: true,
-                firmaTecnico: true,
+                firmaCliente: true
             },
         }) as BitacoraConRelaciones;
         if (!bitacora) {
@@ -50,8 +49,8 @@ export class FirmaReporteService {
         currentY = this.renderInfoBitacora(doc, currentY, bitacora);
         currentY += 7;
 
-        const firmaTecnico = bitacora.firmaTecnico_id ? await prisma.firma.findUnique({ where: { id: bitacora.firmaTecnico_id } }): null;        
-        const firmaCliente = bitacora.firmaCLiente_id ? await prisma.firma.findUnique({ where: { id: bitacora.firmaCLiente_id } }): null;
+        const firmaTecnico = await prisma.firma.findFirst({ where: { tecnico_id: bitacora.usuario_id } });        
+        const firmaCliente = bitacora.firmaCliente_id ? await prisma.firma.findUnique({ where: { id: bitacora.firmaCliente_id } }): null;
         await this.renderFirmas(doc, currentY, firmaTecnico, firmaCliente, bitacora);
         
         return Buffer.from(doc.output('arraybuffer'));
@@ -453,15 +452,15 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "normal");
 
         let fechaTecnico = firmaTecnico?.firma_base64;
-        if (firmaTecnico && fechaTecnico && fechaTecnico.length > 10) {
-            fechaTecnico = `${new Date(firmaTecnico.createdAt).toLocaleDateString('es-ES')} - ${new Date(firmaTecnico.createdAt).toLocaleTimeString('es-ES')}`;
+        if ( firmaTecnico && fechaTecnico && fechaTecnico.length > 10 && firmaTecnico.createdAt ) {
+            fechaTecnico = `${new Date(bitacora.createdAt).toLocaleDateString('es-ES')} - ${new Date(bitacora.fecha_servicio).toLocaleTimeString('es-ES')}`;
         } else {
             fechaTecnico = " - ";
         }
 
         let fechaCliente = firmaCliente?.firma_base64;
-        if (fechaCliente && fechaCliente.length > 10 && firmaTecnico && firmaTecnico.createdAt) {
-            fechaCliente = `${new Date(firmaTecnico.createdAt).toLocaleDateString('es-ES')} - ${new Date(firmaTecnico.createdAt).toLocaleTimeString('es-ES')}`;
+        if ( fechaCliente && fechaCliente.length > 10 && firmaCliente && firmaCliente.createdAt ) {
+            fechaCliente = `${new Date(firmaCliente.createdAt).toLocaleDateString('es-ES')} - ${new Date(firmaCliente.createdAt).toLocaleTimeString('es-ES')}`;
         } else {
             fechaCliente = " - ";
         }

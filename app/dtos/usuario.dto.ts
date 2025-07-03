@@ -15,7 +15,6 @@ export const CrearUsuarioDto = z.object({
     zona_asignada: z.string()
         .min(3, "La zona debe tener al menos 3 caracteres.")
         .max(300, "La zona no puede exceder los 300 caracteres."),
-    fecha_ingreso: z.coerce.date(),
     telefono: z.string()
         .min(8, "El teléfono debe tener al menos 8 caracteres.")
         .max(10, "El teléfono no puede exceder los 10 caracteres."),
