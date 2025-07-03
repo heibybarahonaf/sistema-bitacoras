@@ -174,6 +174,7 @@ export default function UsuariosPage() {
       firmaRef.current.clear();
     }
   }, [firmaTecnicoImg, modalOpen, usuarioEditar]);
+
   // Guardar nuevo usuario
   async function handleSubmitUsuario(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -274,7 +275,8 @@ export default function UsuariosPage() {
       });
 
       fetchUsuarios();
-    } catch {
+    } catch (error){
+      console.log(error)
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
