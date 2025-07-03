@@ -41,7 +41,6 @@ export class BitacoraService {
                 usuario: true,
                 sistema: true,
                 equipo: true,
-                firmaTecnico: true,
                 firmaCliente: true,
             },
         });
@@ -190,6 +189,10 @@ export class BitacoraService {
         await EncuestaService.obtenerEncuestaActiva();
         await UsuarioService.obtenerUsuarioPorId(bitacoraData.usuario_id);
 
+        if (!bitacoraData.firmaTecnico){
+            throw new ResponseDto(401, "La firma del tecnico es oblitaoria!");
+        }
+
         if (bitacoraData.equipo_id !== undefined) {
             const equipo = await EquipoService.obtenerEquipoPorId(bitacoraData.equipo_id);
 
@@ -260,6 +263,7 @@ export class BitacoraService {
             const bitacora = await prisma.bitacora.create({
                 data: {
                     ...bitacoraData,
+                    firmaTecnico: true,
                     monto: monto
                 }
             });
@@ -301,14 +305,6 @@ export class BitacoraService {
             },
         });
 
-        await prisma.encuesta_Bitacora.create({
-            data: {
-                bitacora_id: id,
-                encuesta_id: encuestaActiva.id,
-                respuestas: respuestas, 
-            },
-        });
-
         return bitacoraActualizada;
 
     }
@@ -316,13 +312,12 @@ export class BitacoraService {
 
     public static async obtenerBitacoraPorFirmaClienteId(firmaClienteId: number): Promise<Bitacora> {
         const bitacora = await prisma.bitacora.findFirst({
-            where: { firmaCLiente_id: firmaClienteId },
+            where: { firmaCliente_id: firmaClienteId },
             include: {
                 cliente: true,
                 usuario: true,
                 sistema: true,
                 equipo: true,
-                firmaTecnico: true,
                 firmaCliente: true,
             },
         });
@@ -335,30 +330,6 @@ export class BitacoraService {
 
         return bitacora;
     }
-
-
-    public static async obtenerEncuestaDeBitacora(bitacoraId: number) {
-        const bitacora = await prisma.bitacora.findUnique({
-        where: { id: bitacoraId },
-        include: {
-            encuestaBitacoras: {
-            include: {
-                encuesta: {
-                include: {
-                    preguntas: {
-                    include: {
-                        pregunta: true,
-                    },
-                    },
-                },
-                },
-            },
-            },
-        },
-        });
-
-        return bitacora?.encuestaBitacoras?.[0]?.encuesta;
-  }
 
 
     public static async actualizarCalificacion(bitacoraId: number, calificacion: number) {

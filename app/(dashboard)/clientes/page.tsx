@@ -122,7 +122,6 @@ export default function ClientesPage() {
     try {
       const res = await fetch("/api/clientes");
       const response = await res.json();
-      console.log(response)
 
       if (response.code === 404) {
         setClientes([]);

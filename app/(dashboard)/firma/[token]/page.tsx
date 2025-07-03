@@ -1,19 +1,10 @@
 "use client";
 
 import Swal from "sweetalert2";
+import { Bitacora } from "@prisma/client";
 import { useParams } from "next/navigation";
 import SignatureCanvas from "react-signature-canvas";
 import { useEffect, useRef, useState } from "react";
-
-interface Bitacora {
-  id: number;  // ← Asegúrate que venga este campo desde el backend
-  no_ticket: string;
-  fecha_servicio: string;
-  responsable: string;
-  descripcion_servicio: string;
-  modalidad: string;
-  horas_consumidas: string;
-}
 
 export default function FirmaClientePage() {
   const { token } = useParams();

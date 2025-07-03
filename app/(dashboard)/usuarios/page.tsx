@@ -5,6 +5,8 @@ import { Usuario } from "@prisma/client";
 import { useEffect, useState } from "react";
 import ModalUsuario from "@/components/ModalUsuario";
 import { Trash2, Users, Edit3, Plus } from "lucide-react";
+import SignatureCanvas from "react-signature-canvas";
+import { useRef } from "react";
 
 interface ErrorDeValidacion {
   code: number;
@@ -34,6 +36,8 @@ export default function UsuariosPage() {
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [filtroNombre, setFiltroNombre] = useState("");
+  const firmaRef = useRef<SignatureCanvas | null>(null);
+  const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
 
   //Estados para paginacion
   const [paginaActual, setPaginaActual] = useState(1);
@@ -55,21 +59,29 @@ export default function UsuariosPage() {
   };
 
   // Manejar input teléfono formateado
-  const manejarCambioTelefono = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const manejarCambioTelefono = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const valorFormateado = formatearTelefono(event.target.value);
     event.target.value = valorFormateado;
   };
 
   // Mostrar errores validación con SweetAlert
   function mostrarErroresValidacion(data: ErrorDeValidacion) {
-    if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
+    if (
+      data.code !== 200 &&
+      data.code !== 201 &&
+      data.results &&
+      data.results.length > 0
+    ) {
       const erroresHtml = data.results
         .map(
           (error) =>
-            `<div class="mb-2"><ul class="ml-4 mt-1">${
-              error.mensajes && Array.isArray(error.mensajes)
-                ? error.mensajes.map((msg: string) => `<li>• ${msg}</li>`).join("")
-                : "<li>Error inesperado!</li>"
+            `<div class="mb-2"><ul class="ml-4 mt-1">${error.mensajes && Array.isArray(error.mensajes)
+              ? error.mensajes
+                .map((msg: string) => `<li>• ${msg}</li>`)
+                .join("")
+              : "<li>Error inesperado!</li>"
             }</ul></div>`
         )
         .join("");
@@ -90,6 +102,21 @@ export default function UsuariosPage() {
           confirmButtonColor: "#295d0c",
         });
       }
+    }
+  }
+
+  async function cargarFirmaDelTecnico(usuarioId: number) {
+    try {
+      const res = await fetch(`/api/firmas/tecnico/${usuarioId}`);
+      const data = await res.json();
+
+      if (data.code === 200) {
+        setFirmaTecnicoImg(data.results[0].firma_base64);
+      } else {
+        setFirmaTecnicoImg(null);
+      }
+    } catch (error) {
+      setFirmaTecnicoImg(null);
     }
   }
 
@@ -121,7 +148,10 @@ export default function UsuariosPage() {
       Swal.fire({
         icon: "error",
         title: "Error al cargar usuarios",
-        text: error instanceof Error ? error.message : "Error inesperado al cargar los usuarios",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Error inesperado al cargar los usuarios",
         confirmButtonColor: "#295d0c",
       });
     } finally {
@@ -136,6 +166,15 @@ export default function UsuariosPage() {
     }
   }, [isClient]);
 
+  useEffect(() => {
+    if (firmaTecnicoImg && firmaRef.current && usuarioEditar && modalOpen) {
+      firmaRef.current.clear();
+      firmaRef.current.fromDataURL(firmaTecnicoImg);
+    } else if (firmaRef.current) {
+      firmaRef.current.clear();
+    }
+  }, [firmaTecnicoImg, modalOpen, usuarioEditar]);
+
   // Guardar nuevo usuario
   async function handleSubmitUsuario(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -148,7 +187,6 @@ export default function UsuariosPage() {
       rol: formData.get("rol") as string,
       zona_asignada: formData.get("zona_asignada") as string,
       activo: true,
-      fecha_ingreso: new Date().toISOString(),
       telefono: formData.get("telefono") as string,
     };
 
@@ -160,10 +198,25 @@ export default function UsuariosPage() {
       });
 
       const data = await res.json();
+      const id = data.results[0].id;
 
-      if (!res.ok || (data.code !== 200 && data.code !== 201)) {
+      if (data.code !== 201) {
         mostrarErroresValidacion(data);
         return;
+      }
+
+      if (firmaRef.current && !firmaRef.current.isEmpty()) {
+        const firmaBase64 = firmaRef.current.toDataURL();
+        const ress = await fetch("/api/firmas/tecnico", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ firma_base64: firmaBase64, tecnico_id: id }),
+        });
+
+        if (!ress.ok) {
+          const errorFirma = await ress.json();
+          throw new Error(errorFirma.message || "Error al guardar la firma");
+        }
       }
 
       Swal.fire({
@@ -179,7 +232,7 @@ export default function UsuariosPage() {
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
-        text: "No se pudo conectar con el servidor",
+        text: "No se pudo conectar con el servidor1",
         confirmButtonColor: "#295d0c",
       });
     }
@@ -222,7 +275,8 @@ export default function UsuariosPage() {
       });
 
       fetchUsuarios();
-    } catch {
+    } catch (error){
+      console.log(error)
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
@@ -236,6 +290,7 @@ export default function UsuariosPage() {
   function abrirEditarUsuario(usuario: Usuario) {
     setUsuarioEditar(usuario);
     setModalOpen(true);
+    cargarFirmaDelTecnico(usuario.id);
   }
 
   // Actualizar usuario
@@ -273,6 +328,20 @@ export default function UsuariosPage() {
         return;
       }
 
+      if (firmaRef.current && !firmaRef.current.isEmpty()) {
+        const firmaBase64 = firmaRef.current.toDataURL();
+        const ress = await fetch(`/api/firmas/tecnico/${data.results[0].id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ firma_base64: firmaBase64 }),
+        });
+
+        if (!ress.ok) {
+          const errorFirma = await ress.json();
+          throw new Error(errorFirma.message || "Error al guardar la firma");
+        }
+      }
+
       Swal.fire({
         icon: "success",
         title: "¡Usuario actualizado!",
@@ -283,7 +352,7 @@ export default function UsuariosPage() {
       fetchUsuarios();
       setModalOpen(false);
       setUsuarioEditar(null);
-    } catch {
+    } catch (error) {
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
@@ -293,6 +362,29 @@ export default function UsuariosPage() {
     }
   }
 
+  // no se porque no carga bien
+  useEffect(() => {
+    const canvas = firmaRef.current?.getCanvas();
+    if (!canvas || !firmaRef.current) return;
+
+    const ratio = window.devicePixelRatio || 1;
+
+    canvas.width = 350 * ratio;
+    canvas.height = 100 * ratio;
+    canvas.style.width = "350px";
+    canvas.style.height = "100px";
+
+    const ctx = canvas.getContext("2d");
+    if (ctx) ctx.scale(ratio, ratio);
+
+    if (firmaTecnicoImg && usuarioEditar && modalOpen) {
+      firmaRef.current.clear();
+      firmaRef.current.fromDataURL(firmaTecnicoImg);
+    } else {
+      firmaRef.current.clear();
+    }
+  }, [firmaTecnicoImg, modalOpen, usuarioEditar]);
+
   // Filtrar usuarios por nombre para paginación
   const usuariosFiltrados = usuarios.filter((usuario) =>
     usuario.nombre.toLowerCase().includes(filtroNombre.toLowerCase())
@@ -301,12 +393,16 @@ export default function UsuariosPage() {
   // Calcular usuarios a mostrar en la página actual
   const indexUltimoUsuario = paginaActual * usuariosPorPagina;
   const indexPrimerUsuario = indexUltimoUsuario - usuariosPorPagina;
-  const usuariosPaginados = usuariosFiltrados.slice(indexPrimerUsuario, indexUltimoUsuario);
+  const usuariosPaginados = usuariosFiltrados.slice(
+    indexPrimerUsuario,
+    indexUltimoUsuario
+  );
 
   // Cambiar página
   function cambiarPagina(nuevaPagina: number) {
     if (nuevaPagina < 1) return;
-    if (nuevaPagina > Math.ceil(usuariosFiltrados.length / usuariosPorPagina)) return;
+    if (nuevaPagina > Math.ceil(usuariosFiltrados.length / usuariosPorPagina))
+      return;
     setPaginaActual(nuevaPagina);
   }
 
@@ -350,7 +446,9 @@ export default function UsuariosPage() {
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">👥</div>
           <p className="text-gray-600 text-lg">No hay usuarios registrados.</p>
-          <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Usuario" para comenzar.</p>
+          <p className="text-gray-500 text-sm mt-2">
+            Haz clic en "Agregar Usuario" para comenzar.
+          </p>
         </div>
       ) : usuariosFiltrados.length > 0 ? (
         <>
@@ -405,25 +503,31 @@ export default function UsuariosPage() {
             <button
               onClick={() => cambiarPagina(paginaActual - 1)}
               disabled={paginaActual === 1}
-              className={`px-4 py-2 rounded-md font-semibold ${
-                paginaActual === 1
+              className={`px-4 py-2 rounded-md font-semibold ${paginaActual === 1
                   ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                   : "bg-[#295d0c] text-white hover:bg-[#23480a]"
-              }`}
+                }`}
             >
               Anterior
             </button>
             <span className="text-gray-700 font-medium">
-              Página {paginaActual} de {Math.max(1, Math.ceil(usuariosFiltrados.length / usuariosPorPagina))}
+              Página {paginaActual} de{" "}
+              {Math.max(
+                1,
+                Math.ceil(usuariosFiltrados.length / usuariosPorPagina)
+              )}
             </span>
             <button
               onClick={() => cambiarPagina(paginaActual + 1)}
-              disabled={paginaActual >= Math.ceil(usuariosFiltrados.length / usuariosPorPagina)}
-              className={`px-4 py-2 rounded-md font-semibold ${
-                paginaActual >= Math.ceil(usuariosFiltrados.length / usuariosPorPagina)
+              disabled={
+                paginaActual >=
+                Math.ceil(usuariosFiltrados.length / usuariosPorPagina)
+              }
+              className={`px-4 py-2 rounded-md font-semibold ${paginaActual >=
+                  Math.ceil(usuariosFiltrados.length / usuariosPorPagina)
                   ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                   : "bg-[#295d0c] text-white hover:bg-[#23480a]"
-              }`}
+                }`}
             >
               Siguiente
             </button>
@@ -447,10 +551,30 @@ export default function UsuariosPage() {
           className="space-y-4"
         >
           {[
-            { label: "Nombre", name: "nombre", type: "text", placeholder: "Nombre de usuario" },
-            { label: "Correo", name: "correo", type: "email", placeholder: "Correo electrónico" },
-            { label: "Contraseña", name: "password", type: "password", placeholder: "Contraseña" },
-            { label: "Zona Asignada", name: "zona_asignada", type: "text", placeholder: "Zona asignada" },
+            {
+              label: "Nombre",
+              name: "nombre",
+              type: "text",
+              placeholder: "Nombre de usuario",
+            },
+            {
+              label: "Correo",
+              name: "correo",
+              type: "email",
+              placeholder: "Correo electrónico",
+            },
+            {
+              label: "Contraseña",
+              name: "password",
+              type: "password",
+              placeholder: "Contraseña",
+            },
+            {
+              label: "Zona Asignada",
+              name: "zona_asignada",
+              type: "text",
+              placeholder: "Zona asignada",
+            },
             {
               label: "Rol",
               name: "rol",
@@ -467,7 +591,9 @@ export default function UsuariosPage() {
               {type === "select" ? (
                 <select
                   name={name}
-                  defaultValue={usuarioEditar ? (usuarioEditar as any)[name] : "tecnico"}
+                  defaultValue={
+                    usuarioEditar ? (usuarioEditar as any)[name] : "tecnico"
+                  }
                   required
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
                 >
@@ -482,7 +608,9 @@ export default function UsuariosPage() {
                   name={name}
                   type={type}
                   placeholder={placeholder}
-                  defaultValue={usuarioEditar ? (usuarioEditar as any)[name] : ""}
+                  defaultValue={
+                    usuarioEditar ? (usuarioEditar as any)[name] : ""
+                  }
                   required
                   className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
                 />
@@ -496,7 +624,9 @@ export default function UsuariosPage() {
               name="telefono"
               type="tel"
               placeholder="Número telefónico"
-              defaultValue={usuarioEditar ? formatearTelefono(usuarioEditar.telefono) : ""}
+              defaultValue={
+                usuarioEditar ? formatearTelefono(usuarioEditar.telefono) : ""
+              }
               onChange={manejarCambioTelefono}
               maxLength={9}
               required
@@ -517,6 +647,35 @@ export default function UsuariosPage() {
               </select>
             </label>
           )}
+
+          <>
+            <span className="text-gray-800 font-semibold block mb-2">
+              Firma
+            </span>
+            <div className="flex justify-center mb-2">
+              <SignatureCanvas
+                ref={firmaRef}
+                penColor="black"
+                canvasProps={{
+                  width: 350,
+                  height: 100,
+                  className:
+                    "border border-gray-300 rounded-md shadow bg-white",
+                  style: { width: "350px", height: "100px" },
+                }}
+              />
+            </div>
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => firmaRef.current?.clear()}
+                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+              >
+                Limpiar
+              </button>
+            </div>
+          </>
+
           <div className="mt-6 flex justify-end space-x-4">
             <button
               type="button"

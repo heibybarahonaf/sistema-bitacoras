@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  seed = "ts-node ./prisma/seed.ts"
 }
 
 datasource db {
@@ -10,13 +11,15 @@ datasource db {
 model Firma {
   id              Int        @id @default(autoincrement())
   token           String
+  tecnico_id      Int?         
   firma_base64    String?
   usada           Boolean
   url             String
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  createdAt       DateTime?   @default(now())
+  updatedAt       DateTime?   @default(now())
+
   clienteBitacora Bitacora[] @relation("FirmaCliente")
-  tecnicoBitacora Bitacora[] @relation("FirmaTecnico")
+  tecnico Usuario? @relation(fields: [tecnico_id], references: [id])
 
   @@map("firmas")
 }
@@ -25,8 +28,8 @@ model Bitacora {
   id                      Int      @id @default(autoincrement())
   cliente_id              Int
   usuario_id              Int
-  firmaTecnico_id         Int?
-  firmaCLiente_id         Int?
+  firmaCliente_id         Int?
+  firmaTecnico            Boolean
   no_ticket               String   @db.VarChar(10)
   fecha_servicio          DateTime
   hora_llegada            DateTime
@@ -46,35 +49,17 @@ model Bitacora {
   monto                   Int?
   tipo_horas              String   @db.VarChar(25)
   createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  updatedAt               DateTime @default(now())
 
   cliente             Cliente  @relation(fields: [cliente_id], references: [id])
-  firmaCliente        Firma?   @relation("FirmaCliente", fields: [firmaCLiente_id], references: [id])
-  firmaTecnico        Firma?   @relation("FirmaTecnico", fields: [firmaTecnico_id], references: [id])
+  firmaCliente        Firma?   @relation("FirmaCliente", fields: [firmaCliente_id], references: [id])
   sistema             Sistema? @relation(fields: [sistema_id], references: [id])
   equipo              Equipo?  @relation(fields: [equipo_id], references: [id])
   fase_implementacion Fase_Implementacion  @relation(fields: [fase_implementacion_id], references: [id])
   tipo_servicio       Tipo_Servicio  @relation(fields: [tipo_servicio_id], references: [id])
   usuario             Usuario  @relation(fields: [usuario_id], references: [id])
 
-  encuestaBitacoras Encuesta_Bitacora[] // Relación uno a muchos
-
   @@map("bitacoras")
-}
-
-model Encuesta_Bitacora {
-  id          Int      @id @default(autoincrement())
-  bitacora_id Int
-  encuesta_id Int
-  respuestas  String?  @db.VarChar(50)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  bitacora Bitacora @relation(fields: [bitacora_id], references: [id])
-  encuesta Encuesta @relation(fields: [encuesta_id], references: [id])
-
-  @@unique([bitacora_id, encuesta_id])
-  @@map("encuesta_bitacora")
 }
 
 model Encuesta {
@@ -83,10 +68,9 @@ model Encuesta {
   descripcion String   @db.VarChar(250)
   activa      Boolean  @default(false)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now())
 
   preguntas         EncuestaPregunta[]
-  encuestaBitacoras Encuesta_Bitacora[] // Relación inversa
 
   @@map("encuestas")
 }
@@ -105,7 +89,8 @@ model Cliente {
   monto_paquetes     Int
   monto_individuales Int
   createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  updatedAt          DateTime        @default(now())
+
   bitacora           Bitacora[]
   pagos              Pagos_Cliente[]
 
@@ -120,11 +105,12 @@ model Usuario {
   rol           String     @default("tecnico")
   activo        Boolean
   zona_asignada String     @db.VarChar(300)
-  fecha_ingreso DateTime
   telefono      String     @db.VarChar(10)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  createdAt     DateTime?   @default(now())
+  updatedAt     DateTime?   @default(now())
+
   bitacora      Bitacora[]
+  firmasTecnico Firma[]
 
   @@map("usuarios")
 }
@@ -135,7 +121,8 @@ model Sistema {
   descripcion String
   activo      Boolean
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  updatedAt   DateTime   @default(now())
+
   bitacora    Bitacora[]
 
   @@map("sistemas")
@@ -147,7 +134,8 @@ model Equipo {
   descripcion String
   activo      Boolean
   createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  updatedAt   DateTime   @default(now())
+
   bitacora    Bitacora[]
 
   @@map("equipos")
@@ -159,7 +147,8 @@ model Tipo_Servicio {
   descripcion    String
   activo         Boolean
   createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  updatedAt      DateTime   @default(now())
+
   bitacora       Bitacora[]
 
   @@map("tipos_servicios")
@@ -171,7 +160,8 @@ model Fase_Implementacion {
   descripcion          String
   activa               Boolean
   createdAt            DateTime   @default(now())
-  updatedAt            DateTime   @updatedAt
+  updatedAt            DateTime   @default(now())
+
   bitacora             Bitacora[]
 
   @@map("fases_implementacion")
@@ -187,7 +177,8 @@ model Pagos_Cliente {
   tipo_horas   String   @db.VarChar(20)
   cant_horas   Int
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime @default(now())
+
   cliente      Cliente  @relation(fields: [cliente_id], references: [id])
 
   @@map("pagos_clientes")
@@ -197,7 +188,7 @@ model Pregunta {
   id        Int      @id @default(autoincrement())
   pregunta  String   @db.VarChar(250)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   encuestaPreguntas EncuestaPregunta[]
 
@@ -209,7 +200,7 @@ model EncuestaPregunta {
   encuesta_id Int
   pregunta_id Int
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  updatedAt   DateTime @default(now())
 
   encuesta Encuesta @relation(fields: [encuesta_id], references: [id])
   pregunta Pregunta @relation(fields: [pregunta_id], references: [id])

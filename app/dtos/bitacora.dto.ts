@@ -58,10 +58,10 @@ export const CrearBitacoraDto = z.object({
         required_error: "El ID de la fase de implementación es obligatorio.",
         invalid_type_error: "El ID de la fase de implementación debe ser un número.",
     }),
-    firmaTecnico_id: z.number({
-        invalid_type_error: "El ID de la firma del técnico debe ser un número.",
+    firmaTecnico: z.boolean({
+        invalid_type_error: "El ID de la firma del técnico debe ser un booleano.",
     }).optional(),
-    firmaCLiente_id: z.number({
+    firmaCliente_id: z.number({
         invalid_type_error: "El ID de la firma del cliente debe ser un número.",
     }).optional(),
 

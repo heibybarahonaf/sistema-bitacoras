@@ -36,29 +36,29 @@ export default function ModalDetalleBitacora({
       if (!bitacora) return;
 
       try {
-        if (bitacora.firmaTecnico_id) {
-          const res = await fetch(`/api/firmas/${bitacora.firmaTecnico_id}`);
-          const data = await res.json();
-          const base64 = data.results?.[0]?.firma_base64;
-          if (isMounted && base64) setFirmaTecnicoImg(base64);
+        let usuarioId;
+        const session = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
+        if (session.ok) {
+          const dataf = await session.json();
+          usuarioId = dataf.results[0].id;
         }
-
-        if (bitacora.firmaCLiente_id) {
-          const res = await fetch(`/api/firmas/${bitacora.firmaCLiente_id}`);
+        //if (bitacora.firmaTecnico_id) {
+          const res = await fetch(`/api/firmas/tecnico/${usuarioId}`);
           const data = await res.json();
           const base64 = data.results?.[0]?.firma_base64;
-          const url = data.results?.[0]?.url;
+          
+          if (isMounted && base64) setFirmaTecnicoImg(base64);
 
           if (isMounted) {
             if (base64 && base64.trim() !== "") {
-              setFirmaClienteImg(base64);
+              setFirmaClienteImg(bitacora.firmaCliente.firma_base64);
               setFirmaClienteUrl(null);
-            } else if (url) {
+            } else if (bitacora.firmaCliente.url) {
               setFirmaClienteImg(null);
-              setFirmaClienteUrl(url);
+              setFirmaClienteUrl(bitacora.firmaCliente.url);
             }
           }
-        }
+
       } catch (error) {
         console.error("Error cargando firmas:", error);
       }

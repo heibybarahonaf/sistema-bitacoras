@@ -67,7 +67,6 @@ const EncuestaPage = () => {
       }
     } catch (error) {
       alert("Error al enviar la calificación.");
-      console.error(error);
     }
   };
 

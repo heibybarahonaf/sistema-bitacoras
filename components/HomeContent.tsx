@@ -32,6 +32,7 @@ export default function HomeContent() {
           alt="POS de Honduras Logo"
           width={500}
           height={200}
+          priority
           className="w-full h-auto transition-transform duration-500 hover:scale-105 drop-shadow-xl"
         />
       </div>
