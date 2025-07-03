@@ -18,7 +18,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         }
 
         const { calificacion } = parsed.data;
-        console.log(calificacion)
         const resultado = await BitacoraService.actualizarCalificacion(bitacoraId, calificacion);
         return NextResponse.json(new ResponseDto(200, "Calificación actualizada con éxito", [resultado]));
 

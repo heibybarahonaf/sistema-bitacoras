@@ -450,128 +450,51 @@ export default function UsuariosPage() {
         </div>
       ) : usuariosFiltrados.length > 0 ? (
         <>
-          {/* Tabla para pantallas >= sm */}
-          <div className="hidden sm:block overflow-x-auto rounded-lg shadow border border-gray-300">
-            <table className="min-w-full table-auto border-collapse text-sm sm:text-base">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">
-                    Nombre
-                  </th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">
-                    Correo
-                  </th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">Rol</th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">Zona</th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">
-                    Teléfono
-                  </th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-center">
-                    Activo
-                  </th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-center">
-                    Acciones
-                  </th>
+          <div className="">
+          <table className="w-full table-auto border-collapse">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-2 sm:px-4 py-3 text-left">Nombre</th>
+                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Correo</th>
+                <th className="px-2 sm:px-4 py-3 text-left">Rol</th>
+                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Zona</th>
+                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Teléfono</th>
+                <th className="px-2 sm:px-4 py-3 text-left">Activo</th>
+                <th className="px-2 sm:px-4 py-3 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {usuariosPaginados.map((usuario) => (
+                <tr key={usuario.id} className="hover:bg-gray-50">
+                  <td className="px-2 sm:px-4 py-3">{usuario.nombre}</td>
+                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{usuario.correo}</td>
+                  <td className="px-2 sm:px-4 py-3">{usuario.rol}</td>
+                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{usuario.zona_asignada}</td>
+                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{formatearTelefono(usuario.telefono)}</td>
+                  <td className="px-2 sm:px-4 py-3 text-center">
+                    {usuario.activo ? "✅" : "❌"}
+                  </td>
+                  <td className="px-2 sm:px-4 py-3 text-center">
+                    <div className="flex justify-center items-center gap-3">
+                      <button
+                        onClick={() => abrirEditarUsuario(usuario)}
+                        className="mr-2 text-[#295d0c] hover:text-[#173a01]"
+                      >
+                        <Edit3/>
+                      </button>
+                      <button
+                        onClick={() => handleEliminarUsuario(usuario.id)}
+                        className="text-[#2e3763] hover:text-[#171f40]"
+                      >
+                        <Trash2/>
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {usuariosPaginados.map((usuario) => (
-                  <tr key={usuario.id} className="hover:bg-gray-50">
-                    <td className="px-2 sm:px-4 py-2 border-b">
-                      {usuario.nombre}
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border-b">
-                      {usuario.correo}
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border-b">
-                      {usuario.rol}
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border-b">
-                      {usuario.zona_asignada}
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border-b">
-                      {formatearTelefono(usuario.telefono)}
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border-b text-center">
-                      {usuario.activo ? "✅" : "❌"}
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border-b text-center space-x-2">
-                      <div className="flex justify-center items-center gap-2">
-                        <button
-                          onClick={() => abrirEditarUsuario(usuario)}
-                          className="flex px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50] text-sm"
-                        >
-                          <Edit3 className="w-5 h-5 mr-1" />
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleEliminarUsuario(usuario.id)}
-                          className="flex px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024] text-sm"
-                        >
-                          <Trash2 className="w-5 h-5 mr-1" />
-                          Eliminar
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Tarjetas para pantallas < sm */}
-          <div className="sm:hidden flex flex-col gap-4">
-            {usuariosPaginados.map((usuario) => (
-              <div
-                key={usuario.id}
-                className="border border-gray-300 rounded-lg p-4 shadow bg-white"
-              >
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-semibold text-lg text-gray-900">
-                    {usuario.nombre}
-                  </h3>
-                  <span
-                    className={`text-sm font-semibold ${usuario.activo ? "text-green-600" : "text-red-600"
-                      }`}
-                  >
-                    {usuario.activo ? "Activo" : "Inactivo"}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-700">
-                  <strong>Correo: </strong>
-                  {usuario.correo}
-                </p>
-                <p className="text-sm text-gray-700">
-                  <strong>Rol: </strong>
-                  {usuario.rol}
-                </p>
-                <p className="text-sm text-gray-700">
-                  <strong>Zona: </strong>
-                  {usuario.zona_asignada}
-                </p>
-                <p className="text-sm text-gray-700">
-                  <strong>Teléfono: </strong>
-                  {formatearTelefono(usuario.telefono)}
-                </p>
-                <div className="mt-4 flex gap-3 justify-end">
-                  <button
-                    onClick={() => abrirEditarUsuario(usuario)}
-                    className="flex items-center gap-1 px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50] text-sm"
-                  >
-                    <Edit3 className="w-5 h-5" />
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleEliminarUsuario(usuario.id)}
-                    className="flex items-center gap-1 px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024] text-sm"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
           {/* Controles paginación */}
           <div className="mt-6 flex justify-center items-center gap-4 select-none">

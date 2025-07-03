@@ -386,39 +386,37 @@ export default function ClientesPage() {
             <table className="min-w-full table-auto border-collapse">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">Empresa</th>
-                  {/*<th className="px-2 sm:px-4 py-2 border-b text-left">Responsable</th>*/}
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">RTN/ID</th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">Correo</th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-left">Teléfono</th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-center">Activo</th>
-                  <th className="px-2 sm:px-4 py-2 border-b text-center">Acciones</th>
+                  <th className="px-2 sm:px-4 py-2 text-left">Empresa</th>
+                  {/*<th className="px-2 sm:px-4 py-2 text-left">Responsable</th>*/}
+                  <th className="px-2 sm:px-4 py-2 text-center">RTN/ID</th>
+                  <th className="px-2 sm:px-4 py-2 text-left hidden md:table-cell">Correo</th>
+                  <th className="px-2 sm:px-4 py-2 text-left hidden md:table-cell">Teléfono</th>
+                  <th className="px-2 sm:px-4 py-2 text-center">Activo</th>
+                  <th className="px-2 sm:px-4 py-2 text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {clientesPaginados.map((cliente) => (
                   <tr key={cliente.id} className="hover:bg-gray-50">
-                    <td className="px-2 sm:px-4 py-2 border-b">{cliente.empresa}</td>
-                    {/*<td className="px-2 sm:px-4 py-2 border-b">{cliente.responsable}</td>*/}
-                    <td className="px-2 sm:px-4 py-2 border-b">{cliente.rtn}</td>
-                    <td className="px-2 sm:px-4 py-2 border-b">{cliente.correo}</td>
-                    <td className="px-2 sm:px-4 py-2 border-b">{formatearTelefono(cliente.telefono)}</td>
-                    <td className="px-2 sm:px-4 py-2 border-b text-centerr">{cliente.activo ? "✅" : "❌"}</td>
-                    <td className="px-2 sm:px-4 py-2 border-b text-center space-x-2">
-                      <div className="flex justify-center items-center gap-2">
+                    <td className="px-2 sm:px-4 py-2">{cliente.empresa}</td>
+                    {/*<td className="px-2 sm:px-4 py-2">{cliente.responsable}</td>*/}
+                    <td className="px-2 sm:px-4 py-2">{cliente.rtn}</td>
+                    <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{cliente.correo}</td>
+                    <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{formatearTelefono(cliente.telefono)}</td>
+                    <td className="px-2 sm:px-4 py-2 text-center">{cliente.activo ? "✅" : "❌"}</td>
+                    <td className="px-2 sm:px-4 py-3 text-center">
+                      <div className="flex justify-center gap-2">
                         <button
                           onClick={() => abrirEditarCliente(cliente)}
-                          className="flex px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
+                          className="mr-2 text-[#295d0c] hover:text-[#173a01]"
                         >
-                          <Edit3 className="w-5 h-5" />
-                          Editar
+                          <Edit3 size={20}/>
                         </button>
                         <button
                           onClick={() => handleEliminarCliente(cliente.id)}
-                          className="flex px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
+                          className="text-[#2e3763] hover:text-[#171f40]"
                         >
-                          <Trash2 className="w-5 h-5" />
-                          Eliminar
+                          <Trash2 size={20}/>
                         </button>
                       </div>
                     </td>
