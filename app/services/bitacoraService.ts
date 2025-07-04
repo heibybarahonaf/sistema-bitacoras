@@ -170,6 +170,39 @@ export class BitacoraService {
     }
 
 
+    public static async obtenerBitacorasTecnicoVentasFechas(nombre: string, fechaInicio: string, fechaFinal: string) {
+        const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
+        const bitacoras = await prisma.bitacora.findMany({
+            where: {
+                usuario_id: tecnico.id,
+                fecha_servicio: {
+                    gte: new Date(fechaInicio),
+                    lte: new Date(fechaFinal),
+                },
+                ventas: {
+                    not: {
+                        equals: "",
+                    },
+                },
+            },
+            include: {
+                cliente: true,
+                usuario: true,
+                sistema: true,
+                equipo: true,
+                tipo_servicio: true,
+            },
+            orderBy: { fecha_servicio: "desc" }
+        });
+
+        if (bitacoras.length === 0) {
+            throw new ResponseDto(404, "No se encontraron bitácoras de ventas registradas con el técnico en el rango de fechas ingresado");
+        }
+
+        return bitacoras;
+    }
+
+
     public static async obtenerBitacorasTecnico(idTecnico: number): Promise<Bitacora[]> {
         const bitacoras = await prisma.bitacora.findMany({ 
             where: { usuario_id: idTecnico },

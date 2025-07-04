@@ -18,7 +18,8 @@ export async function GET(request: Request) {
             //return NextResponse.json({ message: "Se requieren fechas y el nombre del tecnico" }, { status: 400 });
         }
 
-        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(usuario, fechaInicio, fechaFinal);
+        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoVentasFechas(usuario, fechaInicio, fechaFinal);
+        console.log(bitacoras)
         const buffer = await generarPDFPorVentasTecnico(bitacoras, fechaInicio, fechaFinal);
 
         return new NextResponse(buffer, {

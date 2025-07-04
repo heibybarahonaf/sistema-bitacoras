@@ -301,7 +301,6 @@ useEffect(() => {
   return () => clearInterval(intervalo);
 }, [firmaClienteRemotaId]);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setGuardando(true);
