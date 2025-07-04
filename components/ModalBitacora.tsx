@@ -292,7 +292,6 @@ useEffect(() => {
   return () => clearInterval(intervalo);
 }, [firmaClienteRemotaId]);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -662,6 +661,7 @@ useEffect(() => {
                             throw new Error("No se pudo obtener la sesión del usuario");
                           const data = await res.json();
                           const tecnicoId = data.results?.[0]?.id;
+                          //aqui quiero cargar la firma del tecnico pasandole el id que se encuentra en bitacorra.tecnicoId
 
                           if (tecnicoId) {
                             const firmaRes = await fetch(`/api/firmas/tecnico/${tecnicoId}`);

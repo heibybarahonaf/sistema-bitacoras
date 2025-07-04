@@ -36,15 +36,10 @@ export default function ModalDetalleBitacora({
       if (!bitacora) return;
 
       try {
-        let usuarioId;
-        const session = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
-        if (session.ok) {
-          const dataf = await session.json();
-          usuarioId = dataf.results[0].id;
-        }
-        //if (bitacora.firmaTecnico_id) {
-          const res = await fetch(`/api/firmas/tecnico/${usuarioId}`);
-          const data = await res.json();
+        const usuarioId = bitacora.usuario_id; 
+
+        const res = await fetch(`/api/firmas/tecnico/${usuarioId}`);
+        const data = await res.json();
           const base64 = data.results?.[0]?.firma_base64;
           
           if (isMounted && base64) setFirmaTecnicoImg(base64);

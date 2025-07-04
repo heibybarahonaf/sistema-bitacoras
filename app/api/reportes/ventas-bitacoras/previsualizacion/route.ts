@@ -28,8 +28,8 @@ export async function GET(request: Request) {
             throw new ResponseDto(400, "Se requiere el nombre del técnico");
         }
 
-        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(usuario, fechaInicio, fechaFinal);
-        
+        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoVentasFechas(usuario, fechaInicio, fechaFinal);
+        console.log("hola:: ", bitacoras)
         if (bitacoras.length === 0) {
             throw new ResponseDto(404, "No se encontraron bitácoras para el técnico en el rango de fechas especificado");
         }

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { CrearFirmaDto } from "@/app/dtos/firma.dto";
 import { FirmaService } from "@/app/services/firmaService";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
@@ -22,31 +21,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
         return GeneralUtils.generarErrorResponse(error);
         
-    }
-
-}
-
-
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-
-    try {
-
-        const idParams = (await params).id;
-        const id = GeneralUtils.validarIdParam(idParams);
-        const body = await request.json();
-
-        const dto = CrearFirmaDto.parse({
-            ...body,
-            tecnico_id: id,
-        });
-
-        const firmaCreada = await FirmaService.crearFirmaPorIdTecnico(dto);
-        return NextResponse.json(new ResponseDto(201, "Firma creada con éxito", [firmaCreada]));
-
-    } catch (error) {
-
-        return GeneralUtils.generarErrorResponse(error);
-
     }
 
 }
