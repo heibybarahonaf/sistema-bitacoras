@@ -167,6 +167,15 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [cargarFirmaTecnico, setCargarFirmaTecnico] = useState(false);
   const sigCanvas = useRef<SignatureCanvas>(null);
   const sigCanvasCliente = useRef<SignatureCanvas>(null);
+  const [guardando, setGuardando] = useState(false);
+
+
+  useEffect(() => {
+  if (sigCanvas.current) {
+    sigCanvas.current.off(); // Desactiva el canvas del técnico permanentemente
+  }
+}, []);
+
 
   const generarNuevoEnlaceFirma = async () => {
     try {
@@ -295,6 +304,7 @@ useEffect(() => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setGuardando(true);
 
     try {
       if (!modalidad) throw new Error("Seleccione la modalidad");
@@ -513,6 +523,8 @@ useEffect(() => {
         title: "Error al guardar",
         text: error instanceof Error ? error.message : String(error),
       });
+    }finally {
+      setGuardando(false); 
     }
   };
 
@@ -766,9 +778,14 @@ useEffect(() => {
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a] transition"
+              disabled={guardando}
+              className={`px-6 py-2 rounded-md font-semibold transition ${
+                guardando
+                  ? "bg-gray-400 cursor-not-allowed text-white"
+                  : "bg-[#295d0c] hover:bg-[#23480a] text-white"
+              }`}
             >
-              Guardar
+              {guardando ? "Guardando..." : "Guardar"}
             </button>
           </div>
         </form>
