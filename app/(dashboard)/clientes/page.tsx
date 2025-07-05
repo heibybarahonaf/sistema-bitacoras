@@ -3,7 +3,8 @@
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import ModalCliente from "@/components/ModalCliente";
-import { Contact, Plus, Edit3, Trash2 } from "lucide-react";
+import ModalPago from "@/components/ModalPago";
+import { Contact, Plus, Edit3, Trash2, DollarSign } from "lucide-react";
 
 interface Cliente {
   id: number;
@@ -68,6 +69,9 @@ export default function ClientesPage() {
   const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isCliente, setIsCliente] = useState(false);
+  const [modalPagoCliente, setModalPagoCliente] = useState<{ open: boolean; clienteId?: number }>({
+    open: false,
+  });
 
   // Estado para filtro
   const [filtroNombre, setFiltroNombre] = useState("");
@@ -422,6 +426,7 @@ export default function ClientesPage() {
         </div>
       ) : clientes.length > 0 ? (
         <>
+<<<<<<< HEAD
           {/* Información de resultados */}
           <div className="mb-4 text-sm text-gray-600">
             Mostrando {clientes.length} de {meta.total} clientes
@@ -467,6 +472,56 @@ export default function ClientesPage() {
               ))}
             </tbody>
           </table>
+=======
+            <table className="min-w-full table-auto border-collapse">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-2 sm:px-4 py-2 text-left">Empresa</th>
+                  {/*<th className="px-2 sm:px-4 py-2 text-left">Responsable</th>*/}
+                  <th className="px-2 sm:px-4 py-2 text-left">RTN/ID</th>
+                  <th className="px-2 sm:px-4 py-2 text-left hidden md:table-cell">Correo</th>
+                  <th className="px-2 sm:px-4 py-2 text-left hidden md:table-cell">Teléfono</th>
+                  <th className="px-2 sm:px-4 py-2 text-center">Activo</th>
+                  <th className="px-2 sm:px-4 py-2 text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clientesPaginados.map((cliente) => (
+                  <tr key={cliente.id} className="hover:bg-gray-50">
+                    <td className="px-2 sm:px-4 py-2">{cliente.empresa}</td>
+                    {/*<td className="px-2 sm:px-4 py-2">{cliente.responsable}</td>*/}
+                    <td className="px-2 sm:px-4 py-2">{cliente.rtn}</td>
+                    <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{cliente.correo}</td>
+                    <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{formatearTelefono(cliente.telefono)}</td>
+                    <td className="px-2 sm:px-4 py-2 text-center">{cliente.activo ? "✅" : "❌"}</td>
+                    <td className="px-2 sm:px-4 py-3 text-center">
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => abrirEditarCliente(cliente)}
+                          className="mr-2 text-[#295d0c] hover:text-[#173a01]"
+                        >
+                          <Edit3 size={20}/>
+                        </button>
+                        <button
+                          onClick={() => handleEliminarCliente(cliente.id)}
+                          className="text-[#2e3763] hover:text-[#171f40]"
+                        >
+                          <Trash2 size={20}/>
+                        </button>
+                        <button
+                          onClick={() => setModalPagoCliente({ open: true, clienteId: cliente.id })}
+                          className="text-[#047857] hover:text-[#065f46]"
+                          title="Agregar Pago"
+                        >
+                          <DollarSign size={20} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+>>>>>>> 08a2e2f9cf5f7fbb5dca86895b3f6a3499752a4f
 
           {/* Controles de paginación */}
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -584,6 +639,13 @@ export default function ClientesPage() {
           </div>
         </form>
       </ModalCliente>
+      {modalPagoCliente.open && modalPagoCliente.clienteId && (
+      <ModalPago
+        clienteId={modalPagoCliente.clienteId}
+        onClose={() => setModalPagoCliente({ open: false })}
+        onGuardar={fetchClientes}
+      />
+    )}
     </div>
   );
 }

@@ -119,7 +119,7 @@ export default function ModalPago({
       detalle_pago: detallePago,
       monto,
       tipo_horas: tipoHoras,
-      cant_horas: cantHoras,
+      cant_horas: parseInt(String(cantHoras), 10),
     };
 
     const url = pago ? `/api/pagos/${pago.id}` : "/api/pagos";
