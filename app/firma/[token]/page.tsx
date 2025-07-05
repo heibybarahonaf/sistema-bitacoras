@@ -12,10 +12,13 @@ export default function FirmaClientePage() {
   const [firmaId, setFirmaId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [bitacora, setBitacora] = useState<Bitacora | null>(null);
+  const [nombreTecnico, setNombreTecnico] = useState<string | null>(null);
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
 
   useEffect(() => {
     const validarToken = async () => {
       try {
+        
         const res = await fetch(`/api/firmas/validar/${token}`);
         const data = await res.json();   
 
@@ -39,10 +42,25 @@ export default function FirmaClientePage() {
         const dataBitacora = await resBitacora.json();
 
         if (resBitacora.ok && dataBitacora?.result) {
-          setBitacora(dataBitacora.result);
-        } else {
-          setBitacora(null);
-        }
+  const bitacoraData = dataBitacora.result;
+  setBitacora(bitacoraData);
+
+  // Obtener nombre del técnico
+  try {
+    console.log("ID de usuario:", bitacoraData.usuario_id);
+    const resUsuario = await fetch(`${baseUrl}/api/usuarios/${bitacoraData.usuario_id}`);
+    const dataUsuario = await resUsuario.json();
+     console.log("Respuesta completa del usuario", dataUsuario);
+    if (resUsuario.ok && dataUsuario?.results?.[0]?.nombre) {
+      setNombreTecnico(dataUsuario.results[0].nombre);
+    }
+  } catch (error) {
+    console.error("Error al obtener el nombre del técnico:", error);
+  }
+} else {
+  setBitacora(null);
+}
+
 
       } catch (error) {
         console.error("Error al validar token", error);
@@ -113,7 +131,7 @@ export default function FirmaClientePage() {
           <div className="space-y-2 text-gray-800">
             <p><strong>No. Ticket:</strong> {bitacora.no_ticket}</p>
             <p><strong>Fecha del Servicio:</strong> {new Date(bitacora.fecha_servicio).toLocaleDateString("es-HN")}</p>
-            <p><strong>Responsable:</strong> {bitacora.responsable}</p>
+            <p><strong>Técnico:</strong> {nombreTecnico || `ID ${bitacora.usuario_id}`}</p>
             <p><strong>Descripción:</strong> {bitacora.descripcion_servicio}</p>
             <p><strong>Modalidad:</strong> {bitacora.modalidad}</p>
             <p><strong>Horas Consumidas:</strong> {bitacora.horas_consumidas}</p>

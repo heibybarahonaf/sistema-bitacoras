@@ -36,6 +36,7 @@ export async function GET(request: Request) {
             tecnico: bitacora.usuario.nombre,
             hora_llegada: bitacora.hora_llegada,
             hora_salida: bitacora.hora_salida,
+            horas: bitacora.horas_consumidas,
             servicio: bitacora.tipo_servicio?.descripcion,
             modalidad: bitacora.modalidad,
             tipo_horas: bitacora.tipo_horas,

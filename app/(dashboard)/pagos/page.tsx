@@ -2,15 +2,35 @@
 
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
-import { Pagos_Cliente } from "@prisma/client";
 import ModalPago from "@/components/ModalPago"; 
+import { Pagos_Cliente } from "@prisma/client";
 import { DollarSign, Eye, Edit } from "lucide-react";
 
-function mostrarDetallePago(pago: Pagos_Cliente) {
+interface PagoConCliente extends Pagos_Cliente {
+  cliente: {
+    id: number;
+    responsable: string;
+    empresa: string;
+    rtn: string;
+    direccion: string;
+    telefono: string;
+    correo: string;
+    activo: boolean;
+    horas_paquetes: number;
+    horas_individuales: number;
+    monto_paquetes: number;
+    monto_individuales: number;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
+
+function mostrarDetallePago(pago: PagoConCliente) {
   Swal.fire({
     title: "Detalle de Pago",
     html: `
       <strong>Factura:</strong> ${pago.no_factura} <br/><br/>
+      <strong>Cliente:</strong> ${pago.cliente?.empresa || pago.cliente?.responsable} <br/><br/>
       <strong>Forma de pago:</strong> ${pago.forma_pago} <br/><br/>
       <strong>Detalle:</strong> ${pago.detalle_pago} <br/><br/>
       <strong>Monto:</strong> L.${pago.monto} <br/><br/>
@@ -32,11 +52,11 @@ const LoadingSpinner = () => (
 );
 
 export default function PagosPage() {
-  const [pagos, setPagos] = useState<Pagos_Cliente[]>([]);
+  const [pagos, setPagos] = useState<PagoConCliente[]>([]);
   const [loading, setLoading] = useState(false);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
 
-  const [modalPago, setModalPago] = useState<{ open: boolean; pago?: Pagos_Cliente }>({
+  const [modalPago, setModalPago] = useState<{ open: boolean; pago?: PagoConCliente }>({
     open: false,
   });
 
@@ -56,6 +76,7 @@ export default function PagosPage() {
     try {
       const res = await fetch("/api/pagos");
       const response = await res.json();
+      console.log(response)
 
       if (response.code === 404) {
         setPagos([]);
@@ -162,6 +183,7 @@ export default function PagosPage() {
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-2 sm:px-4 py-3 text-left">Factura</th>
+                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Cliente</th>
                 <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Forma de pago</th>
                 <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Detalle</th>
                 <th className="px-2 sm:px-4 py-3 text-left ">Monto</th>
@@ -175,6 +197,7 @@ export default function PagosPage() {
               {pagosFiltrados.map((pago) => (
                 <tr key={pago.id} className="hover:bg-gray-50">
                   <td className="px-2 sm:px-4 py-3">{pago.no_factura}</td>
+                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.cliente?.empresa || pago.cliente?.responsable}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.forma_pago}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.detalle_pago}</td>
                   <td className="px-2 sm:px-4 py-3">L.{pago.monto}</td>
@@ -211,7 +234,7 @@ export default function PagosPage() {
       {/* Modal de edición */}
       {modalPago.open && modalPago.pago && (
         <ModalPago
-          clienteId={modalPago.pago.cliente_id}
+          clienteId={modalPago.pago.cliente.id}
           pago={modalPago.pago}
           onClose={() => setModalPago({ open: false })}
           onGuardar={fetchPagos}

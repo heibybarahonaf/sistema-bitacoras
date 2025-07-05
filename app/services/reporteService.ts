@@ -137,7 +137,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
     const porcentajeComision = config.comision;
 
     const columnas = [
-        "Fecha", "Ticket", "Cliente", "Servicio", "Modalidad", "Horas", "Tipo Horas", "Monto", "Comisión", "Descripcion"
+        "Fecha", "Bitacora No.", "Ticket", "Cliente", "Horas", "Tipo Horas", "Monto", "Comisión", 
     ];
 
     let total = 0;
@@ -150,15 +150,13 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
 
         return [
             formatearFecha(b.fecha_servicio),
+            b.id,
             b.no_ticket ?? campo_vacio,
             b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
-            b.tipo_servicio?.descripcion ?? campo_vacio,
-            b.modalidad ?? campo_vacio,
             horas,
             b.tipo_horas ?? campo_vacio,
             monto.toFixed(2),
-            comision.toFixed(2),
-            b.descripcion_servicio ?? campo_vacio
+            comision.toFixed(2)
         ].map(v => v === undefined ? null : v);
     }) as (string | number | null)[][];
 
@@ -191,13 +189,14 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
 export async function generarPDFPorVentasTecnico(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
     const usuario = bitacoras[0]?.usuario ?? null;
     const columnas = [
-        "Fecha", "Cliente", "Ventas"
+        "Fecha", "Bitacora No.", "Cliente", "Ventas"
     ];
 
     const datos = bitacoras.map(b => {
 
         return [
             formatearFecha(b.fecha_servicio),
+            b.id,
             b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
             b.ventas ?? campo_vacio
         ].map(v => v === undefined ? null : v);

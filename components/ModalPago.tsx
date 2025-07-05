@@ -6,7 +6,26 @@ interface ModalPagoProps {
   clienteId: number;
   onClose: () => void;
   onGuardar: () => void;
-  pago?: Pagos_Cliente; // opcional, si se va a editar
+  pago?: PagoConCliente;
+}
+
+interface PagoConCliente extends Pagos_Cliente {
+  cliente: {
+    id: number;
+    responsable: string;
+    empresa: string;
+    rtn: string;
+    direccion: string;
+    telefono: string;
+    correo: string;
+    activo: boolean;
+    horas_paquetes: number;
+    horas_individuales: number;
+    monto_paquetes: number;
+    monto_individuales: number;
+    createdAt: Date;
+    updatedAt: Date;
+  };
 }
 
 export default function ModalPago({
@@ -19,6 +38,7 @@ export default function ModalPago({
   const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [monto, setMonto] = useState(0);
   const [noFactura, setNoFactura] = useState("");
+  const [cliente, setCliente] = useState("AAAAAAA");
   const [formaPago, setFormaPago] = useState("Efectivo");
   const [detallePago, setDetallePago] = useState("");
   const [config, setConfig] = useState({
@@ -31,6 +51,7 @@ export default function ModalPago({
   useEffect(() => {
     if (pago) {
       setNoFactura(pago.no_factura || "");
+      setCliente(pago.cliente.empresa || "AAAAAAA");
       setFormaPago(pago.forma_pago || "Efectivo");
       setDetallePago(pago.detalle_pago || "");
       setTipoHoras(pago.tipo_horas || "Paquete");
@@ -61,6 +82,24 @@ export default function ModalPago({
     fetchConfig();
   }, []);
 
+  // Obtener nombre del cliente si no hay pago (nuevo registro)
+  useEffect(() => {
+    if (!pago && clienteId) {
+      const fetchCliente = async () => {
+        try {
+          const res = await fetch(`/api/clientes/${clienteId}`);
+          const clienteData = await res.json();
+          if (clienteData && clienteData.empresa) {
+            setCliente(clienteData.empresa);
+          }
+        } catch (error) {
+          console.error("Error al cargar cliente", error);
+        }
+      };
+      fetchCliente();
+    }
+  }, [clienteId, pago]);
+
   // Recalcular monto si cambia cantidad o tipo
   useEffect(() => {
     const precioPorHora =
@@ -80,7 +119,7 @@ export default function ModalPago({
       detalle_pago: detallePago,
       monto,
       tipo_horas: tipoHoras,
-      cant_horas: cantHoras,
+      cant_horas: parseInt(String(cantHoras), 10),
     };
 
     const url = pago ? `/api/pagos/${pago.id}` : "/api/pagos";
@@ -125,6 +164,17 @@ export default function ModalPago({
               onChange={(e) => setNoFactura(e.target.value)}
               required
               className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+            />
+          </label>
+
+          {/* Nombre del cliente - SIEMPRE MOSTRAR */}
+          <label className="block">
+            <span className="text-gray-800 font-semibold">Cliente</span>
+            <input
+              type="text"
+              value={pago?.cliente?.empresa || cliente}
+              readOnly
+              className="mt-1 w-full border border-gray-300 bg-gray-100 rounded-md px-3 py-2 text-gray-700"
             />
           </label>
 

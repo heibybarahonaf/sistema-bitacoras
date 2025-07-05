@@ -36,23 +36,24 @@ export default function ModalDetalleBitacora({
       if (!bitacora) return;
 
       try {
-        const usuarioId = bitacora.usuario_id; 
-
+        const usuarioId = bitacora.usuario_id;
         const res = await fetch(`/api/firmas/tecnico/${usuarioId}`);
         const data = await res.json();
-          const base64 = data.results?.[0]?.firma_base64;
-          
-          if (isMounted && base64) setFirmaTecnicoImg(base64);
+        const base64 = data.results?.[0]?.firma_base64;
 
-          if (isMounted) {
-            if (base64 && base64.trim() !== "") {
-              setFirmaClienteImg(bitacora.firmaCliente.firma_base64);
-              setFirmaClienteUrl(null);
-            } else if (bitacora.firmaCliente.url) {
-              setFirmaClienteImg(null);
-              setFirmaClienteUrl(bitacora.firmaCliente.url);
-            }
+        if (isMounted && base64) setFirmaTecnicoImg(base64);
+
+        // Firma cliente (base64 o URL)
+        if (isMounted) {
+          const firmaCliente = bitacora.firmaCliente;
+          if (firmaCliente?.firma_base64) {
+            setFirmaClienteImg(firmaCliente.firma_base64);
+            setFirmaClienteUrl(null);
+          } else if (firmaCliente?.url) {
+            setFirmaClienteImg(null);
+            setFirmaClienteUrl(firmaCliente.url);
           }
+        }
 
       } catch (error) {
         console.error("Error cargando firmas:", error);
@@ -62,6 +63,7 @@ export default function ModalDetalleBitacora({
     if (isOpen && bitacora) {
       setFirmaTecnicoImg(null);
       setFirmaClienteImg(null);
+      setFirmaClienteUrl(null);
       setNoSoportaClipboard(false);
       cargarFirmas();
     }
@@ -127,11 +129,11 @@ export default function ModalDetalleBitacora({
     ...(bitacora.nombres_capacitados
       ? [{ label: "Nombres Capacitados", value: bitacora.nombres_capacitados }]
       : []),
-      ...(bitacora.ventas ? [{ label: "Posibles Ventas", value: bitacora.ventas }] : []),
+    ...(bitacora.ventas ? [{ label: "Posibles Ventas", value: bitacora.ventas }] : []),
     { label: "Fase de Implementación", value: faseImplementacionNombre },
     ...(bitacora.calificacion
-    ? [{ label: "Calificación", value: bitacora.calificacion }]
-    : [{ label: "Calificación", value: "ENCUESTA NO REALIZADA" }]),
+      ? [{ label: "Calificación", value: bitacora.calificacion }]
+      : [{ label: "Calificación", value: "ENCUESTA NO REALIZADA" }]),
   ];
 
   return (

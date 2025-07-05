@@ -9,6 +9,14 @@ const EditarClienteDto = CrearClienteDto.partial();
 type EditarClienteDto = z.infer<typeof EditarClienteDto>;
 type CrearClienteDto = z.infer<typeof CrearClienteDto>;
 
+interface PaginationResult {
+    data: Cliente[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 export class ClienteService {
 
     public static async obtenerClientes(): Promise<Cliente[]> {
@@ -19,6 +27,48 @@ export class ClienteService {
         }
 
         return clientes;
+    }
+
+    public static async obtenerClientesPaginados(
+        page: number = 1, 
+        limit: number = 10, 
+        search: string = ""
+    ): Promise<PaginationResult> {
+        
+        const offset = (page - 1) * limit;
+        const whereCondition = search 
+            ? {
+                OR: [
+                    { empresa: { contains: search, mode: 'insensitive' as const } },
+                    { rtn: { contains: search, mode: 'insensitive' as const } }
+                ]
+            }
+            : {};
+
+        const [clientes, total] = await Promise.all([
+            prisma.cliente.findMany({
+                where: whereCondition,
+                skip: offset,
+                take: limit,
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.cliente.count({
+                where: whereCondition
+            })
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
+        if (clientes.length === 0 && total === 0) {
+            throw new ResponseDto(404, "No se encontraron clientes");
+        }
+
+        return {
+            data: clientes,
+            total,
+            page,
+            limit,
+            totalPages
+        };
     }
 
 

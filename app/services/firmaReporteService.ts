@@ -36,9 +36,11 @@ export class FirmaReporteService {
                 firmaCliente: true
             },
         }) as BitacoraConRelaciones;
+
         if (!bitacora) {
             throw new Error("Bitácora no encontrada");
         }
+        
         const doc = new jsPDF('p', 'mm', 'a4');
         this.configurarEncabezado(doc, bitacora);
         

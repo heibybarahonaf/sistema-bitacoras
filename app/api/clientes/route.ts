@@ -5,30 +5,46 @@ import { ClienteService } from "@/app/services/clienteService";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function GET(request: Request) {
-
     try {
-
         const url = new URL(request.url);
         const rtn = url.searchParams.get("rtn") || "";
+        const page = parseInt(url.searchParams.get("page") || "1");
+        const limit = parseInt(url.searchParams.get("limit") || "10");
+        const search = url.searchParams.get("search") || "";
 
-        let clientes;
-        if (rtn) {
-            const cliente = await ClienteService.obtenerClientePorRtn(rtn);
-            clientes = cliente ? [cliente] : [];
-        } else {
-            clientes = await ClienteService.obtenerClientes();
+        if (page < 1 || limit < 1) {
+            return NextResponse.json(
+                new ResponseDto(400, "Los parámetros de paginación deben ser mayores a 0")
+            );
         }
 
-        return NextResponse.json(new ResponseDto(200, "Clientes obtenidos correctamente", clientes));
+        let result;
+        if (rtn) {
+            const cliente = await ClienteService.obtenerClientePorRtn(rtn);
+            result = {
+                data: cliente ? [cliente] : [],
+                total: cliente ? 1 : 0,
+                page: 1,
+                limit: 1,
+                totalPages: cliente ? 1 : 0
+            };
+        } else {
+            result = await ClienteService.obtenerClientesPaginados(page, limit, search);
+        }
+
+        return NextResponse.json(
+            new ResponseDto(200, "Clientes obtenidos correctamente", result.data, {
+                total: result.total,
+                page: result.page,
+                limit: result.limit,
+                totalPages: result.totalPages
+            })
+        );
 
     } catch (error) {
-
         return GeneralUtils.generarErrorResponse(error);
-
     }
-
 }
-
 
 export async function POST(req: Request) {
 

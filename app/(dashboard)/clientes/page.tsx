@@ -3,7 +3,8 @@
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
 import ModalCliente from "@/components/ModalCliente";
-import { Contact, Plus, Edit3, Trash2 } from "lucide-react";
+import ModalPago from "@/components/ModalPago";
+import { Contact, Plus, Edit3, Trash2, DollarSign } from "lucide-react";
 
 interface Cliente {
   id: number;
@@ -25,7 +26,7 @@ interface clienteActualizado {
   correo: string,
   activo: boolean,
   updateAt: string
-};
+}
 
 interface ErrorDeValidacion {
   code: number;
@@ -34,6 +35,21 @@ interface ErrorDeValidacion {
     campo: string;
     mensajes: string[];
   }[];
+}
+
+interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface ApiResponse {
+  code: number;
+  message: string;
+  count: number;
+  results: Cliente[];
+  meta?: PaginationMeta;
 }
 
 // carga
@@ -53,13 +69,34 @@ export default function ClientesPage() {
   const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isCliente, setIsCliente] = useState(false);
+  const [modalPagoCliente, setModalPagoCliente] = useState<{ open: boolean; clienteId?: number }>({
+    open: false,
+  });
 
   // Estado para filtro
   const [filtroNombre, setFiltroNombre] = useState("");
+  const [filtroActual, setFiltroActual] = useState("");
 
-  // Paginación estados
+  // Paginación estados - ahora manejados por el backend
   const [paginaActual, setPaginaActual] = useState(1);
-  const clientesPorPagina = 5;
+  const [meta, setMeta] = useState<PaginationMeta>({
+    total: 0,
+    page: 1,
+    limit: 5,
+    totalPages: 0
+  });
+
+  // Debounce para búsqueda
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (filtroNombre !== filtroActual) {
+        setFiltroActual(filtroNombre);
+        setPaginaActual(1); // Reset a página 1 cuando cambie el filtro
+      }
+    }, 500); // 500ms de debounce
+
+    return () => clearTimeout(timer);
+  }, [filtroNombre, filtroActual]);
 
   useEffect(() => {
     setIsCliente(true);
@@ -114,17 +151,29 @@ export default function ClientesPage() {
     }
   }
 
-  // Obtener clientes desde la API
+  // Obtener clientes desde la API con paginación
   async function fetchClientes() {
     setLoading(true);
     setShowEmptyMessage(false);
 
     try {
-      const res = await fetch("/api/clientes");
-      const response = await res.json();
+      const params = new URLSearchParams({
+        page: paginaActual.toString(),
+        limit: meta.limit.toString(),
+        ...(filtroActual && { search: filtroActual })
+      });
+
+      const res = await fetch(`/api/clientes?${params}`);
+      const response: ApiResponse = await res.json();
 
       if (response.code === 404) {
         setClientes([]);
+        setMeta({
+          total: 0,
+          page: paginaActual,
+          limit: meta.limit,
+          totalPages: 0
+        });
         setShowEmptyMessage(true);
         return;
       }
@@ -134,6 +183,10 @@ export default function ClientesPage() {
       }
 
       setClientes(response.results ?? []);
+      
+      if (response.meta) {
+        setMeta(response.meta);
+      }
 
       if (!response.results || response.results.length === 0) {
         setShowEmptyMessage(true);
@@ -154,7 +207,7 @@ export default function ClientesPage() {
     if (isCliente) {
       fetchClientes();
     }
-  }, [isCliente]);
+  }, [isCliente, paginaActual, filtroActual]);
 
   // Crear cliente
   async function handleSubmitCliente(event: React.FormEvent<HTMLFormElement>) {
@@ -183,7 +236,6 @@ export default function ClientesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosCliente),
       });
-      console.log(res)
 
       const data = await res.json();
 
@@ -199,9 +251,9 @@ export default function ClientesPage() {
         confirmButtonColor: "#295d0c",
       });
 
+      setPaginaActual(1); // Volver a página 1 al agregar
       fetchClientes();
       setModalOpen(false);
-      setPaginaActual(1); // Volver a página 1 al agregar
 
     } catch {
       Swal.fire({
@@ -249,8 +301,12 @@ export default function ClientesPage() {
         confirmButtonColor: "#295d0c",
       });
 
-      fetchClientes();
-      setPaginaActual(1); // Volver a página 1 al eliminar
+      // Si quedamos en una página vacía, ir a la anterior
+      if (clientes.length === 1 && paginaActual > 1) {
+        setPaginaActual(paginaActual - 1);
+      } else {
+        fetchClientes();
+      }
 
     } catch {
       Swal.fire({
@@ -328,20 +384,6 @@ export default function ClientesPage() {
     return <LoadingSpinner />;
   }
 
-  // Aquí se filtran los clientes por empresa o RTN según filtroNombre
-  const clientesFiltrados = clientes.filter((cliente) =>
-    (
-      (cliente.empresa ?? "").toLowerCase().includes(filtroNombre.toLowerCase()) ||
-      (cliente.rtn ?? "").toLowerCase().includes(filtroNombre.toLowerCase())
-    )
-  );
-
-  // Calcular clientes para la página actual
-  const indexUltimoCliente = paginaActual * clientesPorPagina;
-  const indexPrimerCliente = indexUltimoCliente - clientesPorPagina;
-  const clientesPaginados = clientesFiltrados.slice(indexPrimerCliente, indexUltimoCliente);
-  const totalPaginas = Math.ceil(clientesFiltrados.length / clientesPorPagina);
-
   return (
     <div className="p-6 bg-white min-h-screen">
       <h1 className="text-3xl font-semibold mb-6 flex items-center gap-2 text-gray-800">
@@ -353,12 +395,9 @@ export default function ClientesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
         <input
           type="text"
-          placeholder="Buscar por nombre de usuario..."
+          placeholder="Buscar por empresa, RTN, responsable o correo..."
           value={filtroNombre}
-          onChange={(e) => {
-            setFiltroNombre(e.target.value);
-            setPaginaActual(1); // Reset paginación al filtrar
-          }}
+          onChange={(e) => setFiltroNombre(e.target.value)}
           className="w-full sm:w-1/2 border border-gray-300 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
         />
         <button
@@ -372,77 +411,105 @@ export default function ClientesPage() {
           Agregar Cliente
         </button>
       </div>
+
       {loading ? (
         <LoadingSpinner />
-      ) : clientesFiltrados.length === 0 && showEmptyMessage ? (
+      ) : clientes.length === 0 && showEmptyMessage ? (
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">👥</div>
-          <p className="text-gray-600 text-lg">No hay clientes registrados.</p>
-          <p className="text-gray-500 text-sm mt-2">Haz clic en "Agregar Cliente" para comenzar.</p>
+          <p className="text-gray-600 text-lg">
+            {filtroActual ? "No se encontraron clientes con ese criterio de búsqueda." : "No hay clientes registrados."}
+          </p>
+          <p className="text-gray-500 text-sm mt-2">
+            {filtroActual ? "Intenta con otro término de búsqueda." : "Haz clic en 'Agregar Cliente' para comenzar."}
+          </p>
         </div>
-      ) : clientesFiltrados.length > 0 ? (
+      ) : clientes.length > 0 ? (
         <>
-            <table className="min-w-full table-auto border-collapse">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-2 sm:px-4 py-2 text-left">Empresa</th>
-                  {/*<th className="px-2 sm:px-4 py-2 text-left">Responsable</th>*/}
-                  <th className="px-2 sm:px-4 py-2 text-center">RTN/ID</th>
-                  <th className="px-2 sm:px-4 py-2 text-left hidden md:table-cell">Correo</th>
-                  <th className="px-2 sm:px-4 py-2 text-left hidden md:table-cell">Teléfono</th>
-                  <th className="px-2 sm:px-4 py-2 text-center">Activo</th>
-                  <th className="px-2 sm:px-4 py-2 text-center">Acciones</th>
+          {/* Información de resultados */}
+          <div className="mb-4 text-sm text-gray-600">
+            Mostrando {clientes.length} de {meta.total} clientes
+            {filtroActual && ` para "${filtroActual}"`}
+          </div>
+
+          <table className="min-w-full table-auto border-collapse">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-2 sm:px-4 py-2 text-left">Empresa</th>
+                <th className="px-2 sm:px-4 py-2 text-center">RTN/ID</th>
+                <th className="px-2 sm:px-4 py-2 text-left hidden md:table-cell">Correo</th>
+                <th className="px-2 sm:px-4 py-2 text-left hidden md:table-cell">Teléfono</th>
+                <th className="px-2 sm:px-4 py-2 text-center">Activo</th>
+                <th className="px-2 sm:px-4 py-2 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {clientes.map((cliente) => (
+                <tr key={cliente.id} className="hover:bg-gray-50">
+                  <td className="px-2 sm:px-4 py-2">{cliente.empresa}</td>
+                  <td className="px-2 sm:px-4 py-2">{cliente.rtn}</td>
+                  <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{cliente.correo}</td>
+                  <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{formatearTelefono(cliente.telefono)}</td>
+                  <td className="px-2 sm:px-4 py-2 text-center">{cliente.activo ? "✅" : "❌"}</td>
+                  <td className="px-2 sm:px-4 py-3 text-center">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => abrirEditarCliente(cliente)}
+                        className="mr-2 text-[#295d0c] hover:text-[#173a01]"
+                      >
+                        <Edit3 size={20}/>
+                      </button>
+                      <button
+                        onClick={() => handleEliminarCliente(cliente.id)}
+                        className="text-[#2e3763] hover:text-[#171f40]"
+                      >
+                        <Trash2 size={20}/>
+                      </button>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {clientesPaginados.map((cliente) => (
-                  <tr key={cliente.id} className="hover:bg-gray-50">
-                    <td className="px-2 sm:px-4 py-2">{cliente.empresa}</td>
-                    {/*<td className="px-2 sm:px-4 py-2">{cliente.responsable}</td>*/}
-                    <td className="px-2 sm:px-4 py-2">{cliente.rtn}</td>
-                    <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{cliente.correo}</td>
-                    <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{formatearTelefono(cliente.telefono)}</td>
-                    <td className="px-2 sm:px-4 py-2 text-center">{cliente.activo ? "✅" : "❌"}</td>
-                    <td className="px-2 sm:px-4 py-3 text-center">
-                      <div className="flex justify-center gap-2">
-                        <button
-                          onClick={() => abrirEditarCliente(cliente)}
-                          className="mr-2 text-[#295d0c] hover:text-[#173a01]"
-                        >
-                          <Edit3 size={20}/>
-                        </button>
-                        <button
-                          onClick={() => handleEliminarCliente(cliente.id)}
-                          className="text-[#2e3763] hover:text-[#171f40]"
-                        >
-                          <Trash2 size={20}/>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
 
           {/* Controles de paginación */}
-          <div className="mt-4 flex justify-center items-center gap-2">
-            <button
-              onClick={() => setPaginaActual((prev) => Math.max(prev - 1, 1))}
-              disabled={paginaActual === 1}
-              className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50"
-            >
-              Anterior
-            </button>
-            <span className="text-gray-700 font-medium">
-                Página {paginaActual} de {Math.max(1, Math.ceil(clientesFiltrados.length / clientesPorPagina))}
-            </span>
-            <button
-              onClick={() => setPaginaActual((prev) => Math.min(prev + 1, totalPaginas))}
-              disabled={paginaActual === totalPaginas}
-              className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50"
-            >
-              Siguiente
-            </button>
+          <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-sm text-gray-600">
+              Página {meta.page} de {meta.totalPages} ({meta.total} total)
+            </div>
+            <div className="flex justify-center items-center gap-2">
+              <button
+                onClick={() => setPaginaActual(1)}
+                disabled={meta.page === 1}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Primera
+              </button>
+              <button
+                onClick={() => setPaginaActual(meta.page - 1)}
+                disabled={meta.page === 1}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Anterior
+              </button>
+              <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+                {meta.page}
+              </span>
+              <button
+                onClick={() => setPaginaActual(meta.page + 1)}
+                disabled={meta.page === meta.totalPages}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Siguiente
+              </button>
+              <button
+                onClick={() => setPaginaActual(meta.totalPages)}
+                disabled={meta.page === meta.totalPages}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Última
+              </button>
+            </div>
           </div>
         </>
       ) : null}
@@ -465,24 +532,14 @@ export default function ClientesPage() {
           ].map(({ label, name, type, placeholder }) => (
             <label key={name} className="block mb-4 text-gray-800 font-medium">
               <span className="text-gray-700">{label}:</span>
-
-              {type === "select" ? (
-                <select
-                  name={name}
-                  defaultValue={clienteEditar ? (clienteEditar as any)[name] : "tecnico"}
-                  required
-                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-                ></select>
-              ) : (
-                <input
-                  name={name}
-                  type={type}
-                  placeholder={placeholder}
-                  defaultValue={clienteEditar ? (clienteEditar as any)[name] : ""}
-                  required
-                  className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-                />
-              )}
+              <input
+                name={name}
+                type={type}
+                placeholder={placeholder}
+                defaultValue={clienteEditar ? (clienteEditar as any)[name] : ""}
+                required
+                className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+              />
             </label>
           ))}
 
@@ -513,6 +570,7 @@ export default function ClientesPage() {
               </select>
             </label>
           )}
+          
           <div className="mt-6 flex justify-end space-x-4">
             <button
               type="button"
@@ -525,11 +583,18 @@ export default function ClientesPage() {
               type="submit"
               className="px-5 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
             >
-              {clienteEditar ? "Actualizar" : "Guardar"}
+              {clienteEditar ? "Actualizar" : "Crear"}
             </button>
           </div>
         </form>
       </ModalCliente>
+      {modalPagoCliente.open && modalPagoCliente.clienteId && (
+      <ModalPago
+        clienteId={modalPagoCliente.clienteId}
+        onClose={() => setModalPagoCliente({ open: false })}
+        onGuardar={fetchClientes}
+      />
+    )}
     </div>
   );
 }
