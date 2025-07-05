@@ -8,6 +8,21 @@ import FormNuevaBitacora from "@/components/ModalBitacora";
 import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
 import { Bitacora, Cliente, Sistema, Equipo, Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
 
+interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+interface ApiResponse {
+  code: number;
+  message: string;
+  count: number;
+  results: Cliente[];
+  meta?: PaginationMeta;
+}
+
 const BuscarCliente: React.FC = () => {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [filtro, setFiltro] = useState("");
@@ -24,11 +39,18 @@ const BuscarCliente: React.FC = () => {
   const [tipo_servicio, setTipoServicio] = useState<Tipo_Servicio[]>([]);
   const [fase_implementacion, setFaseImplementacion] = useState<Fase_Implementacion[]>([]);
   const [filtroEstado, setFiltroEstado] = useState("todas");
+  
+  const [metaClientes, setMetaClientes] = useState<PaginationMeta>({
+    total: 0,
+    page: 1,
+    limit: 5,
+    totalPages: 0
+  });
 
+  const [filtroActual, setFiltroActual] = useState("");
 
   // Paginación clientes
   const [paginaActualClientes, setPaginaActualClientes] = useState(1);
-  const clientesPorPagina = 5;
 
   // Paginación bitácoras
   const [paginaActualBitacoras, setPaginaActualBitacoras] = useState(1);
@@ -43,17 +65,6 @@ const BuscarCliente: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchClientes = async () => {
-      try {
-        const res = await fetch("/api/clientes");
-        const data = await res.json();
-        if (data.code === 200) {
-          setClientes(data.results || []);
-        }
-      } catch (error) {
-        console.error("Error al cargar clientes", error);
-      }
-    };
 
     const fetchTipoServicioYFases = async () => {
       try {
@@ -87,10 +98,56 @@ const BuscarCliente: React.FC = () => {
       }
     };
 
-    fetchClientes();
     fetchSistemasYEquipos();
     fetchTipoServicioYFases();
   }, []);
+
+  const fetchClientes = async () => {
+  try {
+    const params = new URLSearchParams({
+      page: paginaActualClientes.toString(),
+      limit: metaClientes.limit.toString(),
+      ...(filtroActual && { search: filtroActual })
+    });
+
+    const res = await fetch(`/api/clientes?${params}`);
+    const response: ApiResponse = await res.json();
+
+    if (response.code === 404) {
+      setClientes([]);
+      setMetaClientes({
+        total: 0,
+        page: paginaActualClientes,
+        limit: metaClientes.limit,
+        totalPages: 0
+      });
+      return;
+    }
+
+    if (!res.ok || response.code !== 200) {
+      throw new Error(response.message || "Error al cargar clientes");
+    }
+
+    setClientes(response.results ?? []);
+    
+    if (response.meta) {
+      setMetaClientes(response.meta);
+    }
+  } catch (error) {
+    console.error("Error al cargar clientes", error);
+    Swal.fire({
+      icon: "error",
+      title: "Error al cargar clientes",
+      text: error instanceof Error ? error.message : "Error inesperado al cargar los clientes",
+      confirmButtonColor: "#295d0c",
+    });
+  }
+};
+
+// Actualiza el useEffect que llama a fetchClientes
+useEffect(() => {
+  fetchClientes();
+}, [paginaActualClientes, filtroActual]);
 
   const cargarBitacoras = async (clienteId: number) => {
     setLoadingBitacoras(true);
@@ -134,6 +191,17 @@ const BuscarCliente: React.FC = () => {
     (c) =>
       c.empresa.toLowerCase().includes(filtro.toLowerCase()) || c.rtn.includes(filtro)
   );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (filtro !== filtroActual) {
+        setFiltroActual(filtro);
+        setPaginaActualClientes(1); // Reset a página 1 cuando cambie el filtro
+      }
+    }, 500); // 500ms de debounce
+
+    return () => clearTimeout(timer);
+  }, [filtro, filtroActual]);
 
   const mostrarAlertaError = (mensaje: string) => {
     Swal.fire({
@@ -196,12 +264,6 @@ const BuscarCliente: React.FC = () => {
     }
   };
 
-  // Paginación clientes
-  const totalPaginasClientes = Math.ceil(clientesFiltrados.length / clientesPorPagina);
-  const clientesMostrar = clientesFiltrados.slice(
-    (paginaActualClientes - 1) * clientesPorPagina,
-    paginaActualClientes * clientesPorPagina
-  );
 
   // Paginación bitácoras
   const bitacorasFiltradas = bitacoras.filter((b: any) => {
@@ -246,7 +308,7 @@ const bitacorasMostrar = bitacorasFiltradas.slice(
               </tr>
             </thead>
             <tbody>
-              {clientesMostrar.map((c) => (
+              {clientes.map((c) => (
                 <tr key={c.id} className="hover:bg-gray-50">
                   <td className="px-4 py-2 ">{c.empresa}</td>
                   <td className="px-4 py-2 ">{c.rtn}</td>
@@ -262,36 +324,46 @@ const bitacorasMostrar = bitacorasFiltradas.slice(
             </tbody>
           </table>
 
-          {/* Paginación Clientes */}
-          <div className="mt-4 flex justify-center gap-2">
-            <button
-              onClick={() => setPaginaActualClientes((prev) => Math.max(prev - 1, 1))}
-              disabled={paginaActualClientes === 1}
-              className={`px-3 py-1 rounded ${
-                paginaActualClientes === 1
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              Anterior
-            </button>
-
-            <span className="text-gray-700 font-medium">
-              Página {paginaActualClientes} de {Math.max(1, totalPaginasClientes)}
-            </span>
-
-            <button
-              onClick={() => setPaginaActualClientes((prev) => Math.min(prev + 1, totalPaginasClientes))}
-              disabled={paginaActualClientes === totalPaginasClientes}
-              className={`px-3 py-1 rounded ${
-                paginaActualClientes === totalPaginasClientes
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
-            >
-              Siguiente
-            </button>
-          </div>
+          {/* Reemplaza la paginación actual por esta: */}
+<div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+  <div className="text-sm text-gray-600">
+    Mostrando {clientes.length} de {metaClientes.total} clientes
+    {filtroActual && ` para "${filtroActual}"`}
+  </div>
+  <div className="flex justify-center items-center gap-2">
+    <button
+      onClick={() => setPaginaActualClientes(1)}
+      disabled={metaClientes.page === 1}
+      className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Primera
+    </button>
+    <button
+      onClick={() => setPaginaActualClientes(metaClientes.page - 1)}
+      disabled={metaClientes.page === 1}
+      className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Anterior
+    </button>
+    <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+      {metaClientes.page}
+    </span>
+    <button
+      onClick={() => setPaginaActualClientes(metaClientes.page + 1)}
+      disabled={metaClientes.page === metaClientes.totalPages}
+      className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Siguiente
+    </button>
+    <button
+      onClick={() => setPaginaActualClientes(metaClientes.totalPages)}
+      disabled={metaClientes.page === metaClientes.totalPages}
+      className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      Última
+    </button>
+  </div>
+</div>
         </>
       )}
 

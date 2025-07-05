@@ -46,18 +46,15 @@ export async function GET(request: Request) {
             const comision = monto * (config.comision / 100);
 
             return {
+                id: bitacora.id,
                 fecha: bitacora.fecha_servicio,
                 ticket: bitacora.no_ticket,
                 cliente: bitacora.cliente.empresa,
                 tecnico: bitacora.usuario.nombre,
-                hora_llegada: bitacora.hora_llegada,
-                hora_salida: bitacora.hora_salida,
-                servicio: bitacora.tipo_servicio?.descripcion,
-                modalidad: bitacora.modalidad,
+                horas: bitacora.horas_consumidas,
                 tipo_horas: bitacora.tipo_horas,
                 monto,
                 comision,
-                descripcion: bitacora.descripcion_servicio
             };
         });
 

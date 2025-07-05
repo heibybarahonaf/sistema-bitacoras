@@ -82,7 +82,7 @@ model Cliente {
   rtn                String          @db.VarChar(50)
   direccion          String          @db.VarChar(30)
   telefono           String          @db.VarChar(10)
-  correo             String          @unique @db.VarChar(100)
+  correo             String?         @unique @db.VarChar(100)
   activo             Boolean
   horas_paquetes     Int
   horas_individuales Int

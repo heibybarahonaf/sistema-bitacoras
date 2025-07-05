@@ -26,8 +26,7 @@ export class UsuarioService {
     public static async obtenerUsuariosActivos(): Promise<Usuario[]> {
         const usuarios = await prisma.usuario.findMany({ 
             where: { 
-                activo: true, 
-                rol: "tecnico"
+                activo: true
             }  
         });
 

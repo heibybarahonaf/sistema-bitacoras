@@ -13,22 +13,33 @@ type EditarPagoDto = z.infer<typeof EditarPagoDto>;
 export class PagoService {
 
     public static async obtenerPagos(): Promise<Pagos_Cliente[]> {
-        const pagos = await prisma.pagos_Cliente.findMany({ orderBy: { createdAt: "desc" }});
+        const pagos = await prisma.pagos_Cliente.findMany({
+            include: {
+                cliente: true
+            },
+            orderBy: { createdAt: "desc" }
+        });
 
         if (pagos.length === 0) {
             throw new ResponseDto(404, "No se encontraron pagos");
         }
 
+        console.log(pagos)
         return pagos;
     }
 
 
     public static async obtenerPagoPorId(id: number): Promise<Pagos_Cliente> {
-        const pago = await prisma.pagos_Cliente.findUnique({ where: { id } });
+        const pago = await prisma.pagos_Cliente.findUnique({ 
+            where: { id },
+            include: { cliente: true } 
+        });
 
         if (!pago) {
             throw new ResponseDto(404, "Pago no encontrado");
         }
+
+        console.log(pago)
 
         return pago;
     }

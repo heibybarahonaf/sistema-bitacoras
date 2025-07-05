@@ -7,12 +7,14 @@ import { useRouter } from "next/navigation";
 import CardReporte from "../../../components/CardReporte";
 
 interface BitacoraData {
+  id: number;
   fecha: string;
   ticket: string;
   cliente: string;
   tecnico: string;
   hora_llegada: string;
   hora_salida: string;
+  horas: string;
   servicio: string;
   modalidad: string;
   tipo_horas: string;
@@ -378,6 +380,7 @@ export default function ReportesPage() {
                         {modalPreview.tipo === "ventas" ? (
                           <>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Bitacora</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Cliente</th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ventas</th>
                           </>
@@ -389,22 +392,37 @@ export default function ReportesPage() {
                               <>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Cliente</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Técnico</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Llegada</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salida</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Horas</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modalidad</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-80">Descripción</th>
                               </>
                             )}
                             {modalPreview.tipo === "cliente" && (
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Técnico</th>
+                              <>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Técnico</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horas</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Horas</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modalidad</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-80">Descripción</th>
+                              </>
                             )}
                             {modalPreview.tipo === "usuario" && (
-                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Cliente</th>
+                              <>
+                              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Bitacora #</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Cliente</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horas</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Tipo Horas</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Monto</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comisión</th>
+                              </>
                             )}
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Llegada</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salida</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Servicio</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modalidad</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo Horas</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Comisión</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-80">Descripción</th>
+
+                            
+                            
                           </>
                         )}
                       </tr>
@@ -416,6 +434,7 @@ export default function ReportesPage() {
                           return (
                             <tr key={index} className="hover:bg-gray-50">
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatearFecha(bitacora.fecha)}</td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.id}</td>
                               <td className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate" title={bitacora.cliente}>{bitacora.cliente}</td>
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.venta}</td>
                             </tr>
@@ -430,22 +449,35 @@ export default function ReportesPage() {
                               <>
                                 <td className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate" title={bitacora.cliente}>{bitacora.cliente}</td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.tecnico}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatearHora(bitacora.hora_llegada)}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatearHora(bitacora.hora_salida)}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.tipo_horas}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.servicio}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.modalidad}</td>                           
+                                <td className="px-4 py-4 text-sm text-gray-900 whitespace-pre-line max-w-80 break-words">{bitacora.descripcion}</td>
                               </>
                             )}
                             {modalPreview.tipo === "cliente" && (
-                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.tecnico}</td>
+                              <>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.tecnico}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatearHora(bitacora.horas)}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.tipo_horas}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.servicio}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.modalidad}</td>
+                                <td className="px-4 py-4 text-sm text-gray-900 whitespace-pre-line max-w-80 break-words">{bitacora.descripcion}</td>
+                              </>
                             )}
                             {modalPreview.tipo === "usuario" && (
-                              <td className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate" title={bitacora.cliente}>{bitacora.cliente}</td>
+                              <>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.id}</td>
+                                <td className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate" title={bitacora.cliente}>{bitacora.cliente}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatearHora(bitacora.horas)}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.tipo_horas}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.monto}</td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.comision}</td>
+                              </>
                             )}
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatearHora(bitacora.hora_llegada)}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{formatearHora(bitacora.hora_salida)}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.servicio}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.modalidad}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.tipo_horas}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.monto}</td>
-                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{bitacora.comision}</td>
-                            <td className="px-4 py-4 text-sm text-gray-900 whitespace-pre-line max-w-80 break-words">{bitacora.descripcion}</td>
+
                           </tr>
                         );
                       })}
