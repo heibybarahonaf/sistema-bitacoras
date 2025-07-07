@@ -164,29 +164,34 @@ export default function CardReporte({
       </div>
 
       <div className="space-y-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label>
-          <input
-            type="date"
-            value={fechaInicio}
-            onChange={(e) => setFechaInicio(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isGenerating}
-          />
+        <div className="space-y-4 mb-6">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio</label>
+              <input
+                type="date"
+                value={fechaInicio}
+                onChange={(e) => setFechaInicio(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isGenerating}
+              />
+            </div>
+
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Final</label>
+              <input
+                type="date"
+                value={fechaFinal}
+                onChange={(e) => setFechaFinal(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isGenerating}
+              />
+            </div>
+          </div>
+
+          {(tipo === "usuario" || tipo === "ventas") && renderEntidadInput()}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fecha Final</label>
-          <input
-            type="date"
-            value={fechaFinal}
-            onChange={(e) => setFechaFinal(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isGenerating}
-          />
-        </div>
-
-        {(tipo === "usuario" || tipo === "ventas") && renderEntidadInput()}
       </div>
 
       <div className="flex gap-2">
@@ -200,7 +205,7 @@ export default function CardReporte({
           } text-white`}
         >
           <Download className="w-4 h-4" />
-          {isGenerating ? "generando..." : ""}
+          {isGenerating ? "Generando..." : "Generar PDF"}
         </button>
 
         <button
@@ -213,6 +218,7 @@ export default function CardReporte({
           } text-white`}
         >
           <Eye className="w-4 h-4" />
+          Vista previa
         </button>
       </div>
     </div>

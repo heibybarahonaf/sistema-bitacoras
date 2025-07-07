@@ -112,60 +112,70 @@ export default function ModalPago({
       tipoHoras === "Paquete"
         ? config.valor_hora_paquete + (config.valor_hora_paquete*(config.comision/100))
         : config.valor_hora_individual + (config.valor_hora_individual*(config.comision/100));
-    setMonto(cantHoras * precioPorHora);
-  }, [cantHoras, tipoHoras, config]);
+        setMonto(cantHoras * precioPorHora);
+      }, [cantHoras, tipoHoras, config]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const datosPago = {
-      cliente_id: clienteId,
-      no_factura: noFactura,
-      forma_pago: formaPago,
-      detalle_pago: detallePago,
-      monto,
-      tipo_horas: tipoHoras,
-      cant_horas: parseInt(String(cantHoras), 10),
-    };
+  const confirmacion = await Swal.fire({
+    title: "¿Registrar pago?",
+    html: `¿Estás seguro de registrar este pago de <b>${cantHoras} horas</b> como tipo <b>${tipoHoras}</b>?`,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí, guardar",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#295d0c",
+    cancelButtonColor: "#d33",
+  });
 
-    const url = pago ? `/api/pagos/${pago.id}` : "/api/pagos";
-    const method = pago ? "PATCH" : "POST";
+  if (!confirmacion.isConfirmed) return;
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(datosPago),
+  const datosPago = {
+    cliente_id: clienteId,
+    no_factura: noFactura,
+    forma_pago: formaPago,
+    detalle_pago: detallePago,
+    monto,
+    tipo_horas: tipoHoras,
+    cant_horas: parseInt(String(cantHoras), 10),
+  };
+
+  const url = pago ? `/api/pagos/${pago.id}` : "/api/pagos";
+  const method = pago ? "PATCH" : "POST";
+
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datosPago),
+  });
+
+  if (res.ok) {
+    Swal.fire({
+      icon: "success",
+      title: "Éxito",
+      text: "Pago registrado correctamente",
+      confirmButtonColor: "#16a34a",
+      timer: 3000,
+      showConfirmButton: false,
     });
 
-    if (res.ok) {
-      
-      Swal.fire({
-        icon: "success",
-        title: "Éxito",
-        text: "Pago registrado correctamente",
-        confirmButtonColor: "#16a34a",
-        timer: 3000,
-        showConfirmButton: false,
-      });
-
-      onGuardar();
-      onClose();
-
-    } else if(res.status === 403){
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No tienes permiso para realizar esta acción!'
-      });
-    } 
-    else {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se permiten facturas duplicadas!'
-      });
-    }
-  };
+    onGuardar();
+    onClose();
+  } else if (res.status === 403) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "No tienes permiso para realizar esta acción!",
+    });
+  } else {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "No se permiten facturas duplicadas!",
+    });
+  }
+};
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
