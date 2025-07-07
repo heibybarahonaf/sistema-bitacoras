@@ -51,6 +51,11 @@ function generarReporte(
     doc.text(titulo, 10, currentY);
     currentY += 7;
 
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("POS de Honduras", 10, currentY);
+    currentY += 6;
+
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.text(`Período: ${fechaInicio} hasta ${fechaFinal}`, 10, currentY);
@@ -64,17 +69,17 @@ function generarReporte(
         currentY = renderInfoCliente(doc, currentY, nombresExtras);
     }
 
-    doc.addImage(imgData, "PNG", 250, 5, 30, 15);
+    doc.addImage(imgData, "PNG", 250, 9, 30, 15);
 
     autoTable(doc, {
         head: [columnas],
         body: datos,
-        startY: currentY + 5,
+        startY: currentY + 3,
         styles: { fontSize: 6 },
         headStyles: { fillColor: [165, 42, 42] },
     });
 
-    let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10; 
+    let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 5; 
 
     //let finalY = (doc as any).lastAutoTable.finalY + 10;
     const pageHeight = doc.internal.pageSize.height;
@@ -164,7 +169,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
     const usuario = bitacoras[0]?.usuario ?? null;
     
     const doc = generarReporte(
-        "Reporte de Bitácoras Técnico",  
+        "Reporte de Comisiones Técnico",  
         bitacoras,                       
         fechaInicio,                     
         fechaFinal,                      

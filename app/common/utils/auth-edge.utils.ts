@@ -11,13 +11,13 @@ export class AuthEdgeUtils {
         try {
 
             const { payload } = await jwtVerify(token, secret);
-            const { correo, rol } = payload as { correo?: string; rol?: string };
+            const { correo, rol, exp } = payload as { correo?: string; rol?: string; exp?: number };
 
             if (typeof correo !== 'string' || typeof rol !== 'string') {
                 throw new ResponseDto(401, "Sesión inválida o expirada");
             }
 
-            return { correo, rol } as ISesionPayload;
+            return { correo, rol, exp } as ISesionPayload;
 
         } catch {
 

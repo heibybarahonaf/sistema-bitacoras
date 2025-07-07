@@ -12,6 +12,7 @@ type CrearFaseImplementacionDto = z.infer<typeof CrearFaseImplementacionDto>;
 export class FaseImplementacionService {
 
     public static async obtenerFasesImplementacion(): Promise<Fase_Implementacion[]> {
+        
         const fase_implementacion = await prisma.fase_Implementacion.findMany({});
 
         if (fase_implementacion.length === 0) {
@@ -19,10 +20,12 @@ export class FaseImplementacionService {
         }
 
         return fase_implementacion;
+
     }
     
 
     public static async obtenerFasesImplementacionActivas(): Promise<Fase_Implementacion[]> {
+
         const fase_implementacion = await prisma.fase_Implementacion.findMany({ where: { activa: true }});
 
         if (fase_implementacion.length === 0) {
@@ -30,10 +33,12 @@ export class FaseImplementacionService {
         }
 
         return fase_implementacion;
+
     }
 
 
     public static async obtenerFaseImplementacionPorId(id: number): Promise<Fase_Implementacion> {
+
         const fase_implementacion = await prisma.fase_Implementacion.findUnique({ where: { id } });
 
         if (!fase_implementacion) {
@@ -41,10 +46,12 @@ export class FaseImplementacionService {
         }
 
         return fase_implementacion;
+
     }
 
 
     public static async crearFaseImplementacion(faseData: CrearFaseImplementacionDto): Promise<Fase_Implementacion> {
+        
         const fase_implementacion = await prisma.fase_Implementacion.findFirst({ where: { fase: { contains: faseData.fase, mode: "insensitive" } } });
 
         if (fase_implementacion) {
@@ -70,6 +77,7 @@ export class FaseImplementacionService {
 
 
     public static async editarFaseImplementacion(id: number, faseData: EditarFaseImplementacionDto): Promise<Fase_Implementacion> {
+        
         const faseExistente = await this.obtenerFaseImplementacionPorId(id);
         const { fase } = faseData;
 
@@ -105,6 +113,7 @@ export class FaseImplementacionService {
 
 
     public static async eliminarFaseImplementacion(id: number): Promise<Fase_Implementacion>{
+
         await this.obtenerFaseImplementacionPorId(id);
 
         try {

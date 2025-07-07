@@ -55,6 +55,14 @@ export default function PagosPage() {
   const [pagos, setPagos] = useState<PagoConCliente[]>([]);
   const [loading, setLoading] = useState(false);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [pagosPorPagina] = useState(10);
+  const [metaPagos, setMetaPagos] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0
+  });
 
   const [modalPago, setModalPago] = useState<{ open: boolean; pago?: PagoConCliente }>({
     open: false,
@@ -67,16 +75,23 @@ export default function PagosPage() {
 
   useEffect(() => {
     fetchPagos();
-  }, []);
+  }, [paginaActual, filtroFactura, fechaInicio, fechaFin]);
 
   async function fetchPagos() {
     setLoading(true);
     setShowEmptyMessage(false);
 
     try {
-      const res = await fetch("/api/pagos");
+      const params = new URLSearchParams({
+        page: paginaActual.toString(),
+        limit: pagosPorPagina.toString(),
+        ...(filtroFactura && { factura: filtroFactura }),
+        ...(fechaInicio && { fechaInicio }),
+        ...(fechaFin && { fechaFin })
+      });
+
+      const res = await fetch(`/api/pagos?${params}`);
       const response = await res.json();
-      console.log(response)
 
       if (response.code === 404) {
         setPagos([]);
@@ -88,9 +103,15 @@ export default function PagosPage() {
         throw new Error(response.message || "Error al cargar pagos");
       }
 
-      const pagosPlanos = response.results?.[0] || [];
-      setPagos(pagosPlanos);
-      if (pagosPlanos.length === 0) setShowEmptyMessage(true);
+      setPagos(response.results || []);
+      setMetaPagos(response.meta || {
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0
+      });
+      
+      if (response.results?.length === 0) setShowEmptyMessage(true);
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -102,6 +123,12 @@ export default function PagosPage() {
       setLoading(false);
     }
   }
+
+  const cambiarPagina = (nuevaPagina: number) => {
+    if (nuevaPagina >= 1 && nuevaPagina <= metaPagos.totalPages) {
+      setPaginaActual(nuevaPagina);
+    }
+  };
 
   const pagosFiltrados = pagos.filter((pago) => {
     const fechaPagoStr = pago.createdAt instanceof Date
@@ -130,23 +157,23 @@ export default function PagosPage() {
       {/* Filtros */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
         <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-700 whitespace-nowrap">Desde:</span>
-        <input
-          type="date"
-          value={fechaInicio}
-          onChange={(e) => setFechaInicio(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2"
-        />
-      </div>
+          <span className="text-sm text-gray-700 whitespace-nowrap">Desde:</span>
+          <input
+            type="date"
+            value={fechaInicio}
+            onChange={(e) => setFechaInicio(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+        </div>
         <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-700 whitespace-nowrap">Hasta:</span>
-        <input
-          type="date"
-          value={fechaFin}
-          onChange={(e) => setFechaFin(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2"
-        />
-      </div>
+          <span className="text-sm text-gray-700 whitespace-nowrap">Hasta:</span>
+          <input
+            type="date"
+            value={fechaFin}
+            onChange={(e) => setFechaFin(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+        </div>
 
         <input
           type="text"
@@ -228,6 +255,48 @@ export default function PagosPage() {
               ))}
             </tbody>
           </table>
+
+          {/* Paginación */}
+          {pagos.length > 0 && (
+            <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="text-sm text-gray-600">
+                Mostrando {pagos.length} de {metaPagos.total} pagos
+              </div>
+              <div className="flex justify-center items-center gap-2">
+                <button
+                  onClick={() => cambiarPagina(1)}
+                  disabled={metaPagos.page === 1}
+                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Primera
+                </button>
+                <button
+                  onClick={() => cambiarPagina(metaPagos.page - 1)}
+                  disabled={metaPagos.page === 1}
+                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Anterior
+                </button>
+                <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+                  {metaPagos.page}
+                </span>
+                <button
+                  onClick={() => cambiarPagina(metaPagos.page + 1)}
+                  disabled={metaPagos.page === metaPagos.totalPages}
+                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Siguiente
+                </button>
+                <button
+                  onClick={() => cambiarPagina(metaPagos.totalPages)}
+                  disabled={metaPagos.page === metaPagos.totalPages}
+                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Última
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

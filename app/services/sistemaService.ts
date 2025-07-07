@@ -12,6 +12,7 @@ type CrearSistemaDto = z.infer<typeof CrearSistemaDto>;
 export class SistemaService {
 
     public static async obtenerSistemas(): Promise<Sistema[]> {
+
         const sistemas = await prisma.sistema.findMany({});
 
         if (sistemas.length === 0) {
@@ -19,10 +20,12 @@ export class SistemaService {
         }
 
         return sistemas;
+        
     }
 
 
     public static async obtenerSistemasActivos(): Promise<Sistema[]> {
+
         const sistemas = await prisma.sistema.findMany({ where: { activo: true } });
 
         if (sistemas.length === 0) {
@@ -30,10 +33,12 @@ export class SistemaService {
         }
 
         return sistemas;
+
     }
 
 
     public static async obtenerSistemaPorId(id: number): Promise<Sistema> {
+
         const sistema = await prisma.sistema.findUnique({ where: { id } });
 
         if (!sistema) {
@@ -41,10 +46,12 @@ export class SistemaService {
         }
 
         return sistema;
+
     }
 
 
     public static async obtenerSistemaPorNombre(nombre: string): Promise<Sistema> {
+
         const sistema = await prisma.sistema.findFirst({ where: { sistema: { contains: nombre, mode: "insensitive" } } });
 
         if (!sistema) {
@@ -52,10 +59,12 @@ export class SistemaService {
         }
 
         return sistema;
+
     }
 
 
     public static async crearSistema(sistemaData: CrearSistemaDto): Promise<Sistema> {
+
         const sistemaExistente = await prisma.sistema.findFirst({ where: { sistema: { contains: sistemaData.sistema, mode: "insensitive" } } });
 
         if (sistemaExistente) {
@@ -79,6 +88,7 @@ export class SistemaService {
 
 
     public static async editarSistema(id: number, sistemaData: EditarSistemaDto): Promise<Sistema> {
+
         const sistemaExistente = await this.obtenerSistemaPorId(id);
         const { sistema } = sistemaData;
 
@@ -114,6 +124,7 @@ export class SistemaService {
 
 
     public static async eliminarSistema(id: number): Promise<Sistema>{
+
         await this.obtenerSistemaPorId(id);
 
         try {

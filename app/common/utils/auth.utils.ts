@@ -19,16 +19,19 @@ export interface ISesionPayload {
 export class AuthUtils {
 
     public static async hashPassword(password: string): Promise<string> {
+
         return await bcrypt.hash(password, 10);
+
     }
 
 
     public static async comparePassword(password: string, hashedPassword: string): Promise<boolean> {
+
         return await bcrypt.compare(password, hashedPassword);
+
     }
 
     
-    //600
     public static generarTokenCodigo(correo: string, codigo: string, duracionSegundos: number): string {
 
         const payload: Omit<ITokenCodigoPayload, "iat" | "exp"> = { correo, codigo };
@@ -51,14 +54,16 @@ export class AuthUtils {
         
     }
 
-    //3600?
+    
     public static generarTokenSesion(payload: { correo: string; rol: string }, duracionSegundos: number): string {
+
         const datos: Omit<ISesionPayload, "iat" | "exp"> = {
             correo: payload.correo,
             rol: payload.rol,
         };
 
         return jwt.sign(datos, process.env.JWT_SECRET!, { expiresIn: duracionSegundos }); 
+
     }
     
 

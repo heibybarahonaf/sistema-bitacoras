@@ -38,7 +38,7 @@ export default function ModalPago({
   const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [monto, setMonto] = useState(0);
   const [noFactura, setNoFactura] = useState("");
-  const [cliente, setCliente] = useState("AAAAAAA");
+  const [cliente, setCliente] = useState("");
   const [formaPago, setFormaPago] = useState("Efectivo");
   const [detallePago, setDetallePago] = useState("");
   const [config, setConfig] = useState({
@@ -47,11 +47,10 @@ export default function ModalPago({
     comision: 0,
   });
 
-  // Pre-cargar datos si es edición
   useEffect(() => {
     if (pago) {
       setNoFactura(pago.no_factura || "");
-      setCliente(pago.cliente.empresa || "AAAAAAA");
+      setCliente(pago.cliente.empresa || "");
       setFormaPago(pago.forma_pago || "Efectivo");
       setDetallePago(pago.detalle_pago || "");
       setTipoHoras(pago.tipo_horas || "Paquete");
@@ -60,7 +59,7 @@ export default function ModalPago({
     }
   }, [pago]);
 
-  // Obtener configuración de precios
+
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -82,25 +81,32 @@ export default function ModalPago({
     fetchConfig();
   }, []);
 
-  // Obtener nombre del cliente si no hay pago (nuevo registro)
+
   useEffect(() => {
     if (!pago && clienteId) {
       const fetchCliente = async () => {
         try {
           const res = await fetch(`/api/clientes/${clienteId}`);
           const clienteData = await res.json();
-          if (clienteData && clienteData.empresa) {
-            setCliente(clienteData.empresa);
+          
+          if (Array.isArray(clienteData.results) && clienteData.results.length > 0) {
+
+            const cliente = clienteData.results[0];
+            setCliente(cliente.empresa || cliente.responsable || '');
+
+          } else {
+            console.error('La propiedad results no es un array o está vacía');
           }
+
         } catch (error) {
           console.error("Error al cargar cliente", error);
         }
       };
+
       fetchCliente();
     }
   }, [clienteId, pago]);
 
-  // Recalcular monto si cambia cantidad o tipo
   useEffect(() => {
     const precioPorHora =
       tipoHoras === "Paquete"
@@ -132,8 +138,19 @@ export default function ModalPago({
     });
 
     if (res.ok) {
+      
+      Swal.fire({
+        icon: "success",
+        title: "Éxito",
+        text: "Pago registrado correctamente",
+        confirmButtonColor: "#16a34a",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+
       onGuardar();
       onClose();
+
     } else if(res.status === 403){
       Swal.fire({
         icon: 'error',
@@ -142,7 +159,11 @@ export default function ModalPago({
       });
     } 
     else {
-      alert("Error al guardar el pago");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se permiten facturas duplicadas!'
+      });
     }
   };
 

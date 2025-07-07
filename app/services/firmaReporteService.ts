@@ -5,7 +5,6 @@ import { prisma } from "../libs/prisma";
 import { Firma, Bitacora, Prisma } from "@prisma/client";
 
 let tipo_servicio = "";
-
 type BitacoraConRelaciones = Prisma.BitacoraGetPayload<{
   include: {
     cliente: true;
@@ -16,13 +15,13 @@ type BitacoraConRelaciones = Prisma.BitacoraGetPayload<{
     sistema: true;
     firmaCliente: true;
     firmaTecnico: true;
-    capacitados: true;
   };
 }>;
 
 export class FirmaReporteService {
   
     public static async generarReporteFirma(bitacoraId: number, tipo_servicio_in: string): Promise<Buffer> {
+
         tipo_servicio = tipo_servicio_in;
 
         const bitacora = await prisma.bitacora.findUnique({
@@ -94,6 +93,7 @@ export class FirmaReporteService {
 
 
     private static renderInfoCliente(doc: jsPDF, startY: number, bitacora: BitacoraConRelaciones): number {
+
         let currentY = startY;
         
         doc.setFontSize(14);
@@ -182,10 +182,12 @@ export class FirmaReporteService {
 
         currentY += 6;
         return currentY;
+
     }
 
 
     private static renderInfoBitacora(doc: jsPDF, startY: number, bitacora: BitacoraConRelaciones): number {
+
         let currentY = startY;
         const leftX = 20;
         const rightX = 110;
@@ -263,7 +265,7 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Capacitados:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.capacitados || "N/A", labelAlignment, currentY);
+        doc.text(bitacora.nombres_capacitados || "N/A", labelAlignment, currentY);
         
         currentY += 6;
         
@@ -333,6 +335,7 @@ export class FirmaReporteService {
 
 
     private static async renderFirmas(doc: jsPDF, startY: number, firmaTecnico: Firma | null, firmaCliente: Firma | null, bitacora: BitacoraConRelaciones): Promise<number> {
+        
         let currentY = startY;
         
         doc.setFontSize(14);

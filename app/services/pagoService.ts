@@ -12,24 +12,56 @@ type EditarPagoDto = z.infer<typeof EditarPagoDto>;
 
 export class PagoService {
 
-    public static async obtenerPagos(): Promise<Pagos_Cliente[]> {
-        const pagos = await prisma.pagos_Cliente.findMany({
-            include: {
-                cliente: true
-            },
-            orderBy: { createdAt: "desc" }
-        });
+    public static async obtenerPagos(
+        page: number = 1,
+        limit: number = 10,
+        filtroFactura?: string,
+        fechaInicio?: string,
+        fechaFin?: string
+    ): Promise<ResponseDto<Pagos_Cliente>> {
 
-        if (pagos.length === 0) {
-            throw new ResponseDto(404, "No se encontraron pagos");
+        const skip = (page - 1) * limit;
+                const where: any = {};
+        
+        if (filtroFactura) {
+            where.no_factura = { contains: filtroFactura, mode: 'insensitive' };
+        }
+        
+        if (fechaInicio || fechaFin) {
+            where.createdAt = {};
+            if (fechaInicio) where.createdAt.gte = new Date(fechaInicio);
+            if (fechaFin) where.createdAt.lte = new Date(fechaFin);
         }
 
-        console.log(pagos)
-        return pagos;
+        const [pagos, total] = await Promise.all([
+            prisma.pagos_Cliente.findMany({
+            where,
+            skip,
+            take: limit,
+            include: { cliente: true },
+            orderBy: { createdAt: "desc" }
+            }),
+            prisma.pagos_Cliente.count({ where })
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
+
+        return new ResponseDto(
+            pagos.length > 0 ? 200 : 404,
+            pagos.length > 0 ? "Pagos recuperados con éxito" : "No se encontraron pagos",
+            pagos,
+            {
+                total,
+                page,
+                limit,
+                totalPages
+            }
+        );
     }
 
 
     public static async obtenerPagoPorId(id: number): Promise<Pagos_Cliente> {
+
         const pago = await prisma.pagos_Cliente.findUnique({ 
             where: { id },
             include: { cliente: true } 
@@ -39,9 +71,8 @@ export class PagoService {
             throw new ResponseDto(404, "Pago no encontrado");
         }
 
-        console.log(pago)
-
         return pago;
+
     }
 
 
@@ -62,6 +93,7 @@ export class PagoService {
 
 
     public static async crearPago(pagoData: CrearPagoDto): Promise<Pagos_Cliente> {
+
         const cliente = await ClienteService.obtenerClientePorId(pagoData.cliente_id);
 
         try {
@@ -110,6 +142,7 @@ export class PagoService {
 
 
     public static async editarPago(id: number, pagoData: EditarPagoDto): Promise<Pagos_Cliente> {
+
         await this.obtenerPagoPorId(id);
         const { no_factura, forma_pago, detalle_pago} = pagoData;
 

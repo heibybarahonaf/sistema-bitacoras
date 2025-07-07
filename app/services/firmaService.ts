@@ -21,10 +21,12 @@ export class FirmaService {
         });
 
         return firma;
+        
     }
 
 
     public static async obtenerFirmaPorId(id: number): Promise<Firma> {
+
         const firma = await prisma.firma.findUnique({ where: { id } });
 
         if (!firma) {
@@ -32,10 +34,12 @@ export class FirmaService {
         }
 
         return firma;
+
     }
 
 
     public static async obtenerFirmaPorIdTecnico(id: number): Promise<Firma> {
+
         const firma = await prisma.firma.findFirst({ where: { tecnico_id: id } });
 
         if (!firma) {
@@ -43,6 +47,7 @@ export class FirmaService {
         }
 
         return firma;
+
     }
 
 
@@ -59,10 +64,12 @@ export class FirmaService {
         });
 
         return firma;
+
     }
 
 
     public static async actualizarFirmaPorIdTecnico(tecnico_id: number, firma_base64: string): Promise<Firma> {
+
         const firma = await this.obtenerFirmaPorIdTecnico(tecnico_id);
 
         const firmaActualizada = await prisma.firma.update({
@@ -71,10 +78,12 @@ export class FirmaService {
         });
 
         return firmaActualizada;
+
     }
     
 
     public static async crearFirmaRemota(): Promise<{ id: number; url: string }> {
+
         const token = uuidv4();
 
         const firma = await prisma.firma.create({
@@ -87,6 +96,7 @@ export class FirmaService {
         });
 
         return { id: firma.id, url: firma.url };
+
     }
 
 

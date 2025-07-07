@@ -276,7 +276,6 @@ export default function UsuariosPage() {
 
       fetchUsuarios();
     } catch (error){
-      console.log(error)
       Swal.fire({
         icon: "error",
         title: "Error de conexión",

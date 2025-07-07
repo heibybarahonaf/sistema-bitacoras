@@ -34,6 +34,7 @@ export class EncuestaService {
 
 
     public static async obtenerEncuestaActiva(): Promise<EncuestaPreguntas> {
+        
         const encuesta = await prisma.encuesta.findFirst({
             where: { activa: true },
             include: {
@@ -69,6 +70,7 @@ export class EncuestaService {
 
 
     public static async obtenerEncuestasPreguntas(): Promise<EncuestaPreguntas[]> {
+
         const encuestas = await prisma.encuesta.findMany({include:{preguntas:{include:{pregunta:true}}}});
 
         if(encuestas.length == 0){
@@ -92,6 +94,7 @@ export class EncuestaService {
 
 
     public static async obtenerEncuestaPorId(id: number): Promise<EncuestaPreguntas> {
+
         const encuesta = await prisma.encuesta.findFirst({ where: { id }, include: { preguntas: { include: { pregunta: true }}}});
 
         if(!encuesta){
@@ -115,6 +118,7 @@ export class EncuestaService {
 
 
     public static async crearEncuesta(encuestaData: CrearEncuestaDto): Promise<Encuesta> {
+
         const encuestaExistente = await prisma.encuesta.findFirst({ where: { titulo: encuestaData.titulo } });
         if (encuestaExistente) {
             throw new ResponseDto(409, "La encuesta ya está registrada");
@@ -199,6 +203,7 @@ export class EncuestaService {
 
 
     public static async validarPreguntasEncuesta(preguntas: number[]) {
+        
         const preguntasDuplicadas = preguntas.filter(
             (item, index) => preguntas.indexOf(item) !== index
         );

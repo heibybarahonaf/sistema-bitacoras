@@ -19,22 +19,8 @@ interface PaginationResult {
 
 export class ClienteService {
 
-    public static async obtenerClientes(): Promise<Cliente[]> {
-        const clientes = await prisma.cliente.findMany({});
+    public static async obtenerClientesPaginados(page: number = 1, limit: number = 10, search: string = ""): Promise<PaginationResult> {
 
-        if(clientes.length === 0){
-            throw new ResponseDto(404, "No se encontraron clientes");
-        }
-
-        return clientes;
-    }
-
-    public static async obtenerClientesPaginados(
-        page: number = 1, 
-        limit: number = 10, 
-        search: string = ""
-    ): Promise<PaginationResult> {
-        
         const offset = (page - 1) * limit;
         const whereCondition = search 
             ? {
@@ -62,17 +48,13 @@ export class ClienteService {
             throw new ResponseDto(404, "No se encontraron clientes");
         }
 
-        return {
-            data: clientes,
-            total,
-            page,
-            limit,
-            totalPages
-        };
+        return { data: clientes, total, page, limit, totalPages };
+
     }
 
 
     public static async obtenerClientePorId(id: number): Promise<Cliente> {
+        
         const cliente = await prisma.cliente.findUnique({ where: { id } });
 
         if(!cliente){
@@ -80,10 +62,12 @@ export class ClienteService {
         }
     
         return cliente;
+
     }
 
 
     public static async obtenerClientePorEmpresa(empresa: string): Promise<Cliente> {
+
         const cliente = await prisma.cliente.findFirst({ where: { empresa: { contains: empresa, mode: "insensitive" } }});
 
         if(!cliente){
@@ -91,10 +75,12 @@ export class ClienteService {
         }
     
         return cliente;
+
     }
 
 
     public static async obtenerClientePorRtn(rtn: string): Promise<Cliente> {
+
         const rtnLimpio = rtn.replace(/\D/g, "").trim();
         const cliente = await prisma.cliente.findFirst({ where: { rtn: rtnLimpio }});
 
@@ -103,10 +89,12 @@ export class ClienteService {
         }
     
         return cliente;
+
     }
 
 
     public static async crearCliente(clienteData: CrearClienteDto): Promise<Cliente> {
+
         const clienteExistente = await prisma.cliente.findFirst({ where: { empresa: clienteData.empresa }});
         const emailExistente = await prisma.cliente.findFirst({ where: { correo: clienteData.correo }});
         const rtnExistente = await prisma.cliente.findFirst({ where: { rtn: clienteData.rtn }});
@@ -140,6 +128,7 @@ export class ClienteService {
 
 
     public static async editarCliente(id: number, clienteData: EditarClienteDto): Promise<Cliente> {
+
         const clienteExistente = await this.obtenerClientePorId(id);
         const { empresa, rtn, correo } = clienteData;
 
@@ -189,6 +178,7 @@ export class ClienteService {
 
 
     public static async eliminarCliente(id: number): Promise<Cliente> {
+
         await this.obtenerClientePorId(id);
 
         try {

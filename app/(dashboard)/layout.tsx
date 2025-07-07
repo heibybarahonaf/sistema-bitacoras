@@ -1,6 +1,8 @@
+// app/dashboard/layout.tsx (o donde esté ubicado tu layout)
 import type { Metadata } from "next";
 import "../globals.css";
 import Navbar from "@/components/NavBar";
+import AlertaExpiracionSesion from "@/components/AlertaExpiracionSesion";
 
 export const metadata: Metadata = {
   title: "Bitácoras POS",
@@ -14,6 +16,9 @@ export default function DashboardLayout({
 }) {
   return (
     <>
+      {/* Alerta cliente */}
+      <AlertaExpiracionSesion />
+
       <Navbar />
       <main className="flex-1 p-4 pt-20">
         {children}
