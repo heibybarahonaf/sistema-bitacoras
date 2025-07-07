@@ -2,6 +2,7 @@ import Swal from "sweetalert2"
 import { Pagos_Cliente } from "@prisma/client"
 import React, { useState, useEffect } from "react";
 
+
 interface ModalPagoProps {
   clienteId: number;
   onClose: () => void;
