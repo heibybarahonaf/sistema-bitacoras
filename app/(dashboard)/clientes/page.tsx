@@ -465,6 +465,13 @@ export default function ClientesPage() {
                       >
                         <Trash2 size={20}/>
                       </button>
+                      <button
+                        onClick={() => setModalPagoCliente({ open: true, clienteId: cliente.id })}
+                        className="text-[#107c10] hover:text-[#0b5a0b]"
+                        title="Agregar Pago"
+                      >
+                        <DollarSign size={20} />
+                      </button>
                     </div>
                   </td>
                 </tr>
