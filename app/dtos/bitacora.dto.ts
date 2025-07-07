@@ -70,7 +70,7 @@ export const CrearBitacoraDto = z.object({
     .refine(data => {
         return data.sistema_id !== undefined || data.equipo_id !== undefined;
     }, {
-        message: "Se debe proporcionar al menos un sistema_id o equipo_id.",
+        message: "Debe ingresar un sistema o equipo",
         path: ["sistema_id", "equipo_id"]
     }
 

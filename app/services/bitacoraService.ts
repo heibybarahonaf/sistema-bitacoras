@@ -10,27 +10,9 @@ import { UsuarioService } from "../services/usuarioService";
 import { EncuestaService } from "../services/encuestaService";
 import { ConfiguracionService } from "../services/configService";
 
-export const EditarBitacoraDto = z.object({
-    id: z.number(),
-    respuestas: z.string().regex(/^(\d+(,\d+)*)?$/), //  "5,4,3" y asi
-    calificacion: z.number(),
-});
-
 type CrearBitacoraDto = z.infer<typeof CrearBitacoraDto>;
-type EditarBitacoraDto = z.infer<typeof EditarBitacoraDto>;
 
 export class BitacoraService {
-
-    public static async obtenerBitacoras(): Promise<Bitacora[]> {
-        const bitacoras = await prisma.bitacora.findMany({ orderBy: { createdAt: "desc" }});
-
-        if(bitacoras.length === 0){
-            throw new ResponseDto(404, "No se encontraron bitacoras registradas");
-        }
-
-        return bitacoras;
-    }
-
 
     public static async obtenerBitacorasConFirma(bitacoraId: number): Promise<Bitacora> {
         
@@ -50,10 +32,12 @@ export class BitacoraService {
         }
 
         return bitacora;
+        
     }
 
 
     public static async obtenerBitacorasRangoFechas(fechaInicio: string, fechaFinal: string) {
+
         const bitacoras = await prisma.bitacora.findMany({
             where: {
                 fecha_servicio: {
@@ -78,10 +62,12 @@ export class BitacoraService {
         }
 
         return bitacoras;
+
     }
 
 
     public static async obtenerBitacoraPorId(id: number): Promise<Bitacora> {
+
         const bitacora = await prisma.bitacora.findFirst({ where: { id: id }});
 
         if(!bitacora){
@@ -89,31 +75,66 @@ export class BitacoraService {
         }
 
         return bitacora;
+
     }
 
 
-    public static async obtenerBitacorasCliente(idCliente: number): Promise<Bitacora[]> {
-        const bitacoras = await prisma.bitacora.findMany({
-            where: { cliente_id: idCliente },
-            orderBy: { fecha_servicio: "desc" },
-            include: {
-                fase_implementacion: true,
-                tipo_servicio: true,
-                sistema: true,
-                equipo: true,
-                firmaCliente: true,
-            },
-        });
-
-        if (bitacoras.length === 0) {
-            throw new ResponseDto(404, "No se encontraron bitácoras registradas con el cliente");
-        }
-
-        return bitacoras;
+    public static async obtenerBitacorasCliente(
+    idCliente: number,
+    page: number = 1,
+    limit: number = 10,
+    filtroEstado?: 'pendientes' | 'firmadas'
+  ): Promise<ResponseDto<Bitacora>> {
+    const skip = (page - 1) * limit;
+    
+    // Construir cláusula WHERE
+    const where: any = { cliente_id: idCliente };
+    
+    if (filtroEstado === 'pendientes') {
+      where.firmaCliente = { firma_base64: null };
+    } else if (filtroEstado === 'firmadas') {
+      where.firmaCliente = { firma_base64: { not: null } };
     }
+
+    // Consultas en paralelo
+    const [bitacoras, total] = await Promise.all([
+      prisma.bitacora.findMany({
+        where,
+        orderBy: { fecha_servicio: "desc" },
+        include: {
+          fase_implementacion: true,
+          tipo_servicio: true,
+          sistema: true,
+          equipo: true,
+          firmaCliente: true,
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.bitacora.count({ where })
+    ]);
+
+    // Calcular total de páginas
+    const totalPages = Math.ceil(total / limit);
+
+    return new ResponseDto(
+      200,
+      bitacoras.length > 0 
+        ? "Bitácoras obtenidas exitosamente" 
+        : "No se encontraron bitácoras",
+      bitacoras,
+      {
+        total,
+        page,
+        limit,
+        totalPages
+      }
+    );
+  }
 
 
     public static async obtenerBitacorasClienteFechas(rtn: string, fechaInicio: string, fechaFinal: string) {
+
         const cliente = await ClienteService.obtenerClientePorRtn(rtn);
         const bitacoras = await prisma.bitacora.findMany({
             where: {
@@ -139,10 +160,12 @@ export class BitacoraService {
         }
 
         return bitacoras;
+
     }
 
 
     public static async obtenerBitacorasTecnicoFechas(nombre: string, fechaInicio: string, fechaFinal: string) {
+
         const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
         const bitacoras = await prisma.bitacora.findMany({
             where: {
@@ -167,10 +190,12 @@ export class BitacoraService {
         }
 
         return bitacoras;
+
     }
 
 
     public static async obtenerBitacorasTecnicoVentasFechas(nombre: string, fechaInicio: string, fechaFinal: string) {
+
         const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
         const bitacoras = await prisma.bitacora.findMany({
             where: {
@@ -200,10 +225,12 @@ export class BitacoraService {
         }
 
         return bitacoras;
+
     }
 
 
     public static async obtenerBitacorasTecnico(idTecnico: number): Promise<Bitacora[]> {
+
         const bitacoras = await prisma.bitacora.findMany({ 
             where: { usuario_id: idTecnico },
             orderBy: { fecha_servicio: "desc" }
@@ -214,10 +241,12 @@ export class BitacoraService {
         }
 
         return bitacoras;
+
     }
 
 
     public static async crearBitacora(bitacoraData: CrearBitacoraDto): Promise<Bitacora> {
+
         const cliente = await ClienteService.obtenerClientePorId(bitacoraData.cliente_id);
         await EncuestaService.obtenerEncuestaActiva();
         await UsuarioService.obtenerUsuarioPorId(bitacoraData.usuario_id);
@@ -300,14 +329,6 @@ export class BitacoraService {
                     monto: monto
                 }
             });
-            
-            /*
-            await prisma.encuesta_Bitacora.create({
-                data: {
-                    bitacora_id: bitacora.id,
-                    encuesta_id: encuestaActiva.id,                
-                },
-            });*/
 
             await ClienteService.editarCliente(cliente_id, datosActualizacion);
             return bitacora;
@@ -321,29 +342,8 @@ export class BitacoraService {
     }
 
 
-    public static async editarBitacora(bitacoraData: EditarBitacoraDto): Promise<Bitacora> {
-        const encuestaActiva = await EncuestaService.obtenerEncuestaActiva();
-        const { id, respuestas, calificacion } = bitacoraData;
-
-        const bitacora = await prisma.bitacora.findUnique({
-            where: { id },
-        });
-
-        if (!bitacora) throw new Error("Bitácora no encontrada");
-        const bitacoraActualizada = await prisma.bitacora.update({
-            where: { id },
-            data: {
-                calificacion,
-                updatedAt: new Date(),
-            },
-        });
-
-        return bitacoraActualizada;
-
-    }
-
-
     public static async obtenerBitacoraPorFirmaClienteId(firmaClienteId: number): Promise<Bitacora> {
+
         const bitacora = await prisma.bitacora.findFirst({
             where: { firmaCliente_id: firmaClienteId },
             include: {
@@ -362,6 +362,7 @@ export class BitacoraService {
         }
 
         return bitacora;
+
     }
 
 

@@ -45,6 +45,7 @@ export async function GET(request: Request) {
             servicio: bitacora.tipo_servicio?.descripcion,
             modalidad: bitacora.modalidad,
             tipo_horas: bitacora.tipo_horas,
+            horas: bitacora.horas_consumidas,
             descripcion: bitacora.descripcion_servicio
         }));
 

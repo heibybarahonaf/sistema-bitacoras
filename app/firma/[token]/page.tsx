@@ -18,9 +18,8 @@ export default function FirmaClientePage() {
   useEffect(() => {
     const validarToken = async () => {
       try {
-        
         const res = await fetch(`/api/firmas/validar/${token}`);
-        const data = await res.json();   
+        const data = await res.json();
 
         if (!res.ok || !data.results?.[0]) {
           Swal.fire({
@@ -42,25 +41,25 @@ export default function FirmaClientePage() {
         const dataBitacora = await resBitacora.json();
 
         if (resBitacora.ok && dataBitacora?.result) {
-  const bitacoraData = dataBitacora.result;
-  setBitacora(bitacoraData);
+          const bitacoraData = dataBitacora.result;
+          setBitacora(bitacoraData);
 
-  // Obtener nombre del técnico
-  try {
-    console.log("ID de usuario:", bitacoraData.usuario_id);
-    const resUsuario = await fetch(`${baseUrl}/api/usuarios/${bitacoraData.usuario_id}`);
-    const dataUsuario = await resUsuario.json();
-     console.log("Respuesta completa del usuario", dataUsuario);
-    if (resUsuario.ok && dataUsuario?.results?.[0]?.nombre) {
-      setNombreTecnico(dataUsuario.results[0].nombre);
-    }
-  } catch (error) {
-    console.error("Error al obtener el nombre del técnico:", error);
-  }
-} else {
-  setBitacora(null);
-}
+          // Obtener nombre del técnico
+          try {
+            const resUsuario = await fetch(
+              `${baseUrl}/api/usuarios/${bitacoraData.usuario_id}`
+            );
+            const dataUsuario = await resUsuario.json();
+            if (resUsuario.ok && dataUsuario?.results?.[0]?.nombre) {
+              setNombreTecnico(dataUsuario.results[0].nombre);
+            }
+          } catch (error) {
+            console.error("Error al obtener el nombre del técnico:", error);
+          }
 
+        } else {
+          setBitacora(null);
+        }
 
       } catch (error) {
         console.error("Error al validar token", error);
@@ -74,7 +73,11 @@ export default function FirmaClientePage() {
 
   const handleSubmit = async () => {
     if (!sigCanvas.current) {
-      Swal.fire("Error", "El canvas de firma no está listo. Intenta recargar la página.", "error");
+      Swal.fire(
+        "Error",
+        "El canvas de firma no está listo. Intenta recargar la página.",
+        "error"
+      );
       return;
     }
 
@@ -93,7 +96,6 @@ export default function FirmaClientePage() {
     }
 
     try {
-      console.log("3 :::")
       const res = await fetch("/api/firmas/finalizar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -121,28 +123,49 @@ export default function FirmaClientePage() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Validando enlace...</div>;
+  if (loading)
+    return <div className="p-8 text-center">Validando enlace...</div>;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
       <div className="bg-white shadow-lg rounded-md p-6 w-full max-w-md mb-6">
-        <h2 className="text-xl font-bold mb-4 text-center">Detalles de la Bitácora</h2>
+        <h2 className="text-xl font-bold mb-4 text-center">
+          Detalles de la Bitácora
+        </h2>
         {bitacora ? (
           <div className="space-y-2 text-gray-800">
-            <p><strong>No. Ticket:</strong> {bitacora.no_ticket}</p>
-            <p><strong>Fecha del Servicio:</strong> {new Date(bitacora.fecha_servicio).toLocaleDateString("es-HN")}</p>
-            <p><strong>Técnico:</strong> {nombreTecnico || `ID ${bitacora.usuario_id}`}</p>
-            <p><strong>Descripción:</strong> {bitacora.descripcion_servicio}</p>
-            <p><strong>Modalidad:</strong> {bitacora.modalidad}</p>
-            <p><strong>Horas Consumidas:</strong> {bitacora.horas_consumidas}</p>
+            <p>
+              <strong>No. Ticket:</strong> {bitacora.no_ticket}
+            </p>
+            <p>
+              <strong>Fecha del Servicio:</strong>{" "}
+              {new Date(bitacora.fecha_servicio).toLocaleDateString("es-HN")}
+            </p>
+            <p>
+              <strong>Técnico:</strong>{" "}
+              {nombreTecnico || `ID ${bitacora.usuario_id}`}
+            </p>
+            <p>
+              <strong>Descripción:</strong> {bitacora.descripcion_servicio}
+            </p>
+            <p>
+              <strong>Modalidad:</strong> {bitacora.modalidad}
+            </p>
+            <p>
+              <strong>Horas Consumidas:</strong> {bitacora.horas_consumidas}
+            </p>
           </div>
         ) : (
-          <p className="text-gray-500 italic">No se pudo cargar la información de la bitácora.</p>
+          <p className="text-gray-500 italic">
+            No se pudo cargar la información de la bitácora.
+          </p>
         )}
       </div>
 
       <div className="bg-white shadow-lg rounded-md p-6 w-full max-w-md">
-        <h2 className="text-xl font-bold mb-4 text-center">Firma del Cliente</h2>
+        <h2 className="text-xl font-bold mb-4 text-center">
+          Firma del Cliente
+        </h2>
         <SignatureCanvas
           ref={sigCanvas}
           penColor="black"

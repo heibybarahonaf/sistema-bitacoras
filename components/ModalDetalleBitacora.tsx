@@ -1,17 +1,32 @@
 "use client";
 
+import Swal from "sweetalert2";
 import { X } from "lucide-react";
 import React, { useEffect, useState, useRef } from "react";
-import { Sistema, Equipo, Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
+import { 
+  Sistema, 
+  Equipo, 
+  Tipo_Servicio, 
+  Fase_Implementacion,
+  Bitacora as PrismaBitacora
+} from "@prisma/client";
+
+interface Bitacora extends PrismaBitacora {
+  firmaCliente?: {
+    firma_base64?: string;
+    url?: string;
+  };
+}
 
 interface ModalDetalleBitacoraProps {
   isOpen: boolean;
   onClose: () => void;
-  bitacora: any | null;
+  bitacora: Bitacora | null;
   sistemas: Sistema[];
   equipos: Equipo[];
   tipo_servicio: Tipo_Servicio[];
   fase_implementacion: Fase_Implementacion[];
+  isLoading?: boolean;
 }
 
 export default function ModalDetalleBitacora({
@@ -22,11 +37,13 @@ export default function ModalDetalleBitacora({
   equipos,
   tipo_servicio,
   fase_implementacion,
+  isLoading = false
 }: ModalDetalleBitacoraProps) {
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
   const [firmaClienteImg, setFirmaClienteImg] = useState<string | null>(null);
   const [firmaClienteUrl, setFirmaClienteUrl] = useState<string | null>(null);
   const [noSoportaClipboard, setNoSoportaClipboard] = useState(false);
+  
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -73,13 +90,36 @@ export default function ModalDetalleBitacora({
     };
   }, [bitacora, isOpen]);
 
-  if (!isOpen || !bitacora) return null;
+  if (!isOpen) return null;
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white w-full max-w-3xl rounded-lg shadow-lg relative p-6 sm:p-8">
+          <div className="flex flex-col items-center justify-center h-40 gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#295d0c]"></div>
+            <p className="text-gray-700">Cargando detalles de la bitácora...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!bitacora) return null;
 
   const copiarAlPortapapeles = async () => {
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(firmaClienteUrl || "");
-        alert("ENLACE COPIADO");
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'Enlace copiado',
+          showConfirmButton: false,
+          timer: 1500,
+          timerProgressBar: true,
+        });
       } else {
         setNoSoportaClipboard(true);
       }

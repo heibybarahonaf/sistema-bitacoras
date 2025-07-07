@@ -12,6 +12,7 @@ type CrearEquipoDto = z.infer<typeof CrearEquipoDto>;
 export class EquipoService {
 
     public static async obtenerEquipos(): Promise<Equipo[]> {
+
         const equipos = await prisma.equipo.findMany({});
 
         if (equipos.length === 0) {
@@ -19,10 +20,12 @@ export class EquipoService {
         }
 
         return equipos;
+        
     }
     
 
     public static async obtenerEquiposActivos(): Promise<Equipo[]> {
+
         const equipos = await prisma.equipo.findMany({ where: { activo: true }});
 
         if (equipos.length === 0) {
@@ -30,10 +33,12 @@ export class EquipoService {
         }
 
         return equipos;
+
     }
 
 
     public static async obtenerEquipoPorId(id: number): Promise<Equipo> {
+
         const equipo = await prisma.equipo.findUnique({ where: { id } });
 
         if (!equipo) {
@@ -41,10 +46,12 @@ export class EquipoService {
         }
 
         return equipo;
+
     }
 
 
     public static async obtenerEquipoPorNombre(nombre: string): Promise<Equipo> {
+
         const equipo = await prisma.equipo.findFirst({ where: { equipo: { contains: nombre, mode: "insensitive" } } });
 
         if (!equipo) {
@@ -52,10 +59,12 @@ export class EquipoService {
         }
 
         return equipo;
+
     }
 
 
     public static async crearEquipo(equipoData: CrearEquipoDto): Promise<Equipo> {
+
         const equipoExistente = await prisma.equipo.findFirst({ where: { equipo: { contains: equipoData.equipo, mode: "insensitive" } } });
 
         if (equipoExistente) {
@@ -79,6 +88,7 @@ export class EquipoService {
 
 
     public static async editarEquipo(id: number, equipoData: EditarEquipoDto): Promise<Equipo> {
+
         const equipoExistente = await this.obtenerEquipoPorId(id);
         const { equipo } = equipoData;
 
@@ -114,6 +124,7 @@ export class EquipoService {
 
 
     public static async eliminarEquipo(id: number): Promise<Equipo>{
+
         await this.obtenerEquipoPorId(id);
 
         try {

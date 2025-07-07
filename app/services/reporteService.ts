@@ -51,6 +51,11 @@ function generarReporte(
     doc.text(titulo, 10, currentY);
     currentY += 7;
 
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("POS de Honduras", 10, currentY);
+    currentY += 6;
+
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.text(`Período: ${fechaInicio} hasta ${fechaFinal}`, 10, currentY);
@@ -64,17 +69,17 @@ function generarReporte(
         currentY = renderInfoCliente(doc, currentY, nombresExtras);
     }
 
-    doc.addImage(imgData, "PNG", 250, 5, 30, 15);
+    doc.addImage(imgData, "PNG", 250, 9, 30, 15);
 
     autoTable(doc, {
         head: [columnas],
         body: datos,
-        startY: currentY + 5,
+        startY: currentY + 3,
         styles: { fontSize: 6 },
         headStyles: { fillColor: [165, 42, 42] },
     });
 
-    let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10; 
+    let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 5; 
 
     //let finalY = (doc as any).lastAutoTable.finalY + 10;
     const pageHeight = doc.internal.pageSize.height;
@@ -137,7 +142,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
     const porcentajeComision = config.comision;
 
     const columnas = [
-        "Fecha", "Ticket", "Cliente", "Servicio", "Modalidad", "Horas", "Tipo Horas", "Monto", "Comisión", "Descripcion"
+        "Fecha", "Bitacora No.", "Ticket", "Cliente", "Horas", "Tipo Horas", "Monto", "Comisión", 
     ];
 
     let total = 0;
@@ -150,15 +155,13 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
 
         return [
             formatearFecha(b.fecha_servicio),
+            b.id,
             b.no_ticket ?? campo_vacio,
             b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
-            b.tipo_servicio?.descripcion ?? campo_vacio,
-            b.modalidad ?? campo_vacio,
             horas,
             b.tipo_horas ?? campo_vacio,
             monto.toFixed(2),
-            comision.toFixed(2),
-            b.descripcion_servicio ?? campo_vacio
+            comision.toFixed(2)
         ].map(v => v === undefined ? null : v);
     }) as (string | number | null)[][];
 
@@ -166,7 +169,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
     const usuario = bitacoras[0]?.usuario ?? null;
     
     const doc = generarReporte(
-        "Reporte de Bitácoras Técnico",  
+        "Reporte de Comisiones Técnico",  
         bitacoras,                       
         fechaInicio,                     
         fechaFinal,                      
@@ -191,13 +194,14 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
 export async function generarPDFPorVentasTecnico(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
     const usuario = bitacoras[0]?.usuario ?? null;
     const columnas = [
-        "Fecha", "Cliente", "Ventas"
+        "Fecha", "Bitacora No.", "Cliente", "Ventas"
     ];
 
     const datos = bitacoras.map(b => {
 
         return [
             formatearFecha(b.fecha_servicio),
+            b.id,
             b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
             b.ventas ?? campo_vacio
         ].map(v => v === undefined ? null : v);

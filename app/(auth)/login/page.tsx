@@ -126,7 +126,7 @@ export default function LoginInterface() {
         } catch {
             Swal.fire({
                 icon: 'error',
-                title: 'Error de conexión',
+                title: 'Error al enviar el código',
                 text: 'No se pudo conectar con el servidor'
             });
         } finally {
@@ -190,7 +190,7 @@ export default function LoginInterface() {
 
             Swal.fire({
                 icon: 'error',
-                title: 'Error de conexión',
+                title: 'Error al iniciar sesión',
                 text: 'No se pudo conectar con el servidor'
             });
 

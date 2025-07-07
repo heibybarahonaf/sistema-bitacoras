@@ -30,8 +30,7 @@ export default function Navbar() {
     { href: "/configuracion", label: "Configuración", icon: Settings }
   ];
 
-  useEffect(() => {
-    const obtenerUsuario = async () => {
+  const obtenerUsuario = async () => {
 
       try {
 
@@ -50,7 +49,8 @@ export default function Navbar() {
 
     };
 
-    obtenerUsuario();
+  useEffect(() => {
+    setTimeout(obtenerUsuario, 0); 
   }, []);
 
   const handleLogout = async () => {
@@ -83,6 +83,7 @@ export default function Navbar() {
     }
 
   };
+
 
   return (
     <>

@@ -29,12 +29,12 @@ export async function GET(request: Request) {
         }
 
         const bitacoras = await BitacoraService.obtenerBitacorasTecnicoVentasFechas(usuario, fechaInicio, fechaFinal);
-        console.log("hola:: ", bitacoras)
         if (bitacoras.length === 0) {
             throw new ResponseDto(404, "No se encontraron bitácoras para el técnico en el rango de fechas especificado");
         }
 
         const bitacoras_filtradas = bitacoras.map((bitacora: BitacoraConRelaciones) => ({
+            id: bitacora.id,
             fecha: bitacora.fecha_servicio ?? bitacora.fecha_servicio,
             cliente: bitacora.cliente.empresa,
             tecnico: bitacora.usuario.nombre,

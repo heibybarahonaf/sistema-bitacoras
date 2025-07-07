@@ -12,6 +12,7 @@ type CrearConfigDto = z.infer<typeof CrearConfigDto>;
 export class ConfiguracionService {
 
     public static async obtenerConfiguracionPorId(id: number): Promise<Configuracion> {
+
         const configuracion = await prisma.configuracion.findUnique({ where: { id } });
 
         if(!configuracion){
@@ -19,10 +20,12 @@ export class ConfiguracionService {
         }
     
         return configuracion;
+        
     }
 
 
     public static async editarConfiguracion(id: number, configuracionData: EditarConfigDto): Promise<Configuracion> {
+
         await this.obtenerConfiguracionPorId(id);
 
         const datosActualizacion = GeneralUtils.filtrarCamposActualizables(configuracionData);

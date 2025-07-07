@@ -2,15 +2,35 @@
 
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
-import { Pagos_Cliente } from "@prisma/client";
 import ModalPago from "@/components/ModalPago"; 
+import { Pagos_Cliente } from "@prisma/client";
 import { DollarSign, Eye, Edit } from "lucide-react";
 
-function mostrarDetallePago(pago: Pagos_Cliente) {
+interface PagoConCliente extends Pagos_Cliente {
+  cliente: {
+    id: number;
+    responsable: string;
+    empresa: string;
+    rtn: string;
+    direccion: string;
+    telefono: string;
+    correo: string;
+    activo: boolean;
+    horas_paquetes: number;
+    horas_individuales: number;
+    monto_paquetes: number;
+    monto_individuales: number;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
+
+function mostrarDetallePago(pago: PagoConCliente) {
   Swal.fire({
     title: "Detalle de Pago",
     html: `
       <strong>Factura:</strong> ${pago.no_factura} <br/><br/>
+      <strong>Cliente:</strong> ${pago.cliente?.empresa || pago.cliente?.responsable} <br/><br/>
       <strong>Forma de pago:</strong> ${pago.forma_pago} <br/><br/>
       <strong>Detalle:</strong> ${pago.detalle_pago} <br/><br/>
       <strong>Monto:</strong> L.${pago.monto} <br/><br/>
@@ -32,11 +52,19 @@ const LoadingSpinner = () => (
 );
 
 export default function PagosPage() {
-  const [pagos, setPagos] = useState<Pagos_Cliente[]>([]);
+  const [pagos, setPagos] = useState<PagoConCliente[]>([]);
   const [loading, setLoading] = useState(false);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [pagosPorPagina] = useState(10);
+  const [metaPagos, setMetaPagos] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0
+  });
 
-  const [modalPago, setModalPago] = useState<{ open: boolean; pago?: Pagos_Cliente }>({
+  const [modalPago, setModalPago] = useState<{ open: boolean; pago?: PagoConCliente }>({
     open: false,
   });
 
@@ -47,14 +75,22 @@ export default function PagosPage() {
 
   useEffect(() => {
     fetchPagos();
-  }, []);
+  }, [paginaActual, filtroFactura, fechaInicio, fechaFin]);
 
   async function fetchPagos() {
     setLoading(true);
     setShowEmptyMessage(false);
 
     try {
-      const res = await fetch("/api/pagos");
+      const params = new URLSearchParams({
+        page: paginaActual.toString(),
+        limit: pagosPorPagina.toString(),
+        ...(filtroFactura && { factura: filtroFactura }),
+        ...(fechaInicio && { fechaInicio }),
+        ...(fechaFin && { fechaFin })
+      });
+
+      const res = await fetch(`/api/pagos?${params}`);
       const response = await res.json();
 
       if (response.code === 404) {
@@ -67,9 +103,15 @@ export default function PagosPage() {
         throw new Error(response.message || "Error al cargar pagos");
       }
 
-      const pagosPlanos = response.results?.[0] || [];
-      setPagos(pagosPlanos);
-      if (pagosPlanos.length === 0) setShowEmptyMessage(true);
+      setPagos(response.results || []);
+      setMetaPagos(response.meta || {
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0
+      });
+      
+      if (response.results?.length === 0) setShowEmptyMessage(true);
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -81,6 +123,12 @@ export default function PagosPage() {
       setLoading(false);
     }
   }
+
+  const cambiarPagina = (nuevaPagina: number) => {
+    if (nuevaPagina >= 1 && nuevaPagina <= metaPagos.totalPages) {
+      setPaginaActual(nuevaPagina);
+    }
+  };
 
   const pagosFiltrados = pagos.filter((pago) => {
     const fechaPagoStr = pago.createdAt instanceof Date
@@ -109,23 +157,23 @@ export default function PagosPage() {
       {/* Filtros */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
         <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-700 whitespace-nowrap">Desde:</span>
-        <input
-          type="date"
-          value={fechaInicio}
-          onChange={(e) => setFechaInicio(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2"
-        />
-      </div>
+          <span className="text-sm text-gray-700 whitespace-nowrap">Desde:</span>
+          <input
+            type="date"
+            value={fechaInicio}
+            onChange={(e) => setFechaInicio(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+        </div>
         <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-700 whitespace-nowrap">Hasta:</span>
-        <input
-          type="date"
-          value={fechaFin}
-          onChange={(e) => setFechaFin(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2"
-        />
-      </div>
+          <span className="text-sm text-gray-700 whitespace-nowrap">Hasta:</span>
+          <input
+            type="date"
+            value={fechaFin}
+            onChange={(e) => setFechaFin(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+        </div>
 
         <input
           type="text"
@@ -162,6 +210,7 @@ export default function PagosPage() {
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-2 sm:px-4 py-3 text-left">Factura</th>
+                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Cliente</th>
                 <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Forma de pago</th>
                 <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Detalle</th>
                 <th className="px-2 sm:px-4 py-3 text-left ">Monto</th>
@@ -175,6 +224,7 @@ export default function PagosPage() {
               {pagosFiltrados.map((pago) => (
                 <tr key={pago.id} className="hover:bg-gray-50">
                   <td className="px-2 sm:px-4 py-3">{pago.no_factura}</td>
+                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.cliente?.empresa || pago.cliente?.responsable}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.forma_pago}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.detalle_pago}</td>
                   <td className="px-2 sm:px-4 py-3">L.{pago.monto}</td>
@@ -205,13 +255,55 @@ export default function PagosPage() {
               ))}
             </tbody>
           </table>
+
+          {/* Paginación */}
+          {pagos.length > 0 && (
+            <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="text-sm text-gray-600">
+                Mostrando {pagos.length} de {metaPagos.total} pagos
+              </div>
+              <div className="flex justify-center items-center gap-2">
+                <button
+                  onClick={() => cambiarPagina(1)}
+                  disabled={metaPagos.page === 1}
+                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Primera
+                </button>
+                <button
+                  onClick={() => cambiarPagina(metaPagos.page - 1)}
+                  disabled={metaPagos.page === 1}
+                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Anterior
+                </button>
+                <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+                  {metaPagos.page}
+                </span>
+                <button
+                  onClick={() => cambiarPagina(metaPagos.page + 1)}
+                  disabled={metaPagos.page === metaPagos.totalPages}
+                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Siguiente
+                </button>
+                <button
+                  onClick={() => cambiarPagina(metaPagos.totalPages)}
+                  disabled={metaPagos.page === metaPagos.totalPages}
+                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Última
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Modal de edición */}
       {modalPago.open && modalPago.pago && (
         <ModalPago
-          clienteId={modalPago.pago.cliente_id}
+          clienteId={modalPago.pago.cliente.id}
           pago={modalPago.pago}
           onClose={() => setModalPago({ open: false })}
           onGuardar={fetchPagos}

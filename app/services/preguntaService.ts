@@ -12,6 +12,7 @@ type EitarPreguntaDto = z.infer<typeof CrearPreguntaDto>;
 export class PreguntaService {
 
     public static async obtenerPreguntas(): Promise<Pregunta[]> {
+
         const preguntas = await prisma.pregunta.findMany({});
 
         if(preguntas.length === 0){
@@ -19,10 +20,12 @@ export class PreguntaService {
         }
 
         return preguntas;
+
     }
 
 
     public static async obtenerPreguntaPorId(id: number): Promise<Pregunta> {
+
         const pregunta = await prisma.pregunta.findUnique({ where: { id } });
 
         if(!pregunta){
@@ -30,10 +33,12 @@ export class PreguntaService {
         }
     
         return pregunta;
+
     }
 
 
     public static async crearPregunta(preguntaData: CrearPreguntaDto): Promise<Pregunta> {
+
         const preguntaExistente = await prisma.pregunta.findFirst({ where: { pregunta: preguntaData.pregunta }});
         
         if (preguntaExistente) {
@@ -55,6 +60,7 @@ export class PreguntaService {
 
 
     public static async editarPregunta(id: number, preguntaData: EitarPreguntaDto): Promise<Pregunta> {
+        
         const preguntaExistente = await this.obtenerPreguntaPorId(id);
         const { pregunta } = preguntaData;
 

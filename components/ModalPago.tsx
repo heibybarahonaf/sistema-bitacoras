@@ -6,7 +6,26 @@ interface ModalPagoProps {
   clienteId: number;
   onClose: () => void;
   onGuardar: () => void;
-  pago?: Pagos_Cliente; // opcional, si se va a editar
+  pago?: PagoConCliente;
+}
+
+interface PagoConCliente extends Pagos_Cliente {
+  cliente: {
+    id: number;
+    responsable: string;
+    empresa: string;
+    rtn: string;
+    direccion: string;
+    telefono: string;
+    correo: string;
+    activo: boolean;
+    horas_paquetes: number;
+    horas_individuales: number;
+    monto_paquetes: number;
+    monto_individuales: number;
+    createdAt: Date;
+    updatedAt: Date;
+  };
 }
 
 export default function ModalPago({
@@ -19,6 +38,7 @@ export default function ModalPago({
   const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [monto, setMonto] = useState(0);
   const [noFactura, setNoFactura] = useState("");
+  const [cliente, setCliente] = useState("");
   const [formaPago, setFormaPago] = useState("Efectivo");
   const [detallePago, setDetallePago] = useState("");
   const [config, setConfig] = useState({
@@ -27,10 +47,10 @@ export default function ModalPago({
     comision: 0,
   });
 
-  // Pre-cargar datos si es edición
   useEffect(() => {
     if (pago) {
       setNoFactura(pago.no_factura || "");
+      setCliente(pago.cliente.empresa || "");
       setFormaPago(pago.forma_pago || "Efectivo");
       setDetallePago(pago.detalle_pago || "");
       setTipoHoras(pago.tipo_horas || "Paquete");
@@ -39,7 +59,7 @@ export default function ModalPago({
     }
   }, [pago]);
 
-  // Obtener configuración de precios
+
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -61,7 +81,32 @@ export default function ModalPago({
     fetchConfig();
   }, []);
 
-  // Recalcular monto si cambia cantidad o tipo
+
+  useEffect(() => {
+    if (!pago && clienteId) {
+      const fetchCliente = async () => {
+        try {
+          const res = await fetch(`/api/clientes/${clienteId}`);
+          const clienteData = await res.json();
+          
+          if (Array.isArray(clienteData.results) && clienteData.results.length > 0) {
+
+            const cliente = clienteData.results[0];
+            setCliente(cliente.empresa || cliente.responsable || '');
+
+          } else {
+            console.error('La propiedad results no es un array o está vacía');
+          }
+
+        } catch (error) {
+          console.error("Error al cargar cliente", error);
+        }
+      };
+
+      fetchCliente();
+    }
+  }, [clienteId, pago]);
+
   useEffect(() => {
     const precioPorHora =
       tipoHoras === "Paquete"
@@ -93,8 +138,19 @@ export default function ModalPago({
     });
 
     if (res.ok) {
+      
+      Swal.fire({
+        icon: "success",
+        title: "Éxito",
+        text: "Pago registrado correctamente",
+        confirmButtonColor: "#16a34a",
+        timer: 3000,
+        showConfirmButton: false,
+      });
+
       onGuardar();
       onClose();
+
     } else if(res.status === 403){
       Swal.fire({
         icon: 'error',
@@ -103,7 +159,11 @@ export default function ModalPago({
       });
     } 
     else {
-      alert("Error al guardar el pago");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se permiten facturas duplicadas!'
+      });
     }
   };
 
@@ -125,6 +185,17 @@ export default function ModalPago({
               onChange={(e) => setNoFactura(e.target.value)}
               required
               className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+            />
+          </label>
+
+          {/* Nombre del cliente - SIEMPRE MOSTRAR */}
+          <label className="block">
+            <span className="text-gray-800 font-semibold">Cliente</span>
+            <input
+              type="text"
+              value={pago?.cliente?.empresa || cliente}
+              readOnly
+              className="mt-1 w-full border border-gray-300 bg-gray-100 rounded-md px-3 py-2 text-gray-700"
             />
           </label>
 

@@ -13,6 +13,7 @@ type CrearUsuarioDto = z.infer<typeof CrearUsuarioDto>;
 export class UsuarioService {
 
     public static async obtenerUsuarios(): Promise<Usuario[]> {
+
         const usuarios = await prisma.usuario.findMany({});
 
         if(usuarios.length === 0){
@@ -20,14 +21,15 @@ export class UsuarioService {
         }
 
         return usuarios;
+
     }
 
 
     public static async obtenerUsuariosActivos(): Promise<Usuario[]> {
+
         const usuarios = await prisma.usuario.findMany({ 
             where: { 
-                activo: true, 
-                rol: "tecnico"
+                activo: true
             }  
         });
 
@@ -36,10 +38,12 @@ export class UsuarioService {
         }
 
         return usuarios;
+
     }
 
 
     public static async obtenerUsuarioPorId(id : number): Promise <Usuario> {
+
         const usuario = await prisma.usuario.findUnique({ where: { id }});
 
         if(!usuario){
@@ -47,10 +51,12 @@ export class UsuarioService {
         }
         
         return usuario;
+
     }
 
 
     public static async obtenerUsuarioPorCorreo(correo: string): Promise<Usuario> {
+
         const usuario = await prisma.usuario.findFirst({ where: { correo: correo }});
 
         if(!usuario){
@@ -58,10 +64,12 @@ export class UsuarioService {
         }
         
         return usuario;
+
     }
 
 
     public static async obtenerUsuarioPorNombre(nombre: string): Promise<Usuario> {
+
         const usuario = await prisma.usuario.findFirst({ where : { nombre: { contains: nombre, mode: 'insensitive' } }});
 
         if(!usuario){
@@ -69,10 +77,12 @@ export class UsuarioService {
         }
         
         return usuario;
+
     }
 
 
     public static async crearUsuario(usuarioData: CrearUsuarioDto): Promise<Usuario> {
+
         const { nombre, correo, password, rol, activo, zona_asignada, telefono } = usuarioData;
         const emailExistente = await prisma.usuario.findFirst({ where: { correo: correo }});
 
@@ -99,7 +109,6 @@ export class UsuarioService {
 
         } catch (error){
 
-            console.log(error)
             throw new ResponseDto(500, "Error al crear el usuario");
 
         }
@@ -108,6 +117,7 @@ export class UsuarioService {
 
 
     public static async editarUsuario(id: number, usuarioData: EditarUsuarioDto): Promise<Usuario> {
+
         const usuarioExistente = await this.obtenerUsuarioPorId(id);
         const { correo } = usuarioData;
 
@@ -142,6 +152,7 @@ export class UsuarioService {
 
 
     public static async eliminarUsuario(id: number): Promise<Usuario> {
+        
         await this.obtenerUsuarioPorId(id);
 
         try {

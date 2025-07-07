@@ -11,7 +11,7 @@ export async function GET() {
         return NextResponse.json(new ResponseDto(200, "Encuesta activa recuperada", [encuestaActiva]));
 
     } catch (error) {
-        console.log(error)
+        
         return GeneralUtils.generarErrorResponse(error);
 
     }

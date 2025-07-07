@@ -12,6 +12,7 @@ type CrearTipoServicioDto = z.infer<typeof CrearTipoServicioDto>;
 export class TipoServicioService {
 
     public static async obtenerTiposServicio(): Promise<Tipo_Servicio[]> {
+
         const tipos_servicio = await prisma.tipo_Servicio.findMany({});
 
         if (tipos_servicio.length === 0) {
@@ -19,10 +20,12 @@ export class TipoServicioService {
         }
 
         return tipos_servicio;
+
     }
     
 
     public static async obtenerTiposServicioActivos(): Promise<Tipo_Servicio[]> {
+
         const tipos_servicio = await prisma.tipo_Servicio.findMany({ where: { activo: true }});
 
         if (tipos_servicio.length === 0) {
@@ -30,10 +33,12 @@ export class TipoServicioService {
         }
 
         return tipos_servicio;
+
     }
 
 
     public static async obtenerTipoServicioPorId(id: number): Promise<Tipo_Servicio> {
+
         const tipo_servicio = await prisma.tipo_Servicio.findUnique({ where: { id } });
 
         if (!tipo_servicio) {
@@ -41,10 +46,12 @@ export class TipoServicioService {
         }
 
         return tipo_servicio;
+
     }
 
 
     public static async crearTipoServicio(tipoData: CrearTipoServicioDto): Promise<Tipo_Servicio> {
+
         const tipoExistente = await prisma.tipo_Servicio.findFirst({ where: { tipo_servicio: { contains: tipoData.tipo_servicio, mode: "insensitive" } } });
 
         if (tipoExistente) {
@@ -68,6 +75,7 @@ export class TipoServicioService {
 
 
     public static async editarTipoServicio(id: number, tipoData: EditarTipoServicioDto): Promise<Tipo_Servicio> {
+        
         const tipoExistente = await this.obtenerTipoServicioPorId(id);
         const { tipo_servicio } = tipoData;
 
@@ -103,6 +111,7 @@ export class TipoServicioService {
 
 
     public static async eliminarTipoServicio(id: number): Promise<Tipo_Servicio>{
+        
         await this.obtenerTipoServicioPorId(id);
 
         try {

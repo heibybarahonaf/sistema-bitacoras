@@ -80,7 +80,7 @@ export default function CardReporte({
       tipo,
       fechaInicio,
       fechaFinal,
-      tipo == "usuario" ? entidadId : undefined,
+      tipo === "usuario" ? entidadId : undefined,
       tipo === "cliente" ? entidadId : undefined,
       tipo === "ventas" ? entidadId : undefined
     );
@@ -99,8 +99,6 @@ export default function CardReporte({
 
   const getIdLabel = () => {
     switch (tipo) {
-      case "cliente":
-        return "RTN Cliente";
       case "usuario":
         return "Técnico";
       case "ventas":
@@ -112,8 +110,6 @@ export default function CardReporte({
 
   const getIdPlaceholder = () => {
     switch (tipo) {
-      case "cliente":
-        return "Ingresa el RTN del cliente";
       case "usuario":
         return "Selecciona un técnico";
       case "ventas":
@@ -149,24 +145,6 @@ export default function CardReporte({
           {!loadingUsuarios && usuarios.length === 0 && (
             <p className="text-xs text-red-500 mt-1">No se encontraron técnicos activos</p>
           )}
-        </div>
-      );
-    }
-
-    if (tipo === "cliente") {
-      return (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {getIdLabel()}
-          </label>
-          <input
-            type="text"
-            value={entidadId}
-            onChange={(e) => setEntidadId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled={isGenerating}
-            placeholder={getIdPlaceholder()}
-          />
         </div>
       );
     }
@@ -208,7 +186,7 @@ export default function CardReporte({
           />
         </div>
 
-        {tipo !== "general" && renderEntidadInput()}
+        {(tipo === "usuario" || tipo === "ventas") && renderEntidadInput()}
       </div>
 
       <div className="flex gap-2">
@@ -235,7 +213,6 @@ export default function CardReporte({
           } text-white`}
         >
           <Eye className="w-4 h-4" />
-          
         </button>
       </div>
     </div>
