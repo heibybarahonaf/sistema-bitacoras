@@ -80,57 +80,58 @@ export class BitacoraService {
 
 
     public static async obtenerBitacorasCliente(
-    idCliente: number,
-    page: number = 1,
-    limit: number = 10,
-    filtroEstado?: 'pendientes' | 'firmadas'
-  ): Promise<ResponseDto<Bitacora>> {
-    const skip = (page - 1) * limit;
-    
-    // Construir cláusula WHERE
-    const where: any = { cliente_id: idCliente };
-    
-    if (filtroEstado === 'pendientes') {
-      where.firmaCliente = { firma_base64: null };
-    } else if (filtroEstado === 'firmadas') {
-      where.firmaCliente = { firma_base64: { not: null } };
+        idCliente: number,
+        page: number = 1,
+        limit: number = 10,
+        filtroEstado?: 'pendientes' | 'firmadas'
+    ): Promise<ResponseDto<Bitacora>> {
+
+        const skip = (page - 1) * limit;        
+        const where: any = { cliente_id: idCliente };
+        
+        if (filtroEstado === 'pendientes') {
+            where.firmaCliente = {
+                is: { firma_base64: '' }
+            };
+        } else if (filtroEstado === 'firmadas') {
+            where.firmaCliente = {
+                is: { firma_base64: { not: '' } }
+            };
+        }
+
+        const [bitacoras, total] = await Promise.all([
+            prisma.bitacora.findMany({
+                where,
+                orderBy: { fecha_servicio: "desc" },
+                include: {
+                    fase_implementacion: true,
+                    tipo_servicio: true,
+                    sistema: true,
+                    equipo: true,
+                    firmaCliente: true,
+                },
+                skip,
+                take: limit,
+            }),
+            prisma.bitacora.count({ where })
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
+        return new ResponseDto(
+            200,
+            bitacoras.length > 0 
+                ? "Bitácoras obtenidas exitosamente" 
+                : "No se encontraron bitácoras",
+            bitacoras,
+            {
+                total,
+                page,
+                limit,
+                totalPages
+            }
+        );
+
     }
-
-    // Consultas en paralelo
-    const [bitacoras, total] = await Promise.all([
-      prisma.bitacora.findMany({
-        where,
-        orderBy: { fecha_servicio: "desc" },
-        include: {
-          fase_implementacion: true,
-          tipo_servicio: true,
-          sistema: true,
-          equipo: true,
-          firmaCliente: true,
-        },
-        skip,
-        take: limit,
-      }),
-      prisma.bitacora.count({ where })
-    ]);
-
-    // Calcular total de páginas
-    const totalPages = Math.ceil(total / limit);
-
-    return new ResponseDto(
-      200,
-      bitacoras.length > 0 
-        ? "Bitácoras obtenidas exitosamente" 
-        : "No se encontraron bitácoras",
-      bitacoras,
-      {
-        total,
-        page,
-        limit,
-        totalPages
-      }
-    );
-  }
 
 
     public static async obtenerBitacorasClienteFechas(rtn: string, fechaInicio: string, fechaFinal: string) {
@@ -287,11 +288,7 @@ export class BitacoraService {
             const montoActual = cliente.monto_individuales ?? 0;
             const montoIsv = configuracion.valor_hora_individual * (configuracion.comision / 100);
             const montoDebitado = horas_consumidas * (configuracion.valor_hora_individual + montoIsv);
-            monto = montoDebitado;   
-            
-            /*if (horasActuales < horas_consumidas || montoActual < montoDebitado) {
-                throw new ResponseDto(400, "Saldo insuficiente en horas individuales.");
-            }*/
+            monto = montoDebitado;
 
             datosActualizacion = {
                 horas_individuales: horasActuales - horas_consumidas,
@@ -304,10 +301,6 @@ export class BitacoraService {
             const montoIsv = configuracion.valor_hora_paquete * (configuracion.comision / 100);
             const montoDebitado = horas_consumidas * (configuracion.valor_hora_paquete + montoIsv);
             monto = montoDebitado;
-            
-            /*if (horasActuales < horas_consumidas || montoActual < montoDebitado) {
-                throw new ResponseDto(400, "Saldo insuficiente en horas de paquete.");
-            }*/
 
             datosActualizacion = {
                 horas_paquetes: horasActuales - horas_consumidas,

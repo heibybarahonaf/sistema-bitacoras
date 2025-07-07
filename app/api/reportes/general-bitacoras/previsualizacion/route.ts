@@ -33,6 +33,8 @@ export async function GET(request: Request) {
             fecha: bitacora.fecha_servicio ?? bitacora.fecha_servicio,
             ticket: bitacora.no_ticket,
             cliente: bitacora.cliente.empresa,
+            hora_llegada: bitacora.hora_llegada,
+            hora_salida: bitacora.hora_salida,
             tecnico: bitacora.usuario.nombre,
             horas: bitacora.horas_consumidas,
             servicio: bitacora.tipo_servicio?.descripcion,

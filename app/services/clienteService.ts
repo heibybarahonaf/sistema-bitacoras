@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { Cliente } from "@prisma/client";
 import { prisma } from "../libs/prisma";
+import { Cliente } from "@prisma/client";
 import { CrearClienteDto } from "../dtos/cliente.dto";
 import { ResponseDto } from "../common/dtos/response.dto";
 import { GeneralUtils } from "../common/utils/general.utils";
