@@ -374,13 +374,13 @@ const BuscarCliente: React.FC = () => {
 
   return (
     <div className="w-full p-6 pb-20 bg-white min-h-screen">
-      <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
+      <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
         <Notebook className="w-8 h-8 text-[#295d0c]" />
         Gestión de Bitácoras
       </h1>
 
-      <h2 className="text-xl font-bold mb-4">Buscar Cliente</h2>
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+      <h2 className="text-l font-bold mb-4">Buscar Cliente</h2>
+      <div className="flex flex-col text-xs sm:flex-row justify-between items-center mb-6 gap-4">
         <input
           type="text"
           placeholder="Buscar por Empresa o RTN"
@@ -392,7 +392,7 @@ const BuscarCliente: React.FC = () => {
 
       {clientesFiltrados.length > 0 && !clienteSeleccionado && (
         <>
-          <table className="min-w-full table-auto border-collapse">
+          <table className="min-w-full table-auto border-collapse text-sm">
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-2 sm:px-4 py-2 text-left ">Empresa</th>
@@ -418,9 +418,8 @@ const BuscarCliente: React.FC = () => {
             </tbody>
           </table>
 
-          {/* Reemplaza la paginación actual por esta: */}
           <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-gray-600">
+            <div className="text-xs text-gray-600">
               Mostrando {clientes.length} de {metaClientes.total} clientes
               {filtroActual && ` para "${filtroActual}"`}
             </div>
@@ -428,31 +427,31 @@ const BuscarCliente: React.FC = () => {
               <button
                 onClick={() => setPaginaActualClientes(1)}
                 disabled={metaClientes.page === 1}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 rounded text-xs border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Primera
               </button>
               <button
                 onClick={() => setPaginaActualClientes(metaClientes.page - 1)}
                 disabled={metaClientes.page === 1}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Anterior
               </button>
-              <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+              <span className="px-3 py-1 bg-[#295d0c] text-white text-xs rounded font-medium">
                 {metaClientes.page}
               </span>
               <button
                 onClick={() => setPaginaActualClientes(metaClientes.page + 1)}
                 disabled={metaClientes.page === metaClientes.totalPages}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 rounded border border-gray-400 text-xs bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Siguiente
               </button>
               <button
                 onClick={() => setPaginaActualClientes(metaClientes.totalPages)}
                 disabled={metaClientes.page === metaClientes.totalPages}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 rounded border border-gray-400 bg-white text-xs hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Última
               </button>
@@ -469,13 +468,13 @@ const BuscarCliente: React.FC = () => {
                 setClienteSeleccionado(null);
                 setFiltro("");
               }}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+              className="px-4 py-2 bg-gray-200 text-sm text-gray-700 rounded hover:bg-gray-300 transition"
             >
               ← Volver a búsqueda
             </button>
           </div>
 
-          <div className="w-full mx-auto p-4 bg-gray-100 rounded mb-6 flex flex-col sm:flex-row justify-between gap-4">
+          <div className="w-full mx-auto p-4 text-sm bg-gray-100 rounded mb-6 flex flex-col sm:flex-row justify-between gap-4">
             {/* Datos del cliente */}
             <div className="flex-1 space-y-2 text-left">
               <p className="font-bold text-sm text-gray-700">
@@ -528,7 +527,7 @@ const BuscarCliente: React.FC = () => {
 
           <div className="mt-8">
             <div className="flex justify-between items-center mb-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+              <div className="flex flex-col sm:flex-row text-sm sm:items-center sm:justify-between gap-3 mb-4">
                 <div className="flex items-center gap-4">
                   <h3 className="text-lg font-semibold">BITÁCORAS</h3>
 
@@ -628,7 +627,7 @@ const BuscarCliente: React.FC = () => {
               </p>
             ) : (
               <>
-                <table className="w-full table-auto border-collapse">
+                <table className="w-full table-auto border-collapse text-sm">
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="px-2 sm:px-4 py-3 text-left">Ticket</th>
@@ -731,7 +730,7 @@ const BuscarCliente: React.FC = () => {
 
                 {metaBitacoras.totalPages > 0 && (
                   <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs text-gray-600">
                       Mostrando {bitacoras.length} de {metaBitacoras.total}{" "}
                       bitácoras
                     </div>
@@ -739,7 +738,7 @@ const BuscarCliente: React.FC = () => {
                       <button
                         onClick={() => cambiarPaginaBitacoras(1)}
                         disabled={metaBitacoras.page === 1}
-                        className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1 rounded text-xs border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Primera
                       </button>
@@ -748,11 +747,11 @@ const BuscarCliente: React.FC = () => {
                           cambiarPaginaBitacoras(metaBitacoras.page - 1)
                         }
                         disabled={metaBitacoras.page === 1}
-                        className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Anterior
                       </button>
-                      <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+                      <span className="px-3 py-1 bg-[#295d0c] text-white text-xs rounded font-medium">
                         {metaBitacoras.page}
                       </span>
                       <button
@@ -762,7 +761,7 @@ const BuscarCliente: React.FC = () => {
                         disabled={
                           metaBitacoras.page === metaBitacoras.totalPages
                         }
-                        className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1 rounded border border-gray-400 text-xs bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Siguiente
                       </button>
@@ -773,7 +772,7 @@ const BuscarCliente: React.FC = () => {
                         disabled={
                           metaBitacoras.page === metaBitacoras.totalPages
                         }
-                        className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-1 rounded text-xs border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Última
                       </button>

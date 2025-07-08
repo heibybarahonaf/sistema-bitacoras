@@ -2,6 +2,7 @@
 
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
+import { Cog } from "lucide-react";
 
 interface Configuracion {
   correo_ventas: string;
@@ -294,8 +295,11 @@ export default function ConfiguracionPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto mt-10 mb-24 p-6 bg-white rounded shadow">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Configuración del Sistema</h2>
+    <div className="max-w-xl mx-auto text-sm mt-10 mb-24 p-6 bg-white rounded shadow">
+      <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
+        <Cog className="w-8 h-8 text-[#295d0c]" />
+        Configuración del Sistema
+      </h1>
 
       {/* Formulario de configuración general */}
       <form onSubmit={handleSubmit} className="space-y-4">

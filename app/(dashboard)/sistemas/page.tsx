@@ -241,13 +241,13 @@ export default function SistemasPage() {
   if (!isClient) return <LoadingSpinner />;
 
   return (
-    <div className="p-6 bg-white min-h-screen">
-      <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
+    <div className="p-6 mb-6 bg-white min-h-screen">
+      <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
         <Settings2 className="w-8 h-8 text-[#295d0c]" />
         Gestión de Sistemas
       </h1>
 
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+      <div className="flex flex-col text-sm sm:flex-row justify-between items-center mb-6 gap-4">
         <input
           type="text"
           placeholder="Buscar sistema por nombre..."
@@ -277,13 +277,13 @@ export default function SistemasPage() {
         </div>
       ) : (
         <div className="">
-          <table className="w-full table-auto border-collapse">
+          <table className="w-full table-auto text-sm border-collapse">
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-2 sm:px-4 py-3 text-left">Nombre</th>
                 <th className="px-2 sm:px-4 py-3 text-left">Descripción</th>
-                <th className="px-2 sm:px-4 py-3 text-left">Activo</th>
-                <th className="px-2 sm:px-4 py-3 text-left">Acciones</th>
+                <th className="px-2 sm:px-4 py-3 text-center">Activo</th>
+                <th className="px-2 sm:px-4 py-3 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -324,13 +324,13 @@ export default function SistemasPage() {
           setSistemaEditar(null);
         }}
       >
-        <h2 className="text-xl font-semibold mb-6 text-gray-900">
+        <h2 className="text-lg font-semibold mb-6 text-gray-900">
           {sistemaEditar ? "Editar Sistema" : "Nuevo Sistema"}
         </h2>
 
         <form
           onSubmit={sistemaEditar ? handleEditarSistema : handleSubmitSistema}
-          className="space-y-4"
+          className="space-y-4 text-sm"
         >
           {[
             {

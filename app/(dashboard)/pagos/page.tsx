@@ -155,14 +155,14 @@ export default function PagosPage() {
   });
 
   return (
-    <div className="p-6 bg-white min-h-screen">
-      <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
+    <div className="p-6 bg-white min-h-screen mb-8">
+      <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
         <DollarSign className="w-8 h-8 text-[#295d0c]" />
         Pagos Registrados
       </h1>
 
       {/* Filtros */}
-      <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
+      <div className="mb-6 flex flex-col md:flex-row text-sm md:items-center gap-4">
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-700 whitespace-nowrap">Desde:</span>
           <input
@@ -223,7 +223,7 @@ export default function PagosPage() {
         </div>
       ) : (
         <div className="">
-          <table className="w-full table-auto border-collapse">
+          <table className="w-full table-auto border-collapse text-sm">
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-2 sm:px-4 py-3 text-left">Factura</th>
@@ -275,8 +275,8 @@ export default function PagosPage() {
 
           {/* Paginación */}
           {pagos.length > 0 && (
-            <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="text-sm text-gray-600">
+            <div className="mt-4 flex flex-col sm:flex-row text-xs justify-between items-center gap-4">
+              <div className="text-gray-600">
                 Mostrando {pagos.length} de {metaPagos.total} pagos
               </div>
               <div className="flex justify-center items-center gap-2">
