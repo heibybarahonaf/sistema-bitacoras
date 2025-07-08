@@ -6,22 +6,51 @@ import { AuthUtils } from "../common/utils/auth.utils";
 import { ResponseDto } from "../common/dtos/response.dto";
 import { GeneralUtils } from "../common/utils/general.utils";
 
-const EditarUsuarioDto = CrearUsuarioDto.omit({ password: true }).partial();
+const EditarUsuarioDto = CrearUsuarioDto.partial();
 type EditarUsuarioDto = z.infer<typeof EditarUsuarioDto>;
 type CrearUsuarioDto = z.infer<typeof CrearUsuarioDto>;
 
+interface PaginationResult {
+    data: Usuario[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 export class UsuarioService {
 
-    public static async obtenerUsuarios(): Promise<Usuario[]> {
-
-        const usuarios = await prisma.usuario.findMany({});
-
-        if(usuarios.length === 0){
+    public static async obtenerUsuariosPaginados(page: number = 1, limit: number = 10, search: string = ""): Promise<PaginationResult> {
+    
+        const offset = (page - 1) * limit;
+        const whereCondition = search 
+            ? {
+                nombre: {
+                    contains: search,
+                    mode: 'insensitive' as const
+                }
+            }
+            : {};
+    
+        const [usuarios, total] = await Promise.all([
+            prisma.usuario.findMany({
+                where: whereCondition,
+                skip: offset,
+                take: limit,
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.usuario.count({
+                where: whereCondition
+            })
+        ]);
+    
+        const totalPages = Math.ceil(total / limit);
+        if (usuarios.length === 0 && total === 0) {
             throw new ResponseDto(404, "No se encontraron usuarios");
         }
-
-        return usuarios;
-
+    
+        return { data: usuarios, total, page, limit, totalPages };
+    
     }
 
 

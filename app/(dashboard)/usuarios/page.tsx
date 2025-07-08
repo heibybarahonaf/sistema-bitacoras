@@ -17,6 +17,13 @@ interface ErrorDeValidacion {
   }[];
 }
 
+interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 // Componente Spinner carga
 const LoadingSpinner = () => (
   <div className="flex flex-col items-center justify-center py-12">
@@ -35,18 +42,69 @@ export default function UsuariosPage() {
   const [usuarioEditar, setUsuarioEditar] = useState<Usuario | null>(null);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [filtroNombre, setFiltroNombre] = useState("");
   const firmaRef = useRef<SignatureCanvas | null>(null);
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
-
-  //Estados para paginacion
+  const [filtroNombre, setFiltroNombre] = useState("");
+  const [filtroActual, setFiltroActual] = useState("");
   const [paginaActual, setPaginaActual] = useState(1);
-  const usuariosPorPagina = 5; //Cambiar este valor para mostrar mas o menos usuarios por pagina
+  const [meta, setMeta] = useState<PaginationMeta>({
+    total: 0,
+    page: 1,
+    limit: 5,
+    totalPages: 0
+  });
 
   //Detectar cliente para evitar render server
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Cargar usuarios al montar y cuando isClient sea true
+  useEffect(() => {
+    if (isClient) {
+      fetchUsuarios();
+    }
+  }, [isClient, paginaActual, filtroActual]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFiltroActual(filtroNombre);
+      setPaginaActual(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [filtroNombre]);
+
+  useEffect(() => {
+    if (firmaTecnicoImg && firmaRef.current && usuarioEditar && modalOpen) {
+      firmaRef.current.clear();
+      firmaRef.current.fromDataURL(firmaTecnicoImg);
+    } else if (firmaRef.current) {
+      firmaRef.current.clear();
+    }
+  }, [firmaTecnicoImg, modalOpen, usuarioEditar]);
+
+  useEffect(() => {
+    const canvas = firmaRef.current?.getCanvas();
+    if (!canvas || !firmaRef.current) return;
+
+    const ratio = window.devicePixelRatio || 1;
+
+    canvas.width = 350 * ratio;
+    canvas.height = 100 * ratio;
+    canvas.style.width = "350px";
+    canvas.style.height = "100px";
+
+    const ctx = canvas.getContext("2d");
+    if (ctx) ctx.scale(ratio, ratio);
+
+    if (firmaTecnicoImg && usuarioEditar && modalOpen) {
+      firmaRef.current.clear();
+      firmaRef.current.fromDataURL(firmaTecnicoImg);
+    } else {
+      firmaRef.current.clear();
+    }
+  }, [firmaTecnicoImg, modalOpen, usuarioEditar]);
 
   // Función para formatear telefono
   const formatearTelefono = (valor: string) => {
@@ -55,6 +113,7 @@ export default function UsuariosPage() {
     if (limitado.length > 4) {
       return limitado.slice(0, 4) + "-" + limitado.slice(4);
     }
+
     return limitado;
   };
 
@@ -68,24 +127,13 @@ export default function UsuariosPage() {
 
   // Mostrar errores validación con SweetAlert
   function mostrarErroresValidacion(data: ErrorDeValidacion) {
-    if (
-      data.code !== 200 &&
-      data.code !== 201 &&
-      data.results &&
-      data.results.length > 0
-    ) {
-      const erroresHtml = data.results
-        .map(
-          (error) =>
-            `<div class="mb-2"><ul class="ml-4 mt-1">${
-              error.mensajes && Array.isArray(error.mensajes)
-                ? error.mensajes
-                    .map((msg: string) => `<li>• ${msg}</li>`)
-                    .join("")
-                : "<li>Error inesperado!</li>"
-            }</ul></div>`
-        )
-        .join("");
+
+    if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
+      const erroresHtml = data.results.map((error) =>
+        `<div class="mb-2"><ul class="ml-4 mt-1">${
+          error.mensajes?.map((msg: string) => `<li>• ${msg}</li>`).join("") || '<li>Error inesperado!</li>'
+          }</ul></div>`
+      ).join("");
 
       Swal.fire({
         icon: "error",
@@ -94,19 +142,21 @@ export default function UsuariosPage() {
         confirmButtonColor: "#295d0c",
         width: "500px",
       });
-    } else {
-      if (data.code !== 200 && data.code !== 201) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: data.message || "Error inesperado",
-          confirmButtonColor: "#295d0c",
-        });
-      }
+
+    } else if (data.code !== 200 && data.code !== 201) {
+
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: data.message || "Error inesperado",
+        confirmButtonColor: "#295d0c",
+      });
+
     }
   }
 
   async function cargarFirmaDelTecnico(usuarioId: number) {
+
     try {
       const res = await fetch(`/api/firmas/tecnico/${usuarioId}`);
       const data = await res.json();
@@ -116,9 +166,11 @@ export default function UsuariosPage() {
       } else {
         setFirmaTecnicoImg(null);
       }
+
     } catch (error) {
       setFirmaTecnicoImg(null);
     }
+
   }
 
   // Fetch usuarios desde API
@@ -127,12 +179,27 @@ export default function UsuariosPage() {
     setShowEmptyMessage(false);
 
     try {
-      const res = await fetch("/api/usuarios");
+      const params = new URLSearchParams({
+        page: paginaActual.toString(),
+        limit: meta.limit.toString(),
+        ...(filtroActual && { search: filtroActual })
+      });
+
+      const res = await fetch(`/api/usuarios?${params}`);
       const response = await res.json();
 
       if (response.code === 404) {
+
+        setMeta({
+          total: 0,
+          page: paginaActual,
+          limit: meta.limit,
+          totalPages: 0
+        });
+
         setUsuarios([]);
         setShowEmptyMessage(true);
+
         return;
       }
 
@@ -141,40 +208,27 @@ export default function UsuariosPage() {
       }
 
       setUsuarios(response.results ?? []);
-
-      if (!response.results || response.results.length === 0) {
+       if (!response.results?.length) {
         setShowEmptyMessage(true);
       }
+
+      if (response.meta) {
+        setMeta(response.meta);
+      }
+
     } catch (error) {
+
       Swal.fire({
         icon: "error",
         title: "Error al cargar usuarios",
-        text:
-          error instanceof Error
-            ? error.message
-            : "Error inesperado al cargar los usuarios",
+        text: error instanceof Error ? error.message : "Error inesperado al cargar los usuarios",
         confirmButtonColor: "#295d0c",
       });
+
     } finally {
       setLoading(false);
     }
   }
-
-  // Cargar usuarios al montar y cuando isClient sea true
-  useEffect(() => {
-    if (isClient) {
-      fetchUsuarios();
-    }
-  }, [isClient]);
-
-  useEffect(() => {
-    if (firmaTecnicoImg && firmaRef.current && usuarioEditar && modalOpen) {
-      firmaRef.current.clear();
-      firmaRef.current.fromDataURL(firmaTecnicoImg);
-    } else if (firmaRef.current) {
-      firmaRef.current.clear();
-    }
-  }, [firmaTecnicoImg, modalOpen, usuarioEditar]);
 
   // Guardar nuevo usuario
   async function handleSubmitUsuario(event: React.FormEvent<HTMLFormElement>) {
@@ -211,6 +265,7 @@ export default function UsuariosPage() {
       }
 
       if (firmaRef.current && !firmaRef.current.isEmpty()) {
+
         const firmaBase64 = firmaRef.current.toDataURL();
         const ress = await fetch("/api/firmas/tecnico", {
           method: "POST",
@@ -222,6 +277,7 @@ export default function UsuariosPage() {
           const errorFirma = await ress.json();
           throw new Error(errorFirma.message || "Error al guardar la firma");
         }
+
       }
 
       Swal.fire({
@@ -232,14 +288,18 @@ export default function UsuariosPage() {
       });
 
       fetchUsuarios();
+      setPaginaActual(1);
       setModalOpen(false);
+
     } catch {
+
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
         text: "No se pudo conectar con el servidor1",
         confirmButtonColor: "#295d0c",
       });
+
     }
   }
 
@@ -263,13 +323,21 @@ export default function UsuariosPage() {
       const data = await res.json();
 
       if (!res.ok || data.code !== 200) {
+
         Swal.fire({
           icon: "error",
           title: "Error al eliminar",
           text: data.message || "Error al eliminar usuario",
           confirmButtonColor: "#295d0c",
         });
+
         return;
+      }
+
+      if (usuarios.length === 1 && paginaActual > 1) {
+        setPaginaActual(paginaActual - 1);
+      } else {
+        fetchUsuarios();
       }
 
       Swal.fire({
@@ -280,13 +348,16 @@ export default function UsuariosPage() {
       });
 
       fetchUsuarios();
+
     } catch (error) {
+
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
         text: "No se pudo conectar con el servidor",
         confirmButtonColor: "#295d0c",
       });
+
     }
   }
 
@@ -357,64 +428,21 @@ export default function UsuariosPage() {
       fetchUsuarios();
       setModalOpen(false);
       setUsuarioEditar(null);
+
     } catch (error) {
+
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
         text: "No se pudo conectar con el servidor",
         confirmButtonColor: "#295d0c",
       });
+
     }
   }
 
-  // no se porque no carga bien
-  useEffect(() => {
-    const canvas = firmaRef.current?.getCanvas();
-    if (!canvas || !firmaRef.current) return;
-
-    const ratio = window.devicePixelRatio || 1;
-
-    canvas.width = 350 * ratio;
-    canvas.height = 100 * ratio;
-    canvas.style.width = "350px";
-    canvas.style.height = "100px";
-
-    const ctx = canvas.getContext("2d");
-    if (ctx) ctx.scale(ratio, ratio);
-
-    if (firmaTecnicoImg && usuarioEditar && modalOpen) {
-      firmaRef.current.clear();
-      firmaRef.current.fromDataURL(firmaTecnicoImg);
-    } else {
-      firmaRef.current.clear();
-    }
-  }, [firmaTecnicoImg, modalOpen, usuarioEditar]);
-
-  // Filtrar usuarios por nombre para paginación
-  const usuariosFiltrados = usuarios.filter((usuario) =>
-    usuario.nombre.toLowerCase().includes(filtroNombre.toLowerCase())
-  );
-
-  // Calcular usuarios a mostrar en la página actual
-  const indexUltimoUsuario = paginaActual * usuariosPorPagina;
-  const indexPrimerUsuario = indexUltimoUsuario - usuariosPorPagina;
-  const usuariosPaginados = usuariosFiltrados.slice(
-    indexPrimerUsuario,
-    indexUltimoUsuario
-  );
-
-  // Cambiar página
-  function cambiarPagina(nuevaPagina: number) {
-    if (nuevaPagina < 1) return;
-    if (nuevaPagina > Math.ceil(usuariosFiltrados.length / usuariosPorPagina))
-      return;
-    setPaginaActual(nuevaPagina);
-  }
-
-  if (!isClient) {
-    return <LoadingSpinner />;
-  }
-
+  if (!isClient) return <LoadingSpinner />;
+  
   return (
     <div className="p-6 bg-white min-h-screen">
       <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
@@ -427,10 +455,7 @@ export default function UsuariosPage() {
           type="text"
           placeholder="Buscar por nombre de usuario..."
           value={filtroNombre}
-          onChange={(e) => {
-            setFiltroNombre(e.target.value);
-            setPaginaActual(1); // Reset paginación al filtrar
-          }}
+          onChange={(e) => setFiltroNombre(e.target.value)}
           className="w-full sm:w-1/2 border border-gray-300 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
         />
         <button
@@ -447,7 +472,7 @@ export default function UsuariosPage() {
 
       {loading ? (
         <LoadingSpinner />
-      ) : usuariosFiltrados.length === 0 && showEmptyMessage ? (
+      ) : usuarios.length === 0 && showEmptyMessage ? (
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">👥</div>
           <p className="text-gray-600 text-lg">No hay usuarios registrados.</p>
@@ -455,7 +480,7 @@ export default function UsuariosPage() {
             Haz clic en "Agregar Usuario" para comenzar.
           </p>
         </div>
-      ) : usuariosFiltrados.length > 0 ? (
+      ) : usuarios.length > 0 ? (
         <>
           <div className="">
             <table className="w-full table-auto border-collapse">
@@ -478,7 +503,7 @@ export default function UsuariosPage() {
                 </tr>
               </thead>
               <tbody>
-                {usuariosPaginados.map((usuario) => (
+                {usuarios.map((usuario) => (
                   <tr key={usuario.id} className="hover:bg-gray-50">
                     <td className="px-2 sm:px-4 py-3">{usuario.nombre}</td>
                     <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
@@ -517,42 +542,46 @@ export default function UsuariosPage() {
             </table>
           </div>
 
-          {/* Controles paginación */}
-          <div className="mt-6 flex justify-center items-center gap-4 select-none">
-            <button
-              onClick={() => cambiarPagina(paginaActual - 1)}
-              disabled={paginaActual === 1}
-              className={`px-4 py-2 rounded-md font-semibold ${
-                paginaActual === 1
-                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  : "bg-[#295d0c] text-white hover:bg-[#23480a]"
-              }`}
-            >
-              Anterior
-            </button>
-            <span className="text-gray-700 font-medium">
-              Página {paginaActual} de{" "}
-              {Math.max(
-                1,
-                Math.ceil(usuariosFiltrados.length / usuariosPorPagina)
-              )}
-            </span>
-            <button
-              onClick={() => cambiarPagina(paginaActual + 1)}
-              disabled={
-                paginaActual >=
-                Math.ceil(usuariosFiltrados.length / usuariosPorPagina)
-              }
-              className={`px-4 py-2 rounded-md font-semibold ${
-                paginaActual >=
-                Math.ceil(usuariosFiltrados.length / usuariosPorPagina)
-                  ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                  : "bg-[#295d0c] text-white hover:bg-[#23480a]"
-              }`}
-            >
-              Siguiente
-            </button>
+          {/* Controles de paginación */}
+          <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-sm text-gray-600">
+              Página {meta.page} de {meta.totalPages} ({meta.total} total)
+            </div>
+            <div className="flex justify-center items-center gap-2">
+              <button
+                onClick={() => setPaginaActual(1)}
+                disabled={meta.page === 1}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Primera
+              </button>
+              <button
+                onClick={() => setPaginaActual(meta.page - 1)}
+                disabled={meta.page === 1}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Anterior
+              </button>
+              <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+                {meta.page}
+              </span>
+              <button
+                onClick={() => setPaginaActual(meta.page + 1)}
+                disabled={meta.page === meta.totalPages}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Siguiente
+              </button>
+              <button
+                onClick={() => setPaginaActual(meta.totalPages)}
+                disabled={meta.page === meta.totalPages}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Última
+              </button>
+            </div>
           </div>
+
         </>
       ) : null}
 

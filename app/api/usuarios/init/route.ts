@@ -20,7 +20,8 @@ export async function POST(req: Request) {
             rol: "admin" as "admin",
             activo: true,
             zona_asignada: "-",
-            telefono: "0000-0000"
+            telefono: "0000-0000",
+            comision: 0
         };
 
         const usuarioCreado = await UsuarioService.crearUsuario(nuevoUsuario);

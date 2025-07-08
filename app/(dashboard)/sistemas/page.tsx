@@ -15,6 +15,13 @@ interface ErrorDeValidacion {
   }[];
 }
 
+interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 const LoadingSpinner = () => (
   <div className="flex flex-col items-center justify-center py-12">
     <div className="w-12 h-12 border-4 border-gray-200 border-t-[#295d0c] rounded-full animate-spin"></div>
@@ -29,13 +36,35 @@ export default function SistemasPage() {
   const [sistemaEditar, setSistemaEditar] = useState<Sistema | null>(null);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [filtro, setFiltro] = useState("");
+  const [filtroNombre, setFiltroNombre] = useState("");
+  const [filtroActual, setFiltroActual] = useState("");
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [meta, setMeta] = useState<PaginationMeta>({
+    total: 0,
+    page: 1,
+    limit: 5,
+    totalPages: 0
+  });
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  useEffect(() => {
+    if (isClient) fetchSistemas();
+  }, [isClient, paginaActual, filtroActual]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFiltroActual(filtroNombre);
+      setPaginaActual(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [filtroNombre]);
+
   function mostrarErroresValidacion(data: ErrorDeValidacion) {
+
     if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
       const erroresHtml = data.results.map((error) =>
         `<div class="mb-2"><ul class="ml-4 mt-1">${
@@ -50,13 +79,16 @@ export default function SistemasPage() {
         confirmButtonColor: '#295d0c',
         width: '500px'
       });
+
     } else if (data.code !== 200 && data.code !== 201) {
+
       Swal.fire({
         icon: 'error',
         title: 'Error',
         text: data.message || 'Error inesperado',
         confirmButtonColor: '#295d0c'
       });
+
     }
   }
 
@@ -65,34 +97,56 @@ export default function SistemasPage() {
     setShowEmptyMessage(false);
 
     try {
-      const res = await fetch("/api/sistemas");
+      const params = new URLSearchParams({
+        page: paginaActual.toString(),
+        limit: meta.limit.toString(),
+        ...(filtroActual && { search: filtroActual })
+      });
+
+      const res = await fetch(`/api/sistemas?${params}`);
       const response = await res.json();
 
       if (response.code === 404) {
+
+        setMeta({
+          total: 0,
+          page: paginaActual,
+          limit: meta.limit,
+          totalPages: 0
+        });
+
         setSistemas([]);
         setShowEmptyMessage(true);
+        
         return;
       }
 
-      if (!res.ok || response.code !== 200) throw new Error(response.message || "Error al cargar sistemas");
+      if (!res.ok || response.code !== 200) {
+        throw new Error(response.message || "Error al cargar los sistemas");
+      }
 
       setSistemas(response.results ?? []);
-      if (!response.results || response.results.length === 0) setShowEmptyMessage(true);
+      if (!response.results?.length) {
+        setShowEmptyMessage(true);
+      }
+      
+      if (response.meta) {
+        setMeta(response.meta);
+      }
+
     } catch (error) {
+
       Swal.fire({
         icon: 'error',
         title: 'Error al cargar sistemas',
         text: error instanceof Error ? error.message : 'Error inesperado',
         confirmButtonColor: '#295d0c'
       });
+
     } finally {
       setLoading(false);
     }
   }
-
-  useEffect(() => {
-    if (isClient) fetchSistemas();
-  }, [isClient]);
 
   async function handleSubmitSistema(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -126,14 +180,18 @@ export default function SistemasPage() {
       });
 
       fetchSistemas();
+      setPaginaActual(1);
       setModalOpen(false);
+
     } catch {
+
       Swal.fire({
         icon: 'error',
         title: 'Error de conexión',
         text: 'No se pudo conectar con el servidor',
         confirmButtonColor: '#295d0c'
       });
+
     }
   }
 
@@ -156,13 +214,21 @@ export default function SistemasPage() {
       const data = await res.json();
 
       if (!res.ok || data.code !== 200) {
+
         Swal.fire({
           icon: 'error',
           title: 'Error al eliminar',
           text: data.message || 'Error al eliminar sistema',
           confirmButtonColor: '#295d0c'
         });
+
         return;
+      }
+
+      if (sistemas.length === 1 && paginaActual > 1) {
+        setPaginaActual(paginaActual - 1);
+      } else {
+        fetchSistemas();
       }
 
       Swal.fire({
@@ -173,7 +239,9 @@ export default function SistemasPage() {
       });
 
       fetchSistemas();
+
     } catch {
+
       Swal.fire({
         icon: 'error',
         title: 'Error de conexión',
@@ -181,6 +249,7 @@ export default function SistemasPage() {
         confirmButtonColor: '#295d0c'
       });
     }
+
   }
 
   function abrirEditarSistema(sistema: Sistema) {
@@ -224,19 +293,18 @@ export default function SistemasPage() {
       fetchSistemas();
       setModalOpen(false);
       setSistemaEditar(null);
+
     } catch {
+
       Swal.fire({
         icon: 'error',
         title: 'Error de conexión',
         text: 'No se pudo conectar con el servidor',
         confirmButtonColor: '#295d0c'
       });
+
     }
   }
-
-  const sistemasFiltrados = sistemas.filter((s) =>
-    s.sistema.toLowerCase().includes(filtro.toLowerCase())
-  );
 
   if (!isClient) return <LoadingSpinner />;
 
@@ -251,8 +319,8 @@ export default function SistemasPage() {
         <input
           type="text"
           placeholder="Buscar sistema por nombre..."
-          value={filtro}
-          onChange={(e) => setFiltro(e.target.value)}
+          value={filtroNombre}
+          onChange={(e) => setFiltroNombre(e.target.value)}
           className="w-full sm:w-1/2 border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
         />
         <button
@@ -269,7 +337,7 @@ export default function SistemasPage() {
 
       {loading ? (
         <LoadingSpinner />
-      ) : sistemasFiltrados.length === 0 && showEmptyMessage ? (
+      ) : sistemas.length === 0 && showEmptyMessage ? (
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">⚙️</div>
           <p className="text-gray-600 text-lg">No hay sistemas registrados.</p>
@@ -287,7 +355,7 @@ export default function SistemasPage() {
               </tr>
             </thead>
             <tbody>
-              {sistemasFiltrados.map((sistema) => (
+              {sistemas.map((sistema) => (
                 <tr key={sistema.id} className="hover:bg-gray-50">
                   <td className="px-2 sm:px-4 py-3">{sistema.sistema}</td>
                   <td className="px-2 sm:px-4 py-3">{sistema.descripcion}</td>
@@ -314,6 +382,47 @@ export default function SistemasPage() {
               ))}
             </tbody>
           </table>
+
+          {/* Controles de paginación */}
+          <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-sm text-gray-600">
+              Página {meta.page} de {meta.totalPages} ({meta.total} total)
+            </div>
+            <div className="flex justify-center items-center gap-2">
+              <button
+                onClick={() => setPaginaActual(1)}
+                disabled={meta.page === 1}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Primera
+              </button>
+              <button
+                onClick={() => setPaginaActual(meta.page - 1)}
+                disabled={meta.page === 1}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Anterior
+              </button>
+              <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+                {meta.page}
+              </span>
+              <button
+                onClick={() => setPaginaActual(meta.page + 1)}
+                disabled={meta.page === meta.totalPages}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Siguiente
+              </button>
+              <button
+                onClick={() => setPaginaActual(meta.totalPages)}
+                disabled={meta.page === meta.totalPages}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Última
+              </button>
+            </div>
+          </div>
+
         </div>
       )}
 

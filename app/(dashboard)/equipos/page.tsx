@@ -21,6 +21,13 @@ interface ErrorDeValidacion {
   }[];
 }
 
+interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 // Componente de carga
 const LoadingSpinner = () => (
   <div className="flex flex-col items-center justify-center py-12">
@@ -38,7 +45,15 @@ export default function EquiposPage() {
   const [equipoEditar, setEquipoEditar] = useState<Equipo | null>(null);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isEquipo, setIsEquipo] = useState(false);
-  const [filtroEquipo, setFiltroEquipo] = useState("");
+  const [filtroNombre, setFiltroNombre] = useState("");
+  const [filtroActual, setFiltroActual] = useState("");
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [meta, setMeta] = useState<PaginationMeta>({
+    total: 0,
+    page: 1,
+    limit: 5,
+    totalPages: 0
+  });
 
   useEffect(() => {
     setIsEquipo(true);
@@ -46,10 +61,20 @@ export default function EquiposPage() {
 
   useEffect(() => {
     if (isEquipo) fetchEquipos();
-  }, [isEquipo]);
+  }, [isEquipo, paginaActual, filtroActual]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFiltroActual(filtroNombre);
+      setPaginaActual(1);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [filtroNombre]);
 
   // Mostrar errores de validación
   function mostrarErroresValidacion(data: ErrorDeValidacion) {
+
     if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
       const erroresHtml = (data.results ?? [])
         .map((error) => `
@@ -68,13 +93,16 @@ export default function EquiposPage() {
         confirmButtonColor: "#295d0c",
         width: "500px",
       });
+
     } else if (data.code !== 200 && data.code !== 201) {
+
       Swal.fire({
         icon: "error",
         title: "Error",
         text: data.message || "Error inesperado",
         confirmButtonColor: "#295d0c",
       });
+
     }
   }
 
@@ -84,30 +112,52 @@ export default function EquiposPage() {
     setShowEmptyMessage(false);
 
     try {
-      const res = await fetch("/api/equipos");
+      const params = new URLSearchParams({
+        page: paginaActual.toString(),
+        limit: meta.limit.toString(),
+        ...(filtroActual && { search: filtroActual })
+      });
+
+      const res = await fetch(`/api/equipos?${params}`);
       const response = await res.json();
 
       if (response.code === 404) {
+
+        setMeta({
+          total: 0,
+          page: paginaActual,
+          limit: meta.limit,
+          totalPages: 0
+        });
+
         setEquipos([]);
         setShowEmptyMessage(true);
+
         return;
       }
 
       if (!res.ok || response.code !== 200) {
-        throw new Error(response.message || "Error al cargar equipos");
+        throw new Error(response.message || "Error al cargar los equipos");
       }
 
       setEquipos(response.results ?? []);
       if (!response.results?.length) {
         setShowEmptyMessage(true);
       }
+
+      if (response.meta) {
+        setMeta(response.meta);
+      }
+
     } catch (error) {
+
       Swal.fire({
         icon: "error",
         title: "Error al cargar equipos",
         text: error instanceof Error ? error.message : "Error inesperado",
         confirmButtonColor: "#295d0c",
       });
+
     } finally {
       setLoading(false);
     }
@@ -146,8 +196,11 @@ export default function EquiposPage() {
       });
 
       fetchEquipos();
+      setPaginaActual(1);
       setModalOpen(false);
+
     } catch {
+
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
@@ -155,6 +208,7 @@ export default function EquiposPage() {
         confirmButtonColor: "#295d0c",
       });
     }
+
   }
 
   // Eliminar equipo
@@ -177,13 +231,21 @@ export default function EquiposPage() {
       const data = await res.json();
 
       if (!res.ok || data.code !== 200) {
+
         Swal.fire({
           icon: "error",
           title: "Error al eliminar",
           text: data.message || "Error al eliminar equipo",
           confirmButtonColor: "#295d0c",
         });
+
         return;
+      }
+
+      if (equipos.length === 1 && paginaActual > 1) {
+        setPaginaActual(paginaActual - 1);
+      } else {
+        fetchEquipos();
       }
 
       Swal.fire({
@@ -194,13 +256,16 @@ export default function EquiposPage() {
       });
 
       fetchEquipos();
+
     } catch {
+
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
         text: "No se pudo conectar con el servidor",
         confirmButtonColor: "#295d0c",
       });
+
     }
   }
 
@@ -247,13 +312,16 @@ export default function EquiposPage() {
       fetchEquipos();
       setModalOpen(false);
       setEquipoEditar(null);
+
     } catch {
+
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
         text: "No se pudo conectar con el servidor",
         confirmButtonColor: "#295d0c",
       });
+
     }
   }
 
@@ -270,8 +338,8 @@ export default function EquiposPage() {
         <input
           type="text"
           placeholder="Buscar equipo por nombre..."
-          value={filtroEquipo}
-          onChange={(e) => setFiltroEquipo(e.target.value)}
+          value={filtroNombre}
+          onChange={(e) => setFiltroNombre(e.target.value)}
           className="w-full sm:w-1/2 border border-gray-300 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
         />
         <button
@@ -308,26 +376,23 @@ export default function EquiposPage() {
             </thead>
             <tbody>
               {equipos
-                .filter((eq) =>
-                  eq.equipo.toLowerCase().includes(filtroEquipo.toLowerCase())
-                )
-                .map((eq) => (
-                  <tr key={eq.id} className="hover:bg-gray-50">
-                    <td className="px-2 sm:px-4 py-3">{eq.equipo}</td>
-                    <td className="px-2 sm:px-4 py-3">{eq.descripcion}</td>
+                .map((equipo) => (
+                  <tr key={equipo.id} className="hover:bg-gray-50">
+                    <td className="px-2 sm:px-4 py-3">{equipo.equipo}</td>
+                    <td className="px-2 sm:px-4 py-3">{equipo.descripcion}</td>
                     <td className="px-2 sm:px-4 py-3">
-                      {eq.activo ? "✅" : "❌"}
+                      {equipo.activo ? "✅" : "❌"}
                     </td>
                     <td className="px-2 sm:px-4 py-3 text-center">
                       <div className="flex justify-center items-center gap-3">
                         <button
-                          onClick={() => abrirEditarEquipo(eq)}
+                          onClick={() => abrirEditarEquipo(equipo)}
                           className="mr-2 text-[#295d0c] hover:text-[#173a01]"
                         >
                           <Edit3/>
                         </button>
                         <button
-                          onClick={() => handleEliminarEquipo(eq.id)}
+                          onClick={() => handleEliminarEquipo(equipo.id)}
                           className="text-[#2e3763] hover:text-[#171f40]"
                         >
                           <Trash2 />
@@ -338,6 +403,47 @@ export default function EquiposPage() {
                 ))}
             </tbody>
           </table>
+
+          {/* Controles de paginación */}
+          <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-sm text-gray-600">
+              Página {meta.page} de {meta.totalPages} ({meta.total} total)
+            </div>
+            <div className="flex justify-center items-center gap-2">
+              <button
+                onClick={() => setPaginaActual(1)}
+                disabled={meta.page === 1}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Primera
+              </button>
+              <button
+                onClick={() => setPaginaActual(meta.page - 1)}
+                disabled={meta.page === 1}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Anterior
+              </button>
+              <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+                {meta.page}
+              </span>
+              <button
+                onClick={() => setPaginaActual(meta.page + 1)}
+                disabled={meta.page === meta.totalPages}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Siguiente
+              </button>
+              <button
+                onClick={() => setPaginaActual(meta.totalPages)}
+                disabled={meta.page === meta.totalPages}
+                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Última
+              </button>
+            </div>
+          </div>
+
         </div>
       )}
 
