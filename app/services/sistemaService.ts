@@ -9,18 +9,46 @@ const EditarSistemaDto = CrearSistemaDto.partial();
 type EditarSistemaDto = z.infer<typeof EditarSistemaDto>;
 type CrearSistemaDto = z.infer<typeof CrearSistemaDto>;
 
+interface PaginationResult {
+    data: Sistema[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 export class SistemaService {
 
-    public static async obtenerSistemas(): Promise<Sistema[]> {
-
-        const sistemas = await prisma.sistema.findMany({});
-
-        if (sistemas.length === 0) {
+    public static async obtenerSistemasPaginados(page: number = 1, limit: number = 10, search: string = ""): Promise<PaginationResult> {
+    
+        const offset = (page - 1) * limit;
+        const whereCondition = search 
+            ? {
+                OR: [
+                    { sistema: { contains: search, mode: 'insensitive' as const } }
+                ]
+            }
+            : {};
+    
+        const [sistemas, total] = await Promise.all([
+            prisma.sistema.findMany({
+                where: whereCondition,
+                skip: offset,
+                take: limit,
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.sistema.count({
+                where: whereCondition
+            })
+        ]);
+    
+        const totalPages = Math.ceil(total / limit);
+        if (sistemas.length === 0 && total === 0) {
             throw new ResponseDto(404, "No se encontraron sistemas");
         }
-
-        return sistemas;
-        
+    
+        return { data: sistemas, total, page, limit, totalPages };
+    
     }
 
 

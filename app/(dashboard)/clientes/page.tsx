@@ -44,14 +44,6 @@ interface PaginationMeta {
   totalPages: number;
 }
 
-interface ApiResponse {
-  code: number;
-  message: string;
-  count: number;
-  results: Cliente[];
-  meta?: PaginationMeta;
-}
-
 // carga
 const LoadingSpinner = () => (
   <div className="flex flex-col items-center justify-center py-12">
@@ -164,7 +156,7 @@ export default function ClientesPage() {
       });
 
       const res = await fetch(`/api/clientes?${params}`);
-      const response: ApiResponse = await res.json();
+      const response = await res.json();
 
       if (response.code === 404) {
         setClientes([]);

@@ -22,55 +22,31 @@ interface PaginationMeta {
   totalPages: number;
 }
 
-interface ApiResponse {
-  code: number;
-  message: string;
-  count: number;
-  results: Cliente[];
-  meta?: PaginationMeta;
-}
-
 const BuscarCliente: React.FC = () => {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [filtro, setFiltro] = useState("");
-  const [clienteSeleccionado, setClienteSeleccionado] =
-    useState<Cliente | null>(null);
-  const [bitacoras, setBitacoras] = useState<Bitacora[]>([]);
-  const [loadingBitacoras, setLoadingBitacoras] = useState(false);
-  const [isDownloading, setIsDownloading] = useState<number | null>(null);
-  const [showNewBitacora, setShowNewBitacora] = useState(false);
-  const [showPago, setShowPago] = useState(false);
-  const [bitacoraSeleccionada, setBitacoraSeleccionada] =
-    useState<Bitacora | null>(null);
-  const [modalDetalleOpen, setModalDetalleOpen] = useState(false);
-  const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [equipos, setEquipos] = useState<Equipo[]>([]);
+  const [sistemas, setSistemas] = useState<Sistema[]>([]);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [bitacoras, setBitacoras] = useState<Bitacora[]>([]);
   const [tipo_servicio, setTipoServicio] = useState<Tipo_Servicio[]>([]);
+  const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
+  const [bitacoraSeleccionada, setBitacoraSeleccionada] = useState<Bitacora | null>(null);
+  const [fase_implementacion, setFaseImplementacion] = useState<Fase_Implementacion[]>([]);
+
+  const [showPago, setShowPago] = useState(false);
+  const [loadingBitacoras, setLoadingBitacoras] = useState(false);
+  const [showNewBitacora, setShowNewBitacora] = useState(false);
+  const [modalDetalleOpen, setModalDetalleOpen] = useState(false);
+  const [filtro, setFiltro] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("todas");
   const [filtroActual, setFiltroActual] = useState("");
+
   const [paginaActualClientes, setPaginaActualClientes] = useState(1);
   const [paginaActualBitacoras, setPaginaActualBitacoras] = useState(1);
-  const bitacorasPorPagina = 10;
-  const [fase_implementacion, setFaseImplementacion] = useState<
-    Fase_Implementacion[]
-  >([]);
-  const [filtroEstado, setFiltroEstado] = useState("todas");
+  const [isDownloading, setIsDownloading] = useState<number | null>(null);
+  const [metaClientes, setMetaClientes] = useState<PaginationMeta>({total: 0, page: 1, limit: 5, totalPages: 0});
+  const [metaBitacoras, setMetaBitacoras] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0 });
 
-  const [metaClientes, setMetaClientes] = useState<PaginationMeta>({
-    total: 0,
-    page: 1,
-    limit: 5,
-    totalPages: 0,
-  });
-
-  const [metaBitacoras, setMetaBitacoras] = useState<PaginationMeta>({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 0,
-  });
-
-  const formatoLempiras = (valor: number) =>
-    valor.toLocaleString("es-HN", { style: "currency", currency: "HNL" });
+  const formatoLempiras = (valor: number) => valor.toLocaleString("es-HN", { style: "currency", currency: "HNL" });
 
   const mostrarDetalleBitacora = async (bitacora: Bitacora) => {
 
@@ -125,7 +101,7 @@ const BuscarCliente: React.FC = () => {
       });
 
       const res = await fetch(`/api/clientes?${params}`);
-      const response: ApiResponse = await res.json();
+      const response = await res.json();
 
       if (response.code === 404) {
         setClientes([]);
@@ -198,6 +174,7 @@ const BuscarCliente: React.FC = () => {
       }
 
     } catch (error) {
+
       Swal.fire({
         icon: "error",
         title: "Error al cargar bitacoras",
@@ -278,7 +255,6 @@ const BuscarCliente: React.FC = () => {
         const data = await res.json();
 
         if (data.code === 200) {
-          // Verifica si alguna firma cambió
           const nuevas = data.results || [];
           const haCambiado = JSON.stringify(nuevas) !== JSON.stringify(bitacoras);
 
@@ -290,7 +266,7 @@ const BuscarCliente: React.FC = () => {
       } catch (error) {
         console.error("Error al hacer polling de firmas:", error);
       }
-    }, 5000); // cada 5 segundos
+    }, 5000); 
   }
 
   return () => {
@@ -550,14 +526,14 @@ const BuscarCliente: React.FC = () => {
                       cargarClientePorId(clienteSeleccionado.id);
                       cargarBitacoras(clienteSeleccionado.id, paginaActualBitacoras);
                       Swal.fire({
-                                      toast: true,
-                                      position: "top-end",
-                                      icon: "success",
-                                      title:"Datos actualizados",
-                                      showConfirmButton: false,
-                                      timer: 2000,
-                                      timerProgressBar: true,
-                                  });
+                        toast: true,
+                        position: "top-end",
+                        icon: "success",
+                        title:"Datos actualizados",
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true,
+                      });
                     }}
                     className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
                   >
@@ -588,10 +564,8 @@ const BuscarCliente: React.FC = () => {
               tipo_servicio={tipo_servicio}
               fase_implementacion={fase_implementacion}
               isLoading={
-                !sistemas.length ||
-                !equipos.length ||
-                !tipo_servicio.length ||
-                !fase_implementacion.length
+                !sistemas.length || !equipos.length ||
+                !tipo_servicio.length || !fase_implementacion.length
               }
             />
 

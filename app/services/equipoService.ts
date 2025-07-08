@@ -9,18 +9,46 @@ const EditarEquipoDto = CrearEquipoDto.partial();
 type EditarEquipoDto = z.infer<typeof EditarEquipoDto>;
 type CrearEquipoDto = z.infer<typeof CrearEquipoDto>;
 
+interface PaginationResult {
+    data: Equipo[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
 export class EquipoService {
 
-    public static async obtenerEquipos(): Promise<Equipo[]> {
-
-        const equipos = await prisma.equipo.findMany({});
-
-        if (equipos.length === 0) {
+    public static async obtenerEquiposPaginados(page: number = 1, limit: number = 10, search: string = ""): Promise<PaginationResult> {
+    
+        const offset = (page - 1) * limit;
+        const whereCondition = search 
+            ? {
+                OR: [
+                    { equipo: { contains: search, mode: 'insensitive' as const } }
+                ]
+            }
+            : {};
+    
+        const [equipos, total] = await Promise.all([
+            prisma.equipo.findMany({
+                where: whereCondition,
+                skip: offset,
+                take: limit,
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.equipo.count({
+                where: whereCondition
+            })
+        ]);
+    
+        const totalPages = Math.ceil(total / limit);
+        if (equipos.length === 0 && total === 0) {
             throw new ResponseDto(404, "No se encontraron equipos");
         }
-
-        return equipos;
-        
+    
+        return { data: equipos, total, page, limit, totalPages };
+    
     }
     
 

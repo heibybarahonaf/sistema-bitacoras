@@ -5,7 +5,9 @@ import { ClienteService } from "@/app/services/clienteService";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function GET(request: Request) {
+
     try {
+
         const url = new URL(request.url);
         const rtn = url.searchParams.get("rtn") || "";
         const page = parseInt(url.searchParams.get("page") || "1");
@@ -42,9 +44,13 @@ export async function GET(request: Request) {
         );
 
     } catch (error) {
+
         return GeneralUtils.generarErrorResponse(error);
+
     }
+
 }
+
 
 export async function POST(req: Request) {
 

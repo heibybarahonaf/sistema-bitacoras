@@ -16,7 +16,6 @@ export default function DashboardLayout({
 }) {
   return (
     <>
-      {/* Alerta cliente */}
       <AlertaExpiracionSesion />
 
       <Navbar />
