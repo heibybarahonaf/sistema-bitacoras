@@ -63,7 +63,7 @@ CREATE TABLE "clientes" (
     "rtn" VARCHAR(50) NOT NULL,
     "direccion" VARCHAR(30) NOT NULL,
     "telefono" VARCHAR(10) NOT NULL,
-    "correo" VARCHAR(100) NOT NULL,
+    "correo" VARCHAR(100),
     "activo" BOOLEAN NOT NULL,
     "horas_paquetes" INTEGER NOT NULL,
     "horas_individuales" INTEGER NOT NULL,
@@ -85,6 +85,7 @@ CREATE TABLE "usuarios" (
     "activo" BOOLEAN NOT NULL,
     "zona_asignada" VARCHAR(300) NOT NULL,
     "telefono" VARCHAR(10) NOT NULL,
+    "comision" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
 

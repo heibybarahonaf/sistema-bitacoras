@@ -83,7 +83,7 @@ export class UsuarioService {
 
     public static async crearUsuario(usuarioData: CrearUsuarioDto): Promise<Usuario> {
 
-        const { nombre, correo, password, rol, activo, zona_asignada, telefono } = usuarioData;
+        const { correo, password } = usuarioData;
         const emailExistente = await prisma.usuario.findFirst({ where: { correo: correo }});
 
         if (emailExistente) {
@@ -95,13 +95,8 @@ export class UsuarioService {
         try {
             const usuario = await prisma.usuario.create({
                 data: {
-                    nombre,
-                    correo: correo,
-                    password: hashedPassword,
-                    rol,
-                    activo,
-                    zona_asignada,
-                    telefono,
+                    ...usuarioData,
+                    password: hashedPassword
                 },
             });
 

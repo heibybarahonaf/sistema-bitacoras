@@ -1,12 +1,12 @@
 "use client";
 
 import Swal from "sweetalert2";
+import { useRef } from "react";
 import { Usuario } from "@prisma/client";
 import { useEffect, useState } from "react";
 import ModalUsuario from "@/components/ModalUsuario";
-import { Trash2, Users, Edit3, Plus } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
-import { useRef } from "react";
+import { Trash2, Users, Edit3, Plus } from "lucide-react";
 
 interface ErrorDeValidacion {
   code: number;
@@ -77,11 +77,12 @@ export default function UsuariosPage() {
       const erroresHtml = data.results
         .map(
           (error) =>
-            `<div class="mb-2"><ul class="ml-4 mt-1">${error.mensajes && Array.isArray(error.mensajes)
-              ? error.mensajes
-                .map((msg: string) => `<li>• ${msg}</li>`)
-                .join("")
-              : "<li>Error inesperado!</li>"
+            `<div class="mb-2"><ul class="ml-4 mt-1">${
+              error.mensajes && Array.isArray(error.mensajes)
+                ? error.mensajes
+                    .map((msg: string) => `<li>• ${msg}</li>`)
+                    .join("")
+                : "<li>Error inesperado!</li>"
             }</ul></div>`
         )
         .join("");
@@ -180,13 +181,16 @@ export default function UsuariosPage() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
+    const valorComision = formData.get("comision") as string;
+    const comision = valorComision && valorComision.trim() !== "" ? Number(valorComision) : 15;
+
     const datosUsuario = {
       nombre: formData.get("nombre") as string,
       password: formData.get("password") as string,
       correo: formData.get("correo") as string,
       rol: formData.get("rol") as string,
       zona_asignada: formData.get("zona_asignada") as string,
-      comision: Number(formData.get("comision")),
+      comision: comision,
       activo: true,
       telefono: formData.get("telefono") as string,
     };
@@ -276,7 +280,7 @@ export default function UsuariosPage() {
       });
 
       fetchUsuarios();
-    } catch (error){
+    } catch (error) {
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
@@ -454,62 +458,75 @@ export default function UsuariosPage() {
       ) : usuariosFiltrados.length > 0 ? (
         <>
           <div className="">
-          <table className="w-full table-auto border-collapse">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-2 sm:px-4 py-3 text-left">Nombre</th>
-                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Correo</th>
-                <th className="px-2 sm:px-4 py-3 text-left">Rol</th>
-                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Zona</th>
-                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Teléfono</th>
-                <th className="px-2 sm:px-4 py-3 text-left">Comisión</th>
-                <th className="px-2 sm:px-4 py-3 text-left">Activo</th>
-                <th className="px-2 sm:px-4 py-3 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usuariosPaginados.map((usuario) => (
-                <tr key={usuario.id} className="hover:bg-gray-50">
-                  <td className="px-2 sm:px-4 py-3">{usuario.nombre}</td>
-                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{usuario.correo}</td>
-                  <td className="px-2 sm:px-4 py-3">{usuario.rol}</td>
-                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{usuario.zona_asignada}</td>
-                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{formatearTelefono(usuario.telefono)}</td>
-                  <td className="px-2 sm:px-4 py-3">{usuario.comision}%</td>
-                  <td className="px-2 sm:px-4 py-3 text-center">
-                    {usuario.activo ? "✅" : "❌"}
-                  </td>
-                  <td className="px-2 sm:px-4 py-3 text-center">
-                    <div className="flex justify-center items-center gap-3">
-                      <button
-                        onClick={() => abrirEditarUsuario(usuario)}
-                        className="mr-2 text-[#295d0c] hover:text-[#173a01]"
-                      >
-                        <Edit3/>
-                      </button>
-                      <button
-                        onClick={() => handleEliminarUsuario(usuario.id)}
-                        className="text-[#2e3763] hover:text-[#171f40]"
-                      >
-                        <Trash2/>
-                      </button>
-                    </div>
-                  </td>
+            <table className="w-full table-auto border-collapse">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-2 sm:px-4 py-3 text-left">Nombre</th>
+                  <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">
+                    Correo
+                  </th>
+                  <th className="px-2 sm:px-4 py-3 text-left">Rol</th>
+                  <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">
+                    Zona
+                  </th>
+                  <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">
+                    Teléfono
+                  </th>
+                  <th className="px-2 sm:px-4 py-3 text-left">Comisión</th>
+                  <th className="px-2 sm:px-4 py-3 text-left">Activo</th>
+                  <th className="px-2 sm:px-4 py-3 text-center">Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {usuariosPaginados.map((usuario) => (
+                  <tr key={usuario.id} className="hover:bg-gray-50">
+                    <td className="px-2 sm:px-4 py-3">{usuario.nombre}</td>
+                    <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
+                      {usuario.correo}
+                    </td>
+                    <td className="px-2 sm:px-4 py-3">{usuario.rol}</td>
+                    <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
+                      {usuario.zona_asignada}
+                    </td>
+                    <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
+                      {formatearTelefono(usuario.telefono)}
+                    </td>
+                    <td className="px-2 sm:px-4 py-3">{usuario.comision}%</td>
+                    <td className="px-2 sm:px-4 py-3 text-center">
+                      {usuario.activo ? "✅" : "❌"}
+                    </td>
+                    <td className="px-2 sm:px-4 py-3 text-center">
+                      <div className="flex justify-center items-center gap-3">
+                        <button
+                          onClick={() => abrirEditarUsuario(usuario)}
+                          className="mr-2 text-[#295d0c] hover:text-[#173a01]"
+                        >
+                          <Edit3 />
+                        </button>
+                        <button
+                          onClick={() => handleEliminarUsuario(usuario.id)}
+                          className="text-[#2e3763] hover:text-[#171f40]"
+                        >
+                          <Trash2 />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
           {/* Controles paginación */}
           <div className="mt-6 flex justify-center items-center gap-4 select-none">
             <button
               onClick={() => cambiarPagina(paginaActual - 1)}
               disabled={paginaActual === 1}
-              className={`px-4 py-2 rounded-md font-semibold ${paginaActual === 1
+              className={`px-4 py-2 rounded-md font-semibold ${
+                paginaActual === 1
                   ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                   : "bg-[#295d0c] text-white hover:bg-[#23480a]"
-                }`}
+              }`}
             >
               Anterior
             </button>
@@ -526,11 +543,12 @@ export default function UsuariosPage() {
                 paginaActual >=
                 Math.ceil(usuariosFiltrados.length / usuariosPorPagina)
               }
-              className={`px-4 py-2 rounded-md font-semibold ${paginaActual >=
-                  Math.ceil(usuariosFiltrados.length / usuariosPorPagina)
+              className={`px-4 py-2 rounded-md font-semibold ${
+                paginaActual >=
+                Math.ceil(usuariosFiltrados.length / usuariosPorPagina)
                   ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                   : "bg-[#295d0c] text-white hover:bg-[#23480a]"
-                }`}
+              }`}
             >
               Siguiente
             </button>
@@ -643,9 +661,9 @@ export default function UsuariosPage() {
               name="comision"
               type="number"
               placeholder="0"
-              defaultValue={usuarioEditar ? usuarioEditar.comision ?? 0 : ""}
-              min={10}
-              max={30}
+              defaultValue={usuarioEditar ? usuarioEditar.comision || "" : ""}
+              min={0}
+              max={100}
               required
               className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
             />
