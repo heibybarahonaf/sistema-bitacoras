@@ -417,12 +417,12 @@ export default function UsuariosPage() {
 
   return (
     <div className="p-6 bg-white min-h-screen">
-      <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
+      <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
         <Users className="w-8 h-8 text-[#295d0c]" />
         Gestión de Usuarios
       </h1>
 
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+      <div className="flex flex-col text-xs sm:flex-row justify-between items-center mb-6 gap-4">
         <input
           type="text"
           placeholder="Buscar por nombre de usuario..."
@@ -431,16 +431,16 @@ export default function UsuariosPage() {
             setFiltroNombre(e.target.value);
             setPaginaActual(1); // Reset paginación al filtrar
           }}
-          className="w-full sm:w-1/2 border border-gray-300 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+          className="w-full sm:w-1/2 border border-gray-300 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
         />
         <button
           onClick={() => {
             setUsuarioEditar(null);
             setModalOpen(true);
           }}
-          className="flex items-center gap-1.5 sm:gap-2 bg-[#295d0c] text-white px-3 py-2 sm:px-5 sm:py-3 rounded-md text-sm sm:text-base hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+          className="text-sm flex items-center gap-1.5 sm:gap-2 bg-[#295d0c] text-white px-3 py-2 sm:px-5 sm:py-3 rounded-md text-xs sm:text-sm hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-5 h-5 text-sm" />
           Agregar Usuario
         </button>
       </div>
@@ -448,8 +448,8 @@ export default function UsuariosPage() {
       {loading ? (
         <LoadingSpinner />
       ) : usuariosFiltrados.length === 0 && showEmptyMessage ? (
-        <div className="text-center py-12">
-          <div className="text-gray-400 text-6xl mb-4">👥</div>
+        <div className="text-center text-sm py-12">
+          <div className="text-gray-400 text-sm text-6xl mb-4">👥</div>
           <p className="text-gray-600 text-lg">No hay usuarios registrados.</p>
           <p className="text-gray-500 text-sm mt-2">
             Haz clic en "Agregar Usuario" para comenzar.
@@ -457,7 +457,7 @@ export default function UsuariosPage() {
         </div>
       ) : usuariosFiltrados.length > 0 ? (
         <>
-          <div className="">
+          <div className="text-sm">
             <table className="w-full table-auto border-collapse">
               <thead className="bg-gray-100">
                 <tr>
@@ -518,7 +518,7 @@ export default function UsuariosPage() {
           </div>
 
           {/* Controles paginación */}
-          <div className="mt-6 flex justify-center items-center gap-4 select-none">
+          <div className="mt-6 text-sm flex justify-center items-center gap-4 select-none">
             <button
               onClick={() => cambiarPagina(paginaActual - 1)}
               disabled={paginaActual === 1}
