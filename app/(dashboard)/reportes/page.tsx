@@ -48,9 +48,9 @@ export default function ReportesPage() {
     nombreCliente: "",
   });
 
-  const [activeTab, setActiveTab] = useState<
-    "general" | "cliente" | "usuario" | "ventas"
-  >("general");
+
+  const [activeTab, setActiveTab] = useState<"general" | "cliente" | "usuario" | "ventas">("general");
+
 
   // --- Alertas ---
   const mostrarAlertaError = (mensaje: string) => {
@@ -314,6 +314,7 @@ export default function ReportesPage() {
         params.append("usuario", usuario);
       }
 
+
       const response = await fetch(
         `/api/reportes/${tipo}-bitacoras?${params.toString()}`,
         {
@@ -323,6 +324,7 @@ export default function ReportesPage() {
           },
         }
       );
+
 
       if (response.ok) {
         const contentType = response.headers.get("content-type");
@@ -384,9 +386,11 @@ export default function ReportesPage() {
     }
 
     if (new Date(fechaInicio) > new Date(fechaFinal)) {
+
       mostrarAlertaError(
         "La fecha de inicio no puede ser mayor que la fecha final"
       );
+
       return;
     }
 
@@ -439,6 +443,7 @@ export default function ReportesPage() {
         params.append("usuario", usuario);
       }
 
+
       const response = await fetch(
         `/api/reportes/${tipo}-bitacoras/previsualizacion?${params.toString()}`,
         {
@@ -448,6 +453,7 @@ export default function ReportesPage() {
           },
         }
       );
+
 
       if (response.ok) {
         const result = await response.json();
@@ -469,9 +475,11 @@ export default function ReportesPage() {
           errorData = { message: "Error interno del servidor" };
         }
 
+
         mostrarAlertaAdvertencia(
           errorData.message || "Error al cargar la vista previa"
         );
+
         setModalPreview((prev) => ({ ...prev, isOpen: false, loading: false }));
       }
     } catch (error) {
@@ -514,12 +522,14 @@ export default function ReportesPage() {
           <button
             key={tipo}
             className={`py-2 px-6 -mb-px border-b-2 font-medium text-sm
+
             ${
               activeTab === tipo
                 ? "border-[#295d0c] text-[#295d0c]"
                 : "border-transparent text-gray-600 hover:text-gray-800 hover:border-gray-300"
             }
             transition-colors duration-200`}
+
             onClick={() => setActiveTab(tipo)}
             type="button"
           >
@@ -547,7 +557,7 @@ export default function ReportesPage() {
       {/* Modal de Vista Previa */}
       {modalPreview.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-hidden">
+          <div className="bg-white rounded-lg max-w-7xl w-full max-h-[90vh] overflow-auto shadow-lg">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div>
                 <h3 className="text-xl font-semibold text-gray-800">
@@ -557,6 +567,7 @@ export default function ReportesPage() {
                   {modalPreview.tipo === "cliente"
                     ? `RTN: ${modalPreview.rtnCliente} - Cliente: ${modalPreview.nombreCliente}`
                     : modalPreview.tipo === "usuario"
+
                     ? `Técnico: ${
                         modalPreview.filtroNombre.split("Técnico: ")[1] ||
                         modalPreview.filtroNombre
@@ -569,18 +580,20 @@ export default function ReportesPage() {
                     : "Reporte General"}{" "}
                   • {formatearFecha(modalPreview.fechaInicio)} al{" "}
                   {formatearFecha(modalPreview.fechaFinal)}
+
                 </p>
               </div>
               <button
                 onClick={cerrarModal}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Cerrar modal"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-6 h-6 text-gray-600" />
               </button>
             </div>
-
-            <div className="p-4 overflow-y-auto max-h-[calc(90vh-170px)]">
+            <div className="p-6">
               {modalPreview.loading ? (
+
                 <div className="flex items-center justify-center py-12">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   <span className="ml-3 text-gray-600">
@@ -860,6 +873,7 @@ export default function ReportesPage() {
                 </button>
               </div>
             )}
+
           </div>
         </div>
       )}
