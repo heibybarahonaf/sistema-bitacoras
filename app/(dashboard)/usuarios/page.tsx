@@ -186,6 +186,7 @@ export default function UsuariosPage() {
       correo: formData.get("correo") as string,
       rol: formData.get("rol") as string,
       zona_asignada: formData.get("zona_asignada") as string,
+      comision: Number(formData.get("comision")),
       activo: true,
       telefono: formData.get("telefono") as string,
     };
@@ -304,6 +305,7 @@ export default function UsuariosPage() {
       rol: formData.get("rol") as string,
       zona_asignada: formData.get("zona_asignada") as string,
       telefono: formData.get("telefono") as string,
+      comision: Number(formData.get("comision")),
       activo: formData.get("activo") === "true",
       updateAt: new Date().toISOString(),
     };
@@ -460,6 +462,7 @@ export default function UsuariosPage() {
                 <th className="px-2 sm:px-4 py-3 text-left">Rol</th>
                 <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Zona</th>
                 <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Teléfono</th>
+                <th className="px-2 sm:px-4 py-3 text-left">Comisión</th>
                 <th className="px-2 sm:px-4 py-3 text-left">Activo</th>
                 <th className="px-2 sm:px-4 py-3 text-center">Acciones</th>
               </tr>
@@ -472,6 +475,7 @@ export default function UsuariosPage() {
                   <td className="px-2 sm:px-4 py-3">{usuario.rol}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{usuario.zona_asignada}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{formatearTelefono(usuario.telefono)}</td>
+                  <td className="px-2 sm:px-4 py-3">{usuario.comision}%</td>
                   <td className="px-2 sm:px-4 py-3 text-center">
                     {usuario.activo ? "✅" : "❌"}
                   </td>
@@ -628,6 +632,20 @@ export default function UsuariosPage() {
               }
               onChange={manejarCambioTelefono}
               maxLength={9}
+              required
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+            />
+          </label>
+
+          <label className="block mb-4 text-gray-800 font-medium">
+            <span className="text-gray-700">Comisión (%):</span>
+            <input
+              name="comision"
+              type="number"
+              placeholder="0"
+              defaultValue={usuarioEditar ? usuarioEditar.comision ?? 0 : ""}
+              min={10}
+              max={30}
               required
               className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
             />

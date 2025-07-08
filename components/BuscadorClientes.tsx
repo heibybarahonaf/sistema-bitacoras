@@ -262,6 +262,43 @@ const BuscarCliente: React.FC = () => {
     return () => clearTimeout(timer);
   }, [filtro, filtroActual]);
 
+  useEffect(() => {
+  let intervalId: NodeJS.Timeout;
+
+  if (clienteSeleccionado?.id) {
+    intervalId = setInterval(async () => {
+      try {
+        const params = new URLSearchParams({
+          page: paginaActualBitacoras.toString(),
+          limit: metaBitacoras.limit.toString(),
+          ...(filtroEstado !== "todas" && { estado: filtroEstado }),
+        });
+
+        const res = await fetch(`/api/bitacoras/cliente/${clienteSeleccionado.id}?${params}`);
+        const data = await res.json();
+
+        if (data.code === 200) {
+          // Verifica si alguna firma cambió
+          const nuevas = data.results || [];
+          const haCambiado = JSON.stringify(nuevas) !== JSON.stringify(bitacoras);
+
+          if (haCambiado) {
+            setBitacoras(nuevas);
+            setMetaBitacoras(data.meta || metaBitacoras);
+          }
+        }
+      } catch (error) {
+        console.error("Error al hacer polling de firmas:", error);
+      }
+    }, 5000); // cada 5 segundos
+  }
+
+  return () => {
+    if (intervalId) clearInterval(intervalId);
+  };
+}, [clienteSeleccionado?.id, paginaActualBitacoras, filtroEstado, bitacoras]);
+
+
   const mostrarAlertaError = (mensaje: string) => {
     Swal.fire({
       icon: "error",
@@ -509,6 +546,24 @@ const BuscarCliente: React.FC = () => {
                   </select>
                 </div>
                 <div className="space-x-2">
+                  <button
+                    onClick={() => {
+                      cargarClientePorId(clienteSeleccionado.id);
+                      cargarBitacoras(clienteSeleccionado.id, paginaActualBitacoras);
+                      Swal.fire({
+                                      toast: true,
+                                      position: "top-end",
+                                      icon: "success",
+                                      title:"Datos actualizados",
+                                      showConfirmButton: false,
+                                      timer: 2000,
+                                      timerProgressBar: true,
+                                  });
+                    }}
+                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                  >
+                    Actualizar
+                  </button>
                   <button
                     onClick={handleNuevaBitacora}
                     className="px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"

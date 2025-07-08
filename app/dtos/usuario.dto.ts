@@ -18,5 +18,8 @@ export const CrearUsuarioDto = z.object({
     telefono: z.string()
         .min(8, "El teléfono debe tener al menos 8 caracteres.")
         .max(10, "El teléfono no puede exceder los 10 caracteres."),
-        
+    comision: z.number()
+        .int("Las horas individuales deben ser un número entero.")
+        .nonnegative("Las horas individuales no pueden ser negativas."),
+
 });

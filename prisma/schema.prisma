@@ -106,6 +106,7 @@ model Usuario {
   activo        Boolean
   zona_asignada String     @db.VarChar(300)
   telefono      String     @db.VarChar(10)
+  comision      Int?
   createdAt     DateTime?   @default(now())
   updatedAt     DateTime?   @default(now())
 

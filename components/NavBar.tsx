@@ -8,6 +8,7 @@ import {
   User, Users, NotebookText, BarChart, LogOut,
   ClipboardList, Settings, HardDrive, Receipt, MonitorDot
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -15,9 +16,9 @@ export default function Navbar() {
   const [userName, setUserName] = useState("@");
   const pathname = usePathname();
   const router = useRouter();
-  
+
   const isActive = (path: string) => pathname === path;
-  
+
   const menuItems = [
     { href: "/clientes", label: "Clientes", icon: Users },
     { href: "/bitacoras", label: "Bitácoras", icon: NotebookText },
@@ -27,63 +28,62 @@ export default function Navbar() {
     { href: "/usuarios", label: "Usuarios", icon: User },
     { href: "/reportes", label: "Reportes", icon: BarChart },
     { href: "/encuestas", label: "Encuestas", icon: ClipboardList },
-    { href: "/configuracion", label: "Configuración", icon: Settings }
+    { href: "/configuracion", label: "Configuración", icon: Settings },
   ];
 
   const obtenerUsuario = async () => {
-
-      try {
-
-        const res = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
-
-        if (res.ok) {
-          const data = await res.json();
-          setUserName("@"+data.results?.[0].nombre || "@usuario");
-        }
-
-      } catch (error) {
-
-        console.error("Error al obtener nombre del usuario:", error);
-
+    try {
+      const res = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setUserName("@" + data.results?.[0].nombre || "@usuario");
       }
-
-    };
+    } catch (error) {
+      console.error("Error al obtener nombre del usuario:", error);
+    }
+  };
 
   useEffect(() => {
-    setTimeout(obtenerUsuario, 0); 
+    setTimeout(obtenerUsuario, 0);
   }, []);
 
-  const handleLogout = async () => {
+  const confirmarLogout = async () => {
+    const result = await Swal.fire({
+      title: "¿Cerrar sesión?",
+      text: "Tendrás que iniciar sesión nuevamente para ingresar.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#999",
+      confirmButtonText: "Sí, salir",
+      cancelButtonText: "Cancelar",
+    });
 
+    if (result.isConfirmed) {
+      handleLogout();
+    }
+  };
+
+  const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include', 
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
       });
 
       if (response.ok) {
-
         setSidebarOpen(false);
-        router.push('/login');
-
+        router.push("/login");
       } else {
-
-        console.error('Error al cerrar sesión');
-
+        console.error("Error al cerrar sesión");
       }
-
     } catch (error) {
-
-      console.error('Error al cerrar sesión:', error);
-
+      console.error("Error al cerrar sesión:", error);
     } finally {
       setIsLoggingOut(false);
     }
-
   };
-
 
   return (
     <>
@@ -97,16 +97,35 @@ export default function Navbar() {
             ☰
           </button>
           <Link href="/">
-            <Image src="/logo-white.png" alt="Logo POS" width={40} height={40} className="cursor-pointer" />
+            <Image
+              src="/logo-white.png"
+              alt="Logo POS"
+              width={40}
+              height={40}
+              className="cursor-pointer"
+            />
           </Link>
           <span className="text-lg font-semibold hidden sm:block">SISTEMA DE BITÁCORAS</span>
         </div>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm hidden sm:inline">{userName}</span>
+
+        {/* Usuario y botón salir */}
+        <div className="flex items-center gap-4 text-sm">
+          <span className="hidden sm:inline">{userName}</span>
+          <button
+            onClick={confirmarLogout}
+            disabled={isLoggingOut}
+            className={`flex items-center gap-1 text-white transition ${
+              isLoggingOut ? "opacity-50 cursor-not-allowed" : "hover:text-gray-300"
+            }`}
+            title="Cerrar sesión"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">{isLoggingOut ? "Saliendo..." : "Salir"}</span>
+          </button>
         </div>
       </nav>
 
-      {/* Overlay oscuro (cierra al hacer clic fuera) */}
+      {/* Overlay oscuro */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40"
@@ -114,7 +133,7 @@ export default function Navbar() {
         />
       )}
 
-      {/* Menú lateral debajo del navbar */}
+      {/* Menú lateral */}
       <aside
         className={`bg-black text-white w-64 fixed top-16 bottom-0 left-0 p-6 shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -144,15 +163,14 @@ export default function Navbar() {
             );
           })}
         </ul>
-        
+
+        {/* Botón salir en el menú lateral */}
         <div className="absolute bottom-4 right-4">
-          <button 
-            onClick={handleLogout}
+          <button
+            onClick={confirmarLogout}
             disabled={isLoggingOut}
             className={`flex items-center gap-2 text-sm transition-colors duration-200 ${
-              isLoggingOut 
-                ? "text-gray-400 cursor-not-allowed" 
-                : "hover:text-red-500"
+              isLoggingOut ? "text-gray-400 cursor-not-allowed" : "hover:text-red-500"
             }`}
           >
             <LogOut className="w-4 h-4" />

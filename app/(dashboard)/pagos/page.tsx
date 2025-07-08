@@ -2,7 +2,7 @@
 
 import Swal from "sweetalert2";
 import { useEffect, useState } from "react";
-import ModalPago from "@/components/ModalPago"; 
+import ModalPago from "@/components/ModalPago";
 import { Pagos_Cliente } from "@prisma/client";
 import { DollarSign, Eye, Edit } from "lucide-react";
 
@@ -61,7 +61,7 @@ export default function PagosPage() {
     total: 0,
     page: 1,
     limit: 10,
-    totalPages: 0
+    totalPages: 0,
   });
 
   const [modalPago, setModalPago] = useState<{ open: boolean; pago?: PagoConCliente }>({
@@ -70,6 +70,7 @@ export default function PagosPage() {
 
   // Filtros
   const [filtroFactura, setFiltroFactura] = useState("");
+  const [filtroCliente, setFiltroCliente] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
 
@@ -87,7 +88,7 @@ export default function PagosPage() {
         limit: pagosPorPagina.toString(),
         ...(filtroFactura && { factura: filtroFactura }),
         ...(fechaInicio && { fechaInicio }),
-        ...(fechaFin && { fechaFin })
+        ...(fechaFin && { fechaFin }),
       });
 
       const res = await fetch(`/api/pagos?${params}`);
@@ -104,13 +105,15 @@ export default function PagosPage() {
       }
 
       setPagos(response.results || []);
-      setMetaPagos(response.meta || {
-        total: 0,
-        page: 1,
-        limit: 10,
-        totalPages: 0
-      });
-      
+      setMetaPagos(
+        response.meta || {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 0,
+        }
+      );
+
       if (response.results?.length === 0) setShowEmptyMessage(true);
     } catch (error) {
       Swal.fire({
@@ -130,21 +133,25 @@ export default function PagosPage() {
     }
   };
 
+  // Filtrado frontend por cliente y fechas (factura ya se filtra en backend)
   const pagosFiltrados = pagos.filter((pago) => {
-    const fechaPagoStr = pago.createdAt instanceof Date
-      ? pago.createdAt.toISOString().split("T")[0]
-      : String(pago.createdAt).split("T")[0];
+    const fechaPagoStr =
+      pago.createdAt instanceof Date
+        ? pago.createdAt.toISOString().split("T")[0]
+        : String(pago.createdAt).split("T")[0];
     const inicioStr = fechaInicio ? new Date(fechaInicio).toISOString().split("T")[0] : null;
     const finStr = fechaFin ? new Date(fechaFin).toISOString().split("T")[0] : null;
 
-    const cumpleFecha =
-      (!inicioStr || fechaPagoStr >= inicioStr) &&
-      (!finStr || fechaPagoStr <= finStr);
+    const cumpleFecha = (!inicioStr || fechaPagoStr >= inicioStr) && (!finStr || fechaPagoStr <= finStr);
 
-    const cumpleFactura =
-      !filtroFactura || pago.no_factura.toLowerCase().includes(filtroFactura.toLowerCase());
+    const terminoCliente = filtroCliente.toLowerCase();
 
-    return cumpleFecha && cumpleFactura;
+    const cumpleBusquedaCliente =
+      !terminoCliente ||
+      pago.cliente?.empresa?.toLowerCase().includes(terminoCliente) ||
+      pago.cliente?.responsable?.toLowerCase().includes(terminoCliente);
+
+    return cumpleFecha && cumpleBusquedaCliente;
   });
 
   return (
@@ -182,12 +189,22 @@ export default function PagosPage() {
           onChange={(e) => setFiltroFactura(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2 w-full md:w-64"
         />
-        {(fechaInicio || fechaFin || filtroFactura) && (
+
+        <input
+          type="text"
+          placeholder="Buscar cliente..."
+          value={filtroCliente}
+          onChange={(e) => setFiltroCliente(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-2 w-full md:w-64"
+        />
+
+        {(fechaInicio || fechaFin || filtroFactura || filtroCliente) && (
           <button
             onClick={() => {
               setFechaInicio("");
               setFechaFin("");
               setFiltroFactura("");
+              setFiltroCliente("");
             }}
             className="px-3 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
           >
@@ -224,15 +241,15 @@ export default function PagosPage() {
               {pagosFiltrados.map((pago) => (
                 <tr key={pago.id} className="hover:bg-gray-50">
                   <td className="px-2 sm:px-4 py-3">{pago.no_factura}</td>
-                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.cliente?.empresa || pago.cliente?.responsable}</td>
+                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
+                    {pago.cliente?.empresa || pago.cliente?.responsable}
+                  </td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.forma_pago}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.detalle_pago}</td>
                   <td className="px-2 sm:px-4 py-3">L.{pago.monto}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.cant_horas}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.tipo_horas}</td>
-                  <td className="px-2 sm:px-4 py-3">
-                    {new Date(pago.createdAt).toLocaleDateString()}
-                  </td>
+                  <td className="px-2 sm:px-4 py-3">{new Date(pago.createdAt).toLocaleDateString()}</td>
                   <td className="px-2 sm:px-4 py-3 text-center">
                     <div className="flex justify-center gap-2">
                       <button
@@ -277,9 +294,7 @@ export default function PagosPage() {
                 >
                   Anterior
                 </button>
-                <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
-                  {metaPagos.page}
-                </span>
+                <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">{metaPagos.page}</span>
                 <button
                   onClick={() => cambiarPagina(metaPagos.page + 1)}
                   disabled={metaPagos.page === metaPagos.totalPages}
