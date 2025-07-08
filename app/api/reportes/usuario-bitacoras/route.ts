@@ -15,7 +15,6 @@ export async function GET(request: Request) {
 
         if (!fechaInicio || !fechaFinal || !nombre) {
             throw new ResponseDto(400, "Se requieren fechas y el nombre del tecnico");
-            //return NextResponse.json({ message: "Se requieren fechas y el nombre del tecnico" }, { status: 400 });
         }
 
         const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(nombre, fechaInicio, fechaFinal);
