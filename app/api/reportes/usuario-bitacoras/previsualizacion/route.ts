@@ -43,7 +43,7 @@ export async function GET(request: Request) {
             const esIndividual = bitacora.tipo_horas === 'Individual';
             const precio = esIndividual ? config.valor_hora_individual : config.valor_hora_paquete;
             const monto = bitacora.horas_consumidas * precio;
-            const comision = monto * (config.comision / 100);
+            const comision = monto * (bitacora.usuario.comision / 100);
 
             return {
                 id: bitacora.id,
@@ -55,6 +55,7 @@ export async function GET(request: Request) {
                 tipo_horas: bitacora.tipo_horas,
                 monto,
                 comision,
+                porcentaje_comision: bitacora.usuario.comision
             };
         });
 

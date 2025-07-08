@@ -5,6 +5,8 @@ import autoTable from "jspdf-autotable";
 import { ConfiguracionService } from "../services/configService";
 import { Bitacora, Sistema, Equipo, Usuario, Cliente, Tipo_Servicio } from "@prisma/client";
 
+const campo_vacio = "-";
+
 export type BitacoraCompleta = Bitacora & {
     sistema?: Sistema | null;
     equipo?: Equipo | null;
@@ -25,8 +27,6 @@ type DatosExtrasReporte = {
     telefono_usuario?: string;
     zona?: string;
 };
-
-const campo_vacio = "-";
 
 function generarReporte(
     titulo: string,
@@ -51,7 +51,7 @@ function generarReporte(
     doc.text(titulo, 10, currentY);
     currentY += 7;
 
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text("POS de Honduras", 10, currentY);
     currentY += 6;
@@ -79,12 +79,10 @@ function generarReporte(
         headStyles: { fillColor: [165, 42, 42] },
     });
 
-    let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 5; 
-
-    //let finalY = (doc as any).lastAutoTable.finalY + 10;
     const pageHeight = doc.internal.pageSize.height;
     const espacioFooter = 18; 
-
+    
+    let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 5; 
     if (finalY + espacioFooter > pageHeight) {
         doc.addPage();
         finalY = 10;
@@ -110,6 +108,7 @@ function generarReporte(
 
 
 export function generarPDFBitacoras(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Buffer {
+    
     const columnas = [
         "Fecha","Ticket", "Cliente", "Técnico",  "Llegada", "Salida", "Servicio",
         "Modalidad", "Horas", "Tipo Horas", "Descripción"
@@ -136,13 +135,14 @@ export function generarPDFBitacoras(bitacoras: BitacoraCompleta[], fechaInicio: 
 
 
 export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
+    
     const config = await ConfiguracionService.obtenerConfiguracionPorId(1);
     const precioIndividual = config.valor_hora_individual;
     const precioPaquete = config.valor_hora_paquete;
-    const porcentajeComision = config.comision;
+    let porcentajeComision = 0;
 
     const columnas = [
-        "Fecha", "Bitacora No.", "Ticket", "Cliente", "Horas", "Tipo Horas", "Monto", "Comisión", 
+        "Fecha", "Bitacora No.", "Ticket", "Cliente", "Horas", "Tipo Horas", "% Comisión", "Monto", "Comisión", 
     ];
 
     let total = 0;
@@ -150,6 +150,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
         const precio = b.tipo_horas === "Individual" ? precioIndividual : precioPaquete;
         const horas = b.horas_consumidas ?? 0;
         const monto = horas * precio;
+        porcentajeComision = b.usuario?.comision??0;
         const comision = monto * (porcentajeComision / 100);
         total += monto;
 
@@ -160,6 +161,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
             b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
             horas,
             b.tipo_horas ?? campo_vacio,
+            b.usuario?.comision,
             monto.toFixed(2),
             comision.toFixed(2)
         ].map(v => v === undefined ? null : v);
@@ -167,7 +169,6 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
 
     const comision = total * (porcentajeComision / 100);
     const usuario = bitacoras[0]?.usuario ?? null;
-    
     const doc = generarReporte(
         "Reporte de Comisiones Técnico",  
         bitacoras,                       
@@ -188,10 +189,12 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
     );
 
     return Buffer.from(doc.output('arraybuffer'));
+
 }
 
 
 export async function generarPDFPorVentasTecnico(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
+   
     const usuario = bitacoras[0]?.usuario ?? null;
     const columnas = [
         "Fecha", "Bitacora No.", "Cliente", "Ventas"
@@ -225,10 +228,12 @@ export async function generarPDFPorVentasTecnico(bitacoras: BitacoraCompleta[], 
     );
 
     return Buffer.from(doc.output('arraybuffer'));
+
 }
 
 
 export function generarPDFPorCliente(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Buffer {
+    
     const columnas = [
         "Fecha", "Ticket", "Servicio", "Modalidad", "Horas", "Tipo Horas", "Técnico", "Descripción"
     ];
@@ -264,20 +269,26 @@ export function generarPDFPorCliente(bitacoras: BitacoraCompleta[], fechaInicio:
     );
 
     return Buffer.from(doc.output('arraybuffer'));
+
 }
 
 
 function formatearFecha(fecha: Date) {
+
     return new Date(fecha).toLocaleDateString('es-ES');
+
 }
 
 
 function formatearHora(fecha: Date) {
+
     return new Date(fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
 }
 
 
 function renderInfoTecnico(doc: jsPDF, y: number, info: DatosExtrasReporte): number {
+
     const leftX = 10;
     const rightX = 150;
     const offset = 2;
@@ -317,6 +328,7 @@ function renderInfoTecnico(doc: jsPDF, y: number, info: DatosExtrasReporte): num
 
 
 function renderInfoCliente(doc: jsPDF, y: number, info: DatosExtrasReporte): number {
+
     const leftX = 10;
     const rightX = 150;
     const offset = 2; 
@@ -366,10 +378,13 @@ function renderInfoCliente(doc: jsPDF, y: number, info: DatosExtrasReporte): num
     }
 
     return y;
+
 }
 
 
 function safe<T>(valor: T | null | undefined, fallback: string = campo_vacio): string {
+
     if (valor === null || valor === undefined || valor === "") return fallback;
     return String(valor);
+
 }
