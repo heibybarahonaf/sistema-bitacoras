@@ -510,8 +510,8 @@ export default function ReportesPage() {
   ];
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
+    <div className="p-6 mb-6">
+      <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
         <BarChart className="w-8 h-8 text-[#295d0c]" />
         Gestión de Reportes
       </h1>

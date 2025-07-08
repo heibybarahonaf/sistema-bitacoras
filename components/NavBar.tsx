@@ -27,7 +27,7 @@ export default function Navbar() {
     { href: "/sistemas", label: "Sistemas", icon: HardDrive },
     { href: "/usuarios", label: "Usuarios", icon: User },
     { href: "/reportes", label: "Reportes", icon: BarChart },
-    { href: "/encuestas", label: "Encuestas", icon: ClipboardList },
+    { href: "/encuestas", label: "Encuesta", icon: ClipboardList },
     { href: "/configuracion", label: "Configuración", icon: Settings },
   ];
 

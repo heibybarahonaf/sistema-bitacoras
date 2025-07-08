@@ -3,6 +3,7 @@
 import axios from "axios";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { FileText } from "lucide-react";
 
 interface Pregunta {
   id: number;
@@ -126,9 +127,13 @@ export default function CrearEncuestaPage() {
 
   return (
     <div className="max-w-3xl mx-auto p-6 mb-24 relative">
-      <h1 className="text-2xl font-bold mb-4">Gestionar Encuesta</h1>
+      <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
+        <FileText className="w-8 h-8 text-[#295d0c]" />
+        Gestión de Encuesta
+      </h1>
 
       <div className="space-y-4">
+        <h2 className="font-semibold mb-2">Título</h2>
         <input
           type="text"
           placeholder="Título de la encuesta"
@@ -136,6 +141,7 @@ export default function CrearEncuestaPage() {
           onChange={(e) => setTitulo(e.target.value)}
           className="w-full px-3 py-2 border rounded"
         />
+        <h2 className="font-semibold mb-2">Descripción</h2>
         <textarea
           placeholder="Descripción de la encuesta"
           value={descripcion}
@@ -154,9 +160,9 @@ export default function CrearEncuestaPage() {
 
       <hr className="my-6" />
 
-      <div className="flex gap-6">
+      <div className="flex gap-6 text-sm">
         <div className="w-1/2">
-          <h2 className="text-lg font-semibold mb-2">Preguntas asociadas</h2>
+          <h2 className="font-semibold mb-2">Preguntas asociadas</h2>
           {preguntasAsociadas.length === 0 && <p>No hay preguntas asociadas</p>}
           <ul>
             {preguntasAsociadas.map((p) => (
@@ -174,8 +180,8 @@ export default function CrearEncuestaPage() {
           </ul>
         </div>
 
-        <div className="w-1/2">
-          <h2 className="text-lg font-semibold mb-2">Preguntas disponibles</h2>
+        <div className="w-1/2 text-sm">
+          <h2 className="font-semibold mb-2">Preguntas disponibles</h2>
           {preguntasDisponibles.length === 0 && <p>No hay preguntas disponibles</p>}
           <ul>
             {preguntasDisponibles.map((p) => (
@@ -198,7 +204,7 @@ export default function CrearEncuestaPage() {
         <button
           onClick={guardarCambios}
           disabled={cargando}
-          className="bg-green-600 text-white px-5 py-2 rounded hover:bg-green-700"
+          className="bg-[#295d0c] text-white px-5 py-2 rounded hover:bg-[#23480a]"
         >
           Guardar
         </button>

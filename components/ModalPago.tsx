@@ -179,9 +179,9 @@ export default function ModalPago({
 };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="fixed text-xs inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">
+        <h2 className="text-lg font-bold mb-6 text-gray-900">
           {pago ? "Editar Pago" : "Registrar Pago de Horas"}
         </h2>
         <form onSubmit={handleSubmit} className="space-y-5">

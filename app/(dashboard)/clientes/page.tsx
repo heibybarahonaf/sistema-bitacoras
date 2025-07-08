@@ -377,14 +377,14 @@ export default function ClientesPage() {
   }
 
   return (
-    <div className="p-6 bg-white min-h-screen">
-      <h1 className="text-3xl font-semibold mb-6 flex items-center gap-2 text-gray-800">
+    <div className="p-6 mb-6 bg-white min-h-screen">
+      <h1 className="text-2xl font-semibold mb-6 flex border-b border-gray-300 pb-2 items-center gap-2 text-gray-800">
         <Contact className="w-7 h-7 text-[#295d0c]" />
         Gestión de Clientes
       </h1>
 
       {/* Input filtro */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 text-xs">
         <input
           type="text"
           placeholder="Buscar por empresa, RTN, responsable o correo..."
@@ -397,7 +397,7 @@ export default function ClientesPage() {
             setClienteEditar(null);
             setModalOpen(true);
           }}
-          className="flex items-center gap-1.5 sm:gap-2 bg-[#295d0c] text-white px-3 py-2 sm:px-5 sm:py-3 rounded-md text-sm sm:text-base hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+          className="flex items-center gap-1.5 sm:gap-2 bg-[#295d0c] text-white px-3 py-2 xs:px-5 sm:py-3 rounded-md text-sm xs:text-base hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
         >
           <Plus className="w-5 h-5" />
           Agregar Cliente
@@ -419,12 +419,12 @@ export default function ClientesPage() {
       ) : clientes.length > 0 ? (
         <>
           {/* Información de resultados */}
-          <div className="mb-4 text-sm text-gray-600">
+          <div className="mb-4 text-xs text-gray-600">
             Mostrando {clientes.length} de {meta.total} clientes
             {filtroActual && ` para "${filtroActual}"`}
           </div>
-
-          <table className="min-w-full table-auto border-collapse">
+          <div className="-ml-4">
+          <table className="min-w-full table-auto border-collapse text-sm">
             <thead className="bg-gray-100">
               <tr>
                 <th className="px-2 sm:px-4 py-2 text-left">Empresa</th>
@@ -470,41 +470,42 @@ export default function ClientesPage() {
               ))}
             </tbody>
           </table>
+          </div>
 
           {/* Controles de paginación */}
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-gray-600">
+            <div className="text-xs text-gray-600">
               Página {meta.page} de {meta.totalPages} ({meta.total} total)
             </div>
             <div className="flex justify-center items-center gap-2">
               <button
                 onClick={() => setPaginaActual(1)}
                 disabled={meta.page === 1}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 text-xs rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Primera
               </button>
               <button
                 onClick={() => setPaginaActual(meta.page - 1)}
                 disabled={meta.page === 1}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 rounded text-xs border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Anterior
               </button>
-              <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+              <span className="px-3 py-1 bg-[#295d0c] text-xs text-white rounded font-medium">
                 {meta.page}
               </span>
               <button
                 onClick={() => setPaginaActual(meta.page + 1)}
                 disabled={meta.page === meta.totalPages}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Siguiente
               </button>
               <button
                 onClick={() => setPaginaActual(meta.totalPages)}
                 disabled={meta.page === meta.totalPages}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Última
               </button>
@@ -520,7 +521,7 @@ export default function ClientesPage() {
           setClienteEditar(null);
         }}
       >
-        <h2 className="text-xl font-semibold mb-6 text-gray-900">{clienteEditar ? "Editar Cliente" : "Nuevo Cliente"}</h2>
+        <h2 className="text-lg font-semibold mb-6 text-gray-900">{clienteEditar ? "Editar Cliente" : "Nuevo Cliente"}</h2>
         <form onSubmit={clienteEditar ? handleEditarCliente : handleSubmitCliente} className="space-y-4">
           {[
             { label: "Empresa", name: "empresa", type: "text", placeholder: "Nombre de la empresa" },
@@ -529,7 +530,7 @@ export default function ClientesPage() {
             { label: "Direccion", name: "direccion", type: "text", placeholder: "Direccion" },
             { label: "Correo", name: "correo", type: "email", placeholder: "Correo" },
           ].map(({ label, name, type, placeholder }) => (
-            <label key={name} className="block mb-4 text-gray-800 font-medium">
+            <label key={name} className="block mb-4 text-gray-800 font-medium text-xs">
               <span className="text-gray-700">{label}:</span>
               <input
                 name={name}
@@ -542,7 +543,7 @@ export default function ClientesPage() {
             </label>
           ))}
 
-          <label className="block mb-4 text-gray-800 font-medium">
+          <label className="block mb-4 text-gray-800 font-medium text-xs">
             <span className="text-gray-700">Teléfono:</span>
             <input
               name="telefono"
@@ -574,13 +575,13 @@ export default function ClientesPage() {
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="px-5 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
+              className="px-5 py-2 text-sm rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
+              className="px-5 py-2 text-sm rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
             >
               {clienteEditar ? "Actualizar" : "Crear"}
             </button>
