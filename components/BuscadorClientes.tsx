@@ -2,7 +2,7 @@
 
 import Swal from "sweetalert2";
 import ModalPago from "@/components/ModalPago";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Eye, Notebook, Download } from "lucide-react";
 import FormNuevaBitacora from "@/components/ModalBitacora";
 import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
@@ -90,10 +90,8 @@ const BuscarCliente: React.FC = () => {
 
   };
 
-  const fetchClientes = async () => {
-
+  const fetchClientes = useCallback(async () => {
     try {
-
       const params = new URLSearchParams({
         page: paginaActualClientes.toString(),
         limit: metaClientes.limit.toString(),
@@ -125,7 +123,6 @@ const BuscarCliente: React.FC = () => {
       }
 
     } catch (error) {
-
       Swal.fire({
         icon: "error",
         title: "Error al cargar clientes",
@@ -136,14 +133,13 @@ const BuscarCliente: React.FC = () => {
         confirmButtonColor: "#295d0c",
       });
     }
-
-  };
+  }, [paginaActualClientes, filtroActual, metaClientes.limit]);
 
   useEffect(() => {
     fetchClientes();
-  }, [paginaActualClientes, filtroActual]);
+  }, [fetchClientes, paginaActualClientes, filtroActual]);
 
-  const cargarBitacoras = async (clienteId: number, page: number = 1) => {
+  const cargarBitacoras = useCallback(async (clienteId: number, page: number = 1) => {
     setLoadingBitacoras(true);
 
     try {
@@ -186,13 +182,13 @@ const BuscarCliente: React.FC = () => {
       });
 
       setBitacoras([]);
+
     } finally {
       setLoadingBitacoras(false);
     }
-  };
+  }, [filtroEstado, metaBitacoras.limit]);
 
   const cargarClientePorId = async (clienteId: number) => {
-
     try {
       
       const res = await fetch(`/api/clientes/${clienteId}`);
@@ -220,7 +216,7 @@ const BuscarCliente: React.FC = () => {
     if (clienteSeleccionado?.id) {
       cargarBitacoras(clienteSeleccionado.id, paginaActualBitacoras);
     }
-  }, [clienteSeleccionado, paginaActualBitacoras, filtroEstado]);
+  }, [cargarBitacoras, clienteSeleccionado, paginaActualBitacoras, filtroEstado]);
 
   const clientesFiltrados = clientes.filter(
     (c) =>
@@ -272,7 +268,7 @@ const BuscarCliente: React.FC = () => {
   return () => {
     if (intervalId) clearInterval(intervalId);
   };
-}, [clienteSeleccionado?.id, paginaActualBitacoras, filtroEstado, bitacoras]);
+}, [metaBitacoras,clienteSeleccionado?.id, paginaActualBitacoras, filtroEstado, bitacoras]);
 
 
   const mostrarAlertaError = (mensaje: string) => {

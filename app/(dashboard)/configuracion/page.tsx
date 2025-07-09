@@ -1,28 +1,15 @@
 "use client";
 
 import Swal from "sweetalert2";
-import { useEffect, useState } from "react";
 import { Cog } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
 
 interface Configuracion {
   correo_ventas: string;
   comision: number;
   valor_hora_individual: number;
   valor_hora_paquete: number;
-}
-
-interface TipoServicio {
-  id: number;
-  tipo_servicio: string;
-  descripcion: string;
-  activo: boolean;
-}
-
-interface FaseImplementacion {
-  id: number;
-  fase: string;
-  descripcion: string;
-  activa: boolean;
 }
 
 export default function ConfiguracionPage() {
@@ -35,18 +22,20 @@ export default function ConfiguracionPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [servicios, setServicios] = useState<TipoServicio[]>([]);
-  const [fases, setFases] = useState<FaseImplementacion[]>([]);
+  const [servicios, setServicios] = useState<Tipo_Servicio[]>([]);
+  const [fases, setFases] = useState<Fase_Implementacion[]>([]);
 
   useEffect(() => {
     obtenerDatos();
   }, []);
 
   const obtenerDatos = async () => {
+
     try {
       // Obtener tipos de servicio
       const resServicios = await fetch("/api/tipo-servicio");
       const dataServicios = await resServicios.json();
+      
       if (
         resServicios.ok &&
         dataServicios.code === 200 &&
@@ -72,6 +61,7 @@ export default function ConfiguracionPage() {
       if (!res.ok) throw new Error("Error al obtener configuración");
 
       if (data.code === 200 && data.results?.length > 0) {
+
         const config = data.results[0];
         setForm({
           correo_ventas: config.correo_ventas ?? "",
@@ -79,12 +69,15 @@ export default function ConfiguracionPage() {
           valor_hora_individual: Number(config.valor_hora_individual) || 0,
           valor_hora_paquete: Number(config.valor_hora_paquete) || 0,
         });
+
       } else {
+
         Swal.fire(
           "Info",
           "No se encontró configuración, usando valores por defecto",
           "info"
         );
+
       }
     } catch (error: any) {
       Swal.fire("Error", error.message || "Error al cargar datos", "error");
@@ -104,6 +97,7 @@ export default function ConfiguracionPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+
     try {
       const res = await fetch("/api/configuracion/1", {
         method: "PATCH",
@@ -126,7 +120,8 @@ export default function ConfiguracionPage() {
 
   // --- Tipos de Servicio ---
 
-  const mostrarFormularioTipoServicio = async (servicio?: TipoServicio) => {
+  const mostrarFormularioTipoServicio = async (servicio?: Tipo_Servicio) => {
+
     const isEdit = !!servicio;
     const { value: formValues } = await Swal.fire({
       title: isEdit ? "Editar Tipo de Servicio" : "Nuevo Tipo de Servicio",
@@ -177,16 +172,19 @@ export default function ConfiguracionPage() {
             `Tipo de servicio ${isEdit ? "actualizado" : "creado"} con éxito`,
             "success"
           );
+
         } else {
           throw new Error(data.message || "No se pudo completar la acción");
         }
+
       } catch (error: any) {
         Swal.fire("Error", error.message || "Error inesperado", "error");
       }
     }
   };
 
-  const toggleActivoTipoServicio = async (servicio: TipoServicio) => {
+  const toggleActivoTipoServicio = async (servicio: Tipo_Servicio) => {
+
     try {
       const res = await fetch(`/api/tipo-servicio/${servicio.id}`, {
         method: "PATCH",
@@ -200,6 +198,7 @@ export default function ConfiguracionPage() {
       } else {
         throw new Error(data.message || "No se pudo cambiar el estado");
       }
+
     } catch (error: any) {
       Swal.fire("Error", error.message || "Error inesperado", "error");
     }
@@ -207,7 +206,8 @@ export default function ConfiguracionPage() {
 
   // --- Fases de Implementación ---
 
-  const mostrarFormularioFase = async (fase?: FaseImplementacion) => {
+  const mostrarFormularioFase = async (fase?: Fase_Implementacion) => {
+
     const isEdit = !!fase;
     const { value: formValues } = await Swal.fire({
       title: isEdit ? "Editar Fase de Implementación" : "Nueva Fase de Implementación",
@@ -237,6 +237,7 @@ export default function ConfiguracionPage() {
     });
 
     if (formValues) {
+
       try {
         const url = isEdit
           ? `/api/fase-implementacion/${fase!.id}`
@@ -260,16 +261,19 @@ export default function ConfiguracionPage() {
             `Fase de implementación ${isEdit ? "actualizada" : "creada"} con éxito`,
             "success"
           );
+
         } else {
           throw new Error(data.message || "No se pudo completar la acción");
         }
+        
       } catch (error: any) {
         Swal.fire("Error", error.message || "Error inesperado", "error");
       }
     }
   };
 
-  const toggleActivoFase = async (fase: FaseImplementacion) => {
+  const toggleActivoFase = async (fase: Fase_Implementacion) => {
+
     try {
       const res = await fetch(`/api/fase-implementacion/${fase.id}`, {
         method: "PATCH",
@@ -283,6 +287,7 @@ export default function ConfiguracionPage() {
       } else {
         throw new Error(data.message || "No se pudo cambiar el estado");
       }
+
     } catch (error: any) {
       Swal.fire("Error", error.message || "Error inesperado", "error");
     }

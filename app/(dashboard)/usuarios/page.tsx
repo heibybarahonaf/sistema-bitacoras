@@ -3,9 +3,9 @@
 import Swal from "sweetalert2";
 import { useRef } from "react";
 import { Usuario } from "@prisma/client";
-import { useEffect, useState } from "react";
 import ModalUsuario from "@/components/ModalUsuario";
 import SignatureCanvas from "react-signature-canvas";
+import { useEffect, useState, useCallback } from "react";
 import { Trash2, Users, Edit3, Plus } from "lucide-react";
 
 interface ErrorDeValidacion {
@@ -36,35 +36,25 @@ const LoadingSpinner = () => (
 
 export default function UsuariosPage() {
   // Estados
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [usuarioEditar, setUsuarioEditar] = useState<Usuario | null>(null);
-  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const firmaRef = useRef<SignatureCanvas | null>(null);
-  const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
+
+  const [paginaActual, setPaginaActual] = useState(1);
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroActual, setFiltroActual] = useState("");
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [meta, setMeta] = useState<PaginationMeta>({
-    total: 0,
-    page: 1,
-    limit: 5,
-    totalPages: 0
-  });
+  
+  const firmaRef = useRef<SignatureCanvas | null>(null);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [usuarioEditar, setUsuarioEditar] = useState<Usuario | null>(null);
+  const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
+  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 5, totalPages: 0});
 
   //Detectar cliente para evitar render server
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  // Cargar usuarios al montar y cuando isClient sea true
-  useEffect(() => {
-    if (isClient) {
-      fetchUsuarios();
-    }
-  }, [isClient, paginaActual, filtroActual]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -174,7 +164,7 @@ export default function UsuariosPage() {
   }
 
   // Fetch usuarios desde API
-  async function fetchUsuarios() {
+  const fetchUsuarios = useCallback(async () => {
     setLoading(true);
     setShowEmptyMessage(false);
 
@@ -189,7 +179,6 @@ export default function UsuariosPage() {
       const response = await res.json();
 
       if (response.code === 404) {
-
         setMeta({
           total: 0,
           page: paginaActual,
@@ -199,7 +188,6 @@ export default function UsuariosPage() {
 
         setUsuarios([]);
         setShowEmptyMessage(true);
-
         return;
       }
 
@@ -208,7 +196,7 @@ export default function UsuariosPage() {
       }
 
       setUsuarios(response.results ?? []);
-       if (!response.results?.length) {
+      if (!response.results?.length) {
         setShowEmptyMessage(true);
       }
 
@@ -224,11 +212,18 @@ export default function UsuariosPage() {
         text: error instanceof Error ? error.message : "Error inesperado al cargar los usuarios",
         confirmButtonColor: "#295d0c",
       });
-
+      
     } finally {
       setLoading(false);
     }
-  }
+  }, [paginaActual, filtroActual, meta.limit]);
+
+  // Cargar usuarios al montar y cuando isClient sea true
+  useEffect(() => {
+    if (isClient) {
+      fetchUsuarios();
+    }
+  }, [fetchUsuarios, isClient, paginaActual, filtroActual]);
 
   // Guardar nuevo usuario
   async function handleSubmitUsuario(event: React.FormEvent<HTMLFormElement>) {
@@ -267,14 +262,14 @@ export default function UsuariosPage() {
       if (firmaRef.current && !firmaRef.current.isEmpty()) {
 
         const firmaBase64 = firmaRef.current.toDataURL();
-        const ress = await fetch("/api/firmas/tecnico", {
+        const response = await fetch("/api/firmas/tecnico", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ firma_base64: firmaBase64, tecnico_id: id }),
         });
 
-        if (!ress.ok) {
-          const errorFirma = await ress.json();
+        if (!response.ok) {
+          const errorFirma = await response.json();
           throw new Error(errorFirma.message || "Error al guardar la firma");
         }
 
@@ -405,14 +400,14 @@ export default function UsuariosPage() {
 
       if (firmaRef.current && !firmaRef.current.isEmpty()) {
         const firmaBase64 = firmaRef.current.toDataURL();
-        const ress = await fetch(`/api/firmas/tecnico/${data.results[0].id}`, {
+        const response = await fetch(`/api/firmas/tecnico/${data.results[0].id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ firma_base64: firmaBase64 }),
         });
 
-        if (!ress.ok) {
-          const errorFirma = await ress.json();
+        if (!response.ok) {
+          const errorFirma = await response.json();
           throw new Error(errorFirma.message || "Error al guardar la firma");
         }
       }

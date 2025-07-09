@@ -2,8 +2,8 @@
 
 import Swal from 'sweetalert2';
 import { Sistema } from "@prisma/client";
-import { useEffect, useState } from "react";
 import ModalSistema from "@/components/ModalSistema";
+import { useEffect, useState, useCallback } from "react";
 import { Settings2, Plus, Edit3, Trash2 } from "lucide-react";
 
 interface ErrorDeValidacion {
@@ -30,29 +30,22 @@ const LoadingSpinner = () => (
 );
 
 export default function SistemasPage() {
-  const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [loading, setLoading] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [sistemaEditar, setSistemaEditar] = useState<Sistema | null>(null);
-  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
+
+  const [paginaActual, setPaginaActual] = useState(1);
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroActual, setFiltroActual] = useState("");
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [meta, setMeta] = useState<PaginationMeta>({
-    total: 0,
-    page: 1,
-    limit: 5,
-    totalPages: 0
-  });
+
+  const [sistemas, setSistemas] = useState<Sistema[]>([]);
+  const [sistemaEditar, setSistemaEditar] = useState<Sistema | null>(null);
+  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 5, totalPages: 0});
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  useEffect(() => {
-    if (isClient) fetchSistemas();
-  }, [isClient, paginaActual, filtroActual]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -92,7 +85,7 @@ export default function SistemasPage() {
     }
   }
 
-  async function fetchSistemas() {
+  const fetchSistemas = useCallback(async () => {
     setLoading(true);
     setShowEmptyMessage(false);
 
@@ -107,7 +100,6 @@ export default function SistemasPage() {
       const response = await res.json();
 
       if (response.code === 404) {
-
         setMeta({
           total: 0,
           page: paginaActual,
@@ -142,11 +134,15 @@ export default function SistemasPage() {
         text: error instanceof Error ? error.message : 'Error inesperado',
         confirmButtonColor: '#295d0c'
       });
-
+      
     } finally {
       setLoading(false);
     }
-  }
+  }, [paginaActual, filtroActual, meta.limit]);
+
+  useEffect(() => {
+    if (isClient) fetchSistemas();
+  }, [fetchSistemas ,isClient, paginaActual, filtroActual]);
 
   async function handleSubmitSistema(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

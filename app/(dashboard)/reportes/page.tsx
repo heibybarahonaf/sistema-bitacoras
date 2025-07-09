@@ -4,7 +4,6 @@ import Swal from "sweetalert2";
 import { useState } from "react";
 import { Cliente } from "@prisma/client";
 import { BarChart, X } from "lucide-react";
-import { useRouter } from "next/navigation";
 import CardReporte from "../../../components/CardReporte";
 
 interface BitacoraData {
@@ -27,7 +26,6 @@ interface BitacoraData {
 }
 
 export default function ReportesPage() {
-  const router = useRouter();
 
   const [isGenerating, setIsGenerating] = useState({
     general: false,
@@ -48,9 +46,7 @@ export default function ReportesPage() {
     nombreCliente: "",
   });
 
-
   const [activeTab, setActiveTab] = useState<"general" | "cliente" | "usuario" | "ventas">("general");
-
 
   // --- Alertas ---
   const mostrarAlertaError = (mensaje: string) => {
@@ -103,23 +99,26 @@ export default function ReportesPage() {
     const d = new Date(hora);
     const horas = d.getHours().toString().padStart(2, "0");
     const minutos = d.getMinutes().toString().padStart(2, "0");
+
     return `${horas}:${minutos}`;
   };
 
   // --- Función para buscar clientes (usada en modal) ---
   const buscarClientes = async (termino: string): Promise<Cliente[]> => {
+
     try {
-      const res = await fetch(
-        `/api/clientes?search=${encodeURIComponent(termino)}&limit=5`
-      );
+
+      const res = await fetch(`/api/clientes?search=${encodeURIComponent(termino)}&limit=5`);
       if (!res.ok) throw new Error("Error en la búsqueda");
 
       const data = await res.json();
       return data.results || [];
+
     } catch (error) {
-      console.error("Error buscando clientes:", error);
+
       mostrarAlertaError("Error al buscar clientes");
       return [];
+
     }
   };
 
@@ -168,17 +167,20 @@ export default function ReportesPage() {
           Swal.showValidationMessage("Debe seleccionar un cliente");
           return null;
         }
+
         const clienteData = selected.getAttribute("data-cliente");
         if (!clienteData) {
           Swal.showValidationMessage("Datos del cliente no válidos");
           return null;
         }
+
         try {
           return JSON.parse(clienteData) as Cliente;
         } catch {
           Swal.showValidationMessage("Error al procesar datos del cliente");
           return null;
         }
+
       },
       didOpen: () => {
         const input = document.getElementById("buscar-cliente-input");
@@ -270,6 +272,7 @@ export default function ReportesPage() {
     rtn?: string,
     usuario?: string
   ) => {
+
     if (!fechaInicio || !fechaFinal) {
       mostrarAlertaError("Ingresa ambas fechas");
       return;
@@ -313,7 +316,6 @@ export default function ReportesPage() {
       } else if (tipo == "ventas" && usuario) {
         params.append("usuario", usuario);
       }
-
 
       const response = await fetch(
         `/api/reportes/${tipo}-bitacoras?${params.toString()}`,
@@ -465,6 +467,7 @@ export default function ReportesPage() {
           data: data,
           nombreCliente: data.length > 0 ? data[0].cliente : "",
         }));
+        
       } else {
         const errorText = await response.text();
         let errorData;

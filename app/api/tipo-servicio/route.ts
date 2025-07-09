@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { ResponseDto } from "@/app/common/dtos/response.dto";
-import { TipoServicioService } from "@/app/services/tipoServicioService";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { CrearTipoServicioDto } from "@/app/dtos/tipoServicio.dto";
+import { TipoServicioService } from "@/app/services/tipoServicioService";
 
 export async function GET() {
 

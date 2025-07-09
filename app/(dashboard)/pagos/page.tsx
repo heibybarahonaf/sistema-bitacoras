@@ -1,10 +1,10 @@
 "use client";
 
 import Swal from "sweetalert2";
-import { useEffect, useState } from "react";
 import ModalPago from "@/components/ModalPago";
 import { Pagos_Cliente } from "@prisma/client";
 import { DollarSign, Eye, Edit } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
 
 interface PagoConCliente extends Pagos_Cliente {
   cliente: {
@@ -52,33 +52,24 @@ const LoadingSpinner = () => (
 );
 
 export default function PagosPage() {
-  const [pagos, setPagos] = useState<PagoConCliente[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
-  const [paginaActual, setPaginaActual] = useState(1);
   const [pagosPorPagina] = useState(10);
-  const [metaPagos, setMetaPagos] = useState({
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 0,
-  });
+  const [loading, setLoading] = useState(false);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
+  const [metaPagos, setMetaPagos] = useState({total: 0, page: 1, limit: 10, totalPages: 0});
 
+  const [pagos, setPagos] = useState<PagoConCliente[]>([]);
   const [modalPago, setModalPago] = useState<{ open: boolean; pago?: PagoConCliente }>({
     open: false,
   });
 
   // Filtros
+  const [fechaFin, setFechaFin] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
   const [filtroFactura, setFiltroFactura] = useState("");
   const [filtroCliente, setFiltroCliente] = useState("");
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [fechaFin, setFechaFin] = useState("");
 
-  useEffect(() => {
-    fetchPagos();
-  }, [paginaActual, filtroFactura, fechaInicio, fechaFin]);
-
-  async function fetchPagos() {
+  const fetchPagos = useCallback(async () => {
     setLoading(true);
     setShowEmptyMessage(false);
 
@@ -87,6 +78,7 @@ export default function PagosPage() {
         page: paginaActual.toString(),
         limit: pagosPorPagina.toString(),
         ...(filtroFactura && { factura: filtroFactura }),
+        ...(filtroCliente && { cliente: filtroCliente }),
         ...(fechaInicio && { fechaInicio }),
         ...(fechaFin && { fechaFin }),
       });
@@ -108,24 +100,31 @@ export default function PagosPage() {
       setMetaPagos(
         response.meta || {
           total: 0,
-          page: 1,
+          page: paginaActual,
           limit: 10,
           totalPages: 0,
         }
       );
 
       if (response.results?.length === 0) setShowEmptyMessage(true);
+
     } catch (error) {
+
       Swal.fire({
         icon: "error",
         title: "Error al cargar pagos",
         text: error instanceof Error ? error.message : "Error inesperado",
         confirmButtonColor: "#295d0c",
       });
+
     } finally {
       setLoading(false);
     }
-  }
+  }, [paginaActual, pagosPorPagina, filtroFactura, filtroCliente, fechaInicio, fechaFin]);
+  
+  useEffect(() => {
+    fetchPagos();
+  }, [fetchPagos, paginaActual, filtroFactura]);
 
   const cambiarPagina = (nuevaPagina: number) => {
     if (nuevaPagina >= 1 && nuevaPagina <= metaPagos.totalPages) {
@@ -133,26 +132,6 @@ export default function PagosPage() {
     }
   };
 
-  // Filtrado frontend por cliente y fechas (factura ya se filtra en backend)
-  const pagosFiltrados = pagos.filter((pago) => {
-    const fechaPagoStr =
-      pago.createdAt instanceof Date
-        ? pago.createdAt.toISOString().split("T")[0]
-        : String(pago.createdAt).split("T")[0];
-    const inicioStr = fechaInicio ? new Date(fechaInicio).toISOString().split("T")[0] : null;
-    const finStr = fechaFin ? new Date(fechaFin).toISOString().split("T")[0] : null;
-
-    const cumpleFecha = (!inicioStr || fechaPagoStr >= inicioStr) && (!finStr || fechaPagoStr <= finStr);
-
-    const terminoCliente = filtroCliente.toLowerCase();
-
-    const cumpleBusquedaCliente =
-      !terminoCliente ||
-      pago.cliente?.empresa?.toLowerCase().includes(terminoCliente) ||
-      pago.cliente?.responsable?.toLowerCase().includes(terminoCliente);
-
-    return cumpleFecha && cumpleBusquedaCliente;
-  });
 
   return (
     <div className="p-6 bg-white min-h-screen mb-8">
@@ -216,7 +195,7 @@ export default function PagosPage() {
       {/* Tabla de pagos */}
       {loading ? (
         <LoadingSpinner />
-      ) : pagosFiltrados.length === 0 ? (
+      ) : pagos.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">💵</div>
           <p className="text-gray-600 text-lg">No hay pagos registrados.</p>
@@ -238,7 +217,7 @@ export default function PagosPage() {
               </tr>
             </thead>
             <tbody>
-              {pagosFiltrados.map((pago) => (
+              {pagos.map((pago) => (
                 <tr key={pago.id} className="hover:bg-gray-50">
                   <td className="px-2 sm:px-4 py-3">{pago.no_factura}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
