@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+const nodemailer = require("nodemailer");
 import { ResponseDto } from "../common/dtos/response.dto";
 
 interface DatosVenta {
@@ -21,12 +21,12 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-
+/*
 transporter.verify().then(() => {
     console.log("Listo para enviar correos");
 }).catch((err) => {
     console.error("Error al verificar el transporte de correo:", err);
-});
+});*/
 
 
 export class EmailService {
