@@ -188,6 +188,7 @@ export default function UsuariosPage() {
 
         setUsuarios([]);
         setShowEmptyMessage(true);
+
         return;
       }
 
