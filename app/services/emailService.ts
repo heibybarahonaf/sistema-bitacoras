@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 import { ResponseDto } from "../common/dtos/response.dto";
 
 interface DatosVenta {
