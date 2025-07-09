@@ -22,7 +22,7 @@ export default function HomeContent() {
     const url = new URL(window.location.href);
     url.searchParams.delete("error");
     router.replace(url.pathname);
-  }, [error]);
+  }, [router, error]);
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gray-100 pt-24 px-4">

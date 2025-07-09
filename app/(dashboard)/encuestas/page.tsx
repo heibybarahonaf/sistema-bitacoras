@@ -2,8 +2,8 @@
 
 import axios from "axios";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { FileText } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Pregunta {
   id: number;
@@ -20,19 +20,20 @@ interface EncuestaActiva {
 
 export default function CrearEncuestaPage() {
   const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
+  const [encuestaId, setEncuestaId] = useState<number | null>(null);
   const [preguntasAsociadas, setPreguntasAsociadas] = useState<Pregunta[]>([]);
   const [preguntasDisponibles, setPreguntasDisponibles] = useState<Pregunta[]>([]);
 
   const [titulo, setTitulo] = useState("");
-  const [descripcion, setDescripcion] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
-  const [encuestaId, setEncuestaId] = useState<number | null>(null);
+  const [descripcion, setDescripcion] = useState("");
 
   // Estado para mostrar toast
   const [toast, setToast] = useState<{ tipo: "exito" | "error"; texto: string } | null>(null);
 
   useEffect(() => {
+
     const fetchDatosIniciales = async () => {
       try {
         const [resPreguntas, resEncuesta] = await Promise.all([
@@ -65,10 +66,13 @@ export default function CrearEncuestaPage() {
           const disponibles = preguntasData.filter((p) => !idsAsociadas.has(p.id));
           setPreguntasDisponibles(disponibles);
           setPreguntas(preguntasData);
+
         } else {
+
           setPreguntas(preguntasData);
           setPreguntasAsociadas([]);
           setPreguntasDisponibles(preguntasData);
+
         }
       } catch {
         setMensaje("Error al cargar datos iniciales");
@@ -90,23 +94,30 @@ export default function CrearEncuestaPage() {
     }
 
     setCargando(true);
+
     try {
+
       if (encuestaId) {
         await axios.patch(`/api/encuestas/${encuestaId}`, {
           titulo,
           descripcion,
           preguntas: preguntasAsociadas.map((p) => p.id),
         });
+
         mostrarToast("exito", "Encuesta actualizada con éxito");
+
       } else {
+        
         const res = await axios.post("/api/encuestas", {
           titulo,
           descripcion,
           activa: true,
           preguntas: preguntasAsociadas.map((p) => p.id),
         });
+
         setEncuestaId(res.data.id);
         mostrarToast("exito", "Encuesta creada con éxito");
+
       }
     } catch (error: any) {
       mostrarToast("error", error?.response?.data?.message || "Error al guardar encuesta");

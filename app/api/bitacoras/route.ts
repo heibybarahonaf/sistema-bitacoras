@@ -4,22 +4,6 @@ import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { BitacoraService } from "@/app/services/bitacoraService";
 
-export async function GET() {
-
-    try {
-
-        const clientes = await BitacoraService.obtenerBitacoras();
-        return NextResponse.json(new ResponseDto(200, "Bitacoras obtenidas correctamente", clientes));
-
-    } catch (error) {
-
-        return GeneralUtils.generarErrorResponse(error);
-        
-    }
-
-}
-
-
 export async function POST(req: Request) {
 
     try {

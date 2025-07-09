@@ -69,7 +69,7 @@ export default function FirmaClientePage() {
     };
 
     if (token) validarToken();
-  }, [token]);
+  }, [baseUrl, token]);
 
   const handleSubmit = async () => {
     if (!sigCanvas.current) {

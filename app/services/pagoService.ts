@@ -15,9 +15,10 @@ export class PagoService {
     public static async obtenerPagos(
         page: number = 1,
         limit: number = 10,
+        cliente?: string,
         filtroFactura?: string,
         fechaInicio?: string,
-        fechaFin?: string
+        fechaFin?: string,
     ): Promise<ResponseDto<Pagos_Cliente>> {
 
         const skip = (page - 1) * limit;
@@ -33,13 +34,21 @@ export class PagoService {
             if (fechaFin) where.createdAt.lte = new Date(fechaFin);
         }
 
+        if (cliente) {
+            where.cliente = {
+                OR: [
+                    { empresa: { contains: cliente, mode: 'insensitive' } },
+                ]
+            };
+        }
+
         const [pagos, total] = await Promise.all([
             prisma.pagos_Cliente.findMany({
-            where,
-            skip,
-            take: limit,
-            include: { cliente: true },
-            orderBy: { createdAt: "desc" }
+                where,
+                skip,
+                take: limit,
+                include: { cliente: true },
+                orderBy: { createdAt: "desc" }
             }),
             prisma.pagos_Cliente.count({ where })
         ]);

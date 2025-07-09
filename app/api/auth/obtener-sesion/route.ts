@@ -1,5 +1,3 @@
-export const runtime = 'nodejs'; 
-
 import { NextResponse } from 'next/server';
 import { ResponseDto } from '@/app/common/dtos/response.dto';
 import { UsuarioService } from '@/app/services/usuarioService';

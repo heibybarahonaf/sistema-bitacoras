@@ -108,6 +108,7 @@ export default function ModalDetalleBitacora({
   if (!bitacora) return null;
 
   const copiarAlPortapapeles = async () => {
+    
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(firmaClienteUrl || "");

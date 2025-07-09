@@ -1,21 +1,11 @@
 "use client";
 
 import Swal from "sweetalert2";
-import { useEffect, useState } from "react";
-import ModalCliente from "@/components/ModalCliente";
+import { Cliente } from "@prisma/client";
 import ModalPago from "@/components/ModalPago";
+import ModalCliente from "@/components/ModalCliente";
+import { useEffect, useState, useCallback  } from "react";
 import { Contact, Plus, Edit3, Trash2, DollarSign } from "lucide-react";
-
-interface Cliente {
-  id: number;
-  empresa: string;
-  responsable: string;
-  rtn: string;
-  direccion: string;
-  telefono: string;
-  correo: string;
-  activo: boolean;
-}
 
 interface clienteActualizado {
   empresa: string,
@@ -55,12 +45,12 @@ const LoadingSpinner = () => (
 );
 
 export default function ClientesPage() {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null);
-  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isCliente, setIsCliente] = useState(false);
+  const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
+  const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null);
   const [modalPagoCliente, setModalPagoCliente] = useState<{ open: boolean; clienteId?: number }>({
     open: false,
   });
@@ -71,12 +61,7 @@ export default function ClientesPage() {
 
   // Paginación estados - ahora manejados por el backend
   const [paginaActual, setPaginaActual] = useState(1);
-  const [meta, setMeta] = useState<PaginationMeta>({
-    total: 0,
-    page: 1,
-    limit: 5,
-    totalPages: 0
-  });
+  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 5, totalPages: 0});
 
   // Debounce para búsqueda
   useEffect(() => {
@@ -112,10 +97,10 @@ export default function ClientesPage() {
   };
 
   function mostrarErroresValidacion(data: ErrorDeValidacion) {
+
     if (data.code !== 200 && data.code !== 201 && data.results && data.results.length > 0) {
-      const erroresHtml = data.results
-        .map(
-          (error) =>
+      const erroresHtml = data.results 
+        .map((error) =>
             `<div class="mb-2"><ul class="ml-4 mt-1">${
               error.mensajes && Array.isArray(error.mensajes)
                 ? error.mensajes.map((msg: string) => `<li>• ${msg}</li>`).join("")
@@ -131,20 +116,25 @@ export default function ClientesPage() {
         confirmButtonColor: "#295d0c",
         width: "500px",
       });
+
     } else {
+
       if (data.code !== 200 && data.code !== 201) {
+
         Swal.fire({
           icon: "error",
           title: "Error",
           text: data.message || "Error inesperado",
           confirmButtonColor: "#295d0c",
         });
+
       }
+
     }
   }
 
   // Obtener clientes desde la API con paginación
-  async function fetchClientes() {
+  const fetchClientes = useCallback(async () => {
     setLoading(true);
     setShowEmptyMessage(false);
 
@@ -159,6 +149,7 @@ export default function ClientesPage() {
       const response = await res.json();
 
       if (response.code === 404) {
+
         setClientes([]);
         setMeta({
           total: 0,
@@ -166,6 +157,7 @@ export default function ClientesPage() {
           limit: meta.limit,
           totalPages: 0
         });
+
         setShowEmptyMessage(true);
         return;
       }
@@ -183,23 +175,26 @@ export default function ClientesPage() {
       if (!response.results || response.results.length === 0) {
         setShowEmptyMessage(true);
       }
+
     } catch (error) {
+
       Swal.fire({
         icon: "error",
         title: "Error al cargar clientes",
         text: error instanceof Error ? error.message : "Error inesperado al cargar los clientes",
         confirmButtonColor: "#295d0c",
       });
+
     } finally {
       setLoading(false);
     }
-  }
+  }, [paginaActual, filtroActual, meta.limit]);
 
   useEffect(() => {
     if (isCliente) {
       fetchClientes();
     }
-  }, [isCliente, paginaActual, filtroActual]);
+  }, [fetchClientes, isCliente, paginaActual, filtroActual]);
 
   // Crear cliente
   async function handleSubmitCliente(event: React.FormEvent<HTMLFormElement>) {
@@ -248,12 +243,14 @@ export default function ClientesPage() {
       setModalOpen(false);
 
     } catch {
+
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
         text: "No se pudo conectar con el servidor",
         confirmButtonColor: "#295d0c",
       });
+
     }
   }
 
@@ -277,12 +274,14 @@ export default function ClientesPage() {
       const data = await res.json();
 
       if (!res.ok || data.code !== 200) {
+
         Swal.fire({
           icon: "error",
           title: "Error",
           text: data.message || "Error al eliminar cliente",
           confirmButtonColor: "#295d0c",
         });
+
         return;
       }
 
@@ -301,12 +300,14 @@ export default function ClientesPage() {
       }
 
     } catch {
+
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
         text: "No se pudo conectar con el servidor",
         confirmButtonColor: "#295d0c",
       });
+
     }
   }
 
@@ -362,13 +363,16 @@ export default function ClientesPage() {
       fetchClientes();
       setModalOpen(false);
       setClienteEditar(null);
+
     } catch {
+
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
         text: "No se pudo conectar con el servidor",
         confirmButtonColor: "#295d0c",
       });
+
     }
   }
 
