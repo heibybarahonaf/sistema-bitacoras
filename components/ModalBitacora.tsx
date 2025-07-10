@@ -506,12 +506,48 @@ useEffect(() => {
       const clipboardSoportado = typeof navigator.clipboard !== "undefined";
 
       Swal.fire({
-        icon: "success",
-        title: "Bitácora guardada",
-      }).then(() => {
-        onGuardar();
-        //onClose();
+  icon: "success",
+  title: "Bitácora guardada",
+  html: `
+    La bitácora se ha guardado correctamente.<br/>
+    Puedes compartir este enlace con el cliente para la encuesta:<br/><br/>
+    <input type="text" id="encuestaLink" class="swal2-input" value="${encuestaUrl}" readonly />
+    ${
+      typeof navigator.clipboard !== "undefined"
+        ? `<button type="button" id="copyEncuestaBtn" class="swal2-confirm swal2-styled" style="margin-top: 10px;">
+             Copiar enlace
+           </button>`
+        : `<p class="text-sm text-gray-600 italic mt-2">
+             Mantén presionado el campo de texto para copiar el enlace manualmente.
+           </p>`
+    }
+  `,
+  showConfirmButton: false,
+  didOpen: () => {
+    const input = document.getElementById("encuestaLink") as HTMLInputElement;
+    input?.select();
+
+    if (typeof navigator.clipboard !== "undefined") {
+      const copyBtn = document.getElementById("copyEncuestaBtn");
+      copyBtn?.addEventListener("click", () => {
+        navigator.clipboard.writeText(encuestaUrl).then(() => {
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "success",
+            title: "Enlace copiado al portapapeles",
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true,
+          }).then(() => {
+            onGuardar();
+            onClose();
+          });
+        });
       });
+    }
+  },
+});
       }
 
 
