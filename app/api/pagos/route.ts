@@ -12,21 +12,23 @@ export async function GET(req: Request) {
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '10');
         const factura = searchParams.get('factura');
+        const cliente = searchParams.get('cliente');
         const fechaInicio = searchParams.get('fechaInicio');
         const fechaFin = searchParams.get('fechaFin');
 
         const pagos = await PagoService.obtenerPagos(
-        page,
-        limit,
-        factura || undefined,
-        fechaInicio || undefined,
-        fechaFin || undefined
+            page,
+            limit,
+            cliente || undefined,
+            factura || undefined,
+            fechaInicio || undefined,
+            fechaFin || undefined
         );
         
         return NextResponse.json(pagos);
         
     } catch (error) {
-
+        
         return GeneralUtils.generarErrorResponse(error);
 
   }

@@ -6,19 +6,22 @@ import { Pregunta } from "@prisma/client";
 import { useEffect, useState } from "react";
 
 export default function PreguntasPage() {
-  const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
-  const [pregunta, setPregunta] = useState("");
-  const [editandoId, setEditandoId] = useState<number | null>(null);
-  const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState("");
+  const [pregunta, setPregunta] = useState("");
+  const [cargando, setCargando] = useState(false);
+  const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
+  const [editandoId, setEditandoId] = useState<number | null>(null);
 
   const cargarPreguntas = async () => {
+
     try {
+
       const res = await axios.get("/api/preguntas");
       const data = res.data.results[0];
-        if (Array.isArray(data)) {
+
+      if (Array.isArray(data)) {
         setPreguntas(data);
-        }
+      }
 
     } catch {
       console.error("Error al obtener las preguntas");
@@ -28,7 +31,9 @@ export default function PreguntasPage() {
   const guardarPregunta = async () => {
     if (!pregunta.trim()) return;
     setCargando(true);
+
     try {
+
       if (editandoId) {
         await axios.patch(`/api/preguntas/${editandoId}`, { pregunta });
         setMensaje("Pregunta actualizada");
@@ -36,9 +41,11 @@ export default function PreguntasPage() {
         await axios.post("/api/preguntas", { pregunta });
         setMensaje("Pregunta creada");
       }
+
       setPregunta("");
       setEditandoId(null);
       cargarPreguntas();
+      
     } catch (error: any) {
       setMensaje(error?.response?.data?.message || "Error al guardar");
     } finally {

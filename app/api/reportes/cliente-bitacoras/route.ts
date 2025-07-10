@@ -15,7 +15,6 @@ export async function GET(request: Request) {
 
         if (!rtn || !fechaInicio || !fechaFinal) {
             throw new ResponseDto(400, "Se requieren ambas fechas y el rtn del cliente");
-           //return NextResponse.json({ message: "Se requieren ambas fechas y el rtn del cliente" }, { status: 400 });
         }
 
         const bitacoras = await BitacoraService.obtenerBitacorasClienteFechas(

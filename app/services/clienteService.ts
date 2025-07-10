@@ -111,9 +111,14 @@ export class ClienteService {
             throw new ResponseDto(409, "El RTN/ID ya está registrado");
         }
 
+        const { correo } = clienteData;
+
         try {
             const cliente = await prisma.cliente.create({
-                data: clienteData
+                data: {
+                    ...clienteData,
+                    correo: correo || ""
+                }
             });
 
             return cliente;

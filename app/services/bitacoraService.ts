@@ -167,7 +167,6 @@ export class BitacoraService {
 
     public static async obtenerBitacorasTecnicoFechas(nombre: string, fechaInicio: string, fechaFinal: string) {
 
-        console.log("Inicio: ",fechaInicio, " - Fecha final: ",fechaFinal)
         const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
         const bitacoras = await prisma.bitacora.findMany({
             where: {

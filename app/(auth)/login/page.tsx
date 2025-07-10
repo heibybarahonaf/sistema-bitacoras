@@ -17,10 +17,10 @@ interface FormErrors {
 }
 
 export default function LoginInterface() {
-    const [errors, setErrors] = useState<FormErrors>({});
-    const [isLoading, setIsLoading] = useState(false);
     const [step, setStep] = useState(1);
-
+    const [isLoading, setIsLoading] = useState(false);
+    
+    const [errors, setErrors] = useState<FormErrors>({});
     const [formData, setFormData] = useState<FormData>({
         correo: '',
         password: '',
@@ -124,17 +124,18 @@ export default function LoginInterface() {
             setStep(2);
 
         } catch {
+
             Swal.fire({
                 icon: 'error',
                 title: 'Error al enviar el código',
                 text: 'No se pudo conectar con el servidor'
             });
+
         } finally {
             setIsLoading(false);
         }
 
     };
-
 
     const handleLogin = async () => {
         if (!validateForm()) return;
@@ -202,15 +203,14 @@ export default function LoginInterface() {
 
 
     const handleVolver = () => {
-
         setStep(1);
         setFormData(prev => ({
-        ...prev,
-        password: '',
-        codigo: ''
+            ...prev,
+            password: '',
+            codigo: ''
         }));
-        setErrors({});
 
+        setErrors({});
     };
 
     return (
@@ -233,16 +233,16 @@ export default function LoginInterface() {
                 <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
-                    type="email"
-                    id="correo"
-                    name="correo"
-                    value={formData.correo}
-                    onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                        errors.correo ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="correo@gmail.com"
-                    disabled={isLoading}
+                        type="email"
+                        id="correo"
+                        name="correo"
+                        value={formData.correo}
+                        onChange={handleInputChange}
+                        className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                            errors.correo ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="correo@gmail.com"
+                        disabled={isLoading}
                     />
                 </div>
                 {errors.correo && (
@@ -251,18 +251,18 @@ export default function LoginInterface() {
                 </div>
 
                 <button
-                onClick={handleSolicitarCodigo}
-                disabled={isLoading}
-                className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                    <>
-                    <Send className="w-5 h-5" />
-                    Solicitar Código
-                    </>
-                )}
+                    onClick={handleSolicitarCodigo}
+                    disabled={isLoading}
+                    className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                    {isLoading ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                        <>
+                        <Send className="w-5 h-5" />
+                        Solicitar Código
+                        </>
+                    )}
                 </button>
             </div>
             ) : (
@@ -274,16 +274,16 @@ export default function LoginInterface() {
                 <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
-                    type="email"
-                    id="correo-step2"
-                    name="correo"
-                    value={formData.correo}
-                    onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                        errors.correo ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="tu@ejemplo.com"
-                    disabled={isLoading}
+                        type="email"
+                        id="correo-step2"
+                        name="correo"
+                        value={formData.correo}
+                        onChange={handleInputChange}
+                        className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                            errors.correo ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="tu@ejemplo.com"
+                        disabled={isLoading}
                     />
                 </div>
                 {errors.correo && (
@@ -298,16 +298,16 @@ export default function LoginInterface() {
                 <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                        errors.password ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="••••••••"
-                    disabled={isLoading}
+                        type="password"
+                        id="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                            errors.password ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="••••••••"
+                        disabled={isLoading}
                     />
                 </div>
                 {errors.password && (
@@ -322,16 +322,16 @@ export default function LoginInterface() {
                 <div className="relative">
                     <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
-                    type="text"
-                    id="codigo"
-                    name="codigo"
-                    value={formData.codigo}
-                    onChange={handleInputChange}
-                    className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                        errors.codigo ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="Ingresa el código recibido"
-                    disabled={isLoading}
+                        type="text"
+                        id="codigo"
+                        name="codigo"
+                        value={formData.codigo}
+                        onChange={handleInputChange}
+                        className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
+                            errors.codigo ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                        placeholder="Ingresa el código recibido"
+                        disabled={isLoading}
                     />
                 </div>
                 {errors.codigo && (

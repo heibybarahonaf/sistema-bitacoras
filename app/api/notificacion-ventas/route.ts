@@ -37,7 +37,7 @@ export async function POST(req: Request) {
             tecnico: nombreTecnico,
             cliente: nombreCliente,
             telefono: cliente.telefono,
-            correo: cliente.correo,
+            correo: cliente?.correo || "",
             rtn: cliente.rtn,
             ventas
         };

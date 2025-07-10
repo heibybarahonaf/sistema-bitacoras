@@ -1,16 +1,10 @@
 "use client";
 
 import Swal from "sweetalert2";
-import { useEffect, useState } from "react";
+import { Equipo } from "@prisma/client";
 import ModalEquipo from "@/components/ModalEquipo";
+import { useEffect, useState, useCallback } from "react";
 import { MonitorSmartphone, Plus, Edit3, Trash2 } from "lucide-react";
-
-interface Equipo {
-  id: number;
-  equipo: string;
-  descripcion: string;
-  activo: boolean;
-}
 
 interface ErrorDeValidacion {
   code: number;
@@ -39,29 +33,18 @@ const LoadingSpinner = () => (
 );
 
 export default function EquiposPage() {
-  const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [loading, setLoading] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [equipoEditar, setEquipoEditar] = useState<Equipo | null>(null);
-  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [isEquipo, setIsEquipo] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [showEmptyMessage, setShowEmptyMessage] = useState(false);
+
+  const [paginaActual, setPaginaActual] = useState(1);
   const [filtroNombre, setFiltroNombre] = useState("");
   const [filtroActual, setFiltroActual] = useState("");
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [meta, setMeta] = useState<PaginationMeta>({
-    total: 0,
-    page: 1,
-    limit: 5,
-    totalPages: 0
-  });
-
-  useEffect(() => {
-    setIsEquipo(true);
-  }, []);
-
-  useEffect(() => {
-    if (isEquipo) fetchEquipos();
-  }, [isEquipo, paginaActual, filtroActual]);
+  
+  const [equipos, setEquipos] = useState<Equipo[]>([]);
+  const [equipoEditar, setEquipoEditar] = useState<Equipo | null>(null);
+  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 5,totalPages: 0});
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -107,7 +90,7 @@ export default function EquiposPage() {
   }
 
   // Obtener equipos desde la API
-  async function fetchEquipos() {
+  const fetchEquipos = useCallback(async () => {
     setLoading(true);
     setShowEmptyMessage(false);
 
@@ -122,7 +105,6 @@ export default function EquiposPage() {
       const response = await res.json();
 
       if (response.code === 404) {
-
         setMeta({
           total: 0,
           page: paginaActual,
@@ -157,11 +139,19 @@ export default function EquiposPage() {
         text: error instanceof Error ? error.message : "Error inesperado",
         confirmButtonColor: "#295d0c",
       });
-
+      
     } finally {
       setLoading(false);
     }
-  }
+  }, [paginaActual, meta.limit, filtroActual]);
+
+  useEffect(() => {
+    setIsEquipo(true);
+  }, []);
+
+  useEffect(() => {
+    if (isEquipo) fetchEquipos();
+  }, [fetchEquipos, isEquipo, paginaActual, filtroActual]);
 
   // Crear equipo
   async function handleSubmitEquipo(event: React.FormEvent<HTMLFormElement>) {
