@@ -173,7 +173,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [faseImplementacionId, setFaseImplementacionId] = useState<number | null>(null);
   const [fasesImplementacion, setFasesImplementacion] = useState<Fase_Implementacion[]>([]);
   
-  
   const sigCanvas = useRef<SignatureCanvas>(null);
   const [guardando, setGuardando] = useState(false);
   const sigCanvasCliente = useRef<SignatureCanvas>(null);
@@ -190,6 +189,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
 
   const generarNuevoEnlaceFirma = async () => {
     try {
+
       const res = await fetch("/api/firmas/remote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -197,11 +197,13 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
       });
       const json = await res.json();
       const firma = json.results?.[0];
+
       if (firma) {
         setFirmaClienteRemotaId(firma.id);
         setUrlFirmaRemota(firma.url);
         setEsperandoFirmaCliente(true);
       }
+
     } catch {
       Swal.fire("Error", "No se pudo generar un nuevo enlace de firma.", "error");
     }
@@ -251,6 +253,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   useEffect(() => {
 
     const cargarFirmaTecnico = async () => {
+
       try {
         const res = await fetch("/api/auth/obtener-sesion", {
           credentials: "include",
@@ -376,7 +379,6 @@ useEffect(() => {
 
     try {
       if (!modalidad) throw new Error("Seleccione la modalidad");
-
       if (!noTicket) throw new Error("No. Ticket es obligatorio");
       if (!fechaServicio) throw new Error("Fecha del servicio es obligatoria");
       if (!horaLlegada) throw new Error("Hora de llegada es obligatoria");
@@ -387,67 +389,58 @@ useEffect(() => {
       if (!fasesImplementacion) throw new Error("Fase de implementación es obligatoria");
       if (!tipoHoras) throw new Error("Tipo de horas es obligatorio");
 
-      // Firma técnico obligatoria
-      //if (!sigCanvas.current || sigCanvas.current.isEmpty()) {
-        //throw new Error("Por favor, capture la firma del técnico.");
-      //}
-
       // Firma cliente solo si modalidad presencial
       if (modalidad === "Presencial" && sigCanvasCliente.current?.isEmpty()) {
         throw new Error("Por favor, capture la firma del cliente.");
       }
-      // Obtener imágenes base64 de firmas
-      //const firmaTecnico = sigCanvas.current?.getCanvas().toDataURL("image/png");
+
       const firmaCliente =
         modalidad === "Presencial"
           ? sigCanvasCliente.current?.getCanvas().toDataURL("image/png")
           : null;
 
-      // Guardar firmas en backend
-      //const resFirmaTecnico = await fetch("/api/firmas", {
-        //method: "POST",
-        //headers: { "Content-Type": "application/json" },
-        //body: JSON.stringify({ firma_base64: firmaTecnico }),
-      //});
-      //const dataFirmaTecnico = await resFirmaTecnico.json();
-      //if (!resFirmaTecnico.ok || !dataFirmaTecnico.results?.[0]?.id) {
-        //throw new Error("Error al guardar la firma del técnico");
-      //}
-      //const firmaTecnicoId = dataFirmaTecnico.results[0].id;
-
       let firmaClienteId: number | null = null;
       if (modalidad === "Presencial" && firmaCliente) {
+
         const resFirmaCliente = await fetch("/api/firmas", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ firma_base64: firmaCliente }),
         });
+
         const dataFirmaCliente = await resFirmaCliente.json();
         if (!resFirmaCliente.ok || !dataFirmaCliente.results?.[0]?.id) {
           throw new Error("Error al guardar la firma del cliente");
         }
+
         firmaClienteId = dataFirmaCliente.results[0].id;
+
       } else if (modalidad === "Remoto") {
+
         if (!firmaClienteRemotaId) {
           throw new Error("No se ha generado la firma remota del cliente.");
         }
         firmaClienteId = firmaClienteRemotaId;
+
       }
 
       let usuarioId = 1, usuarioNombre = "";
       try {
+
         const res = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           usuarioId = data.results[0].id;
+          usuarioNombre = data.results[0].nombre;
         }
+
       } catch (error) {
         console.error("Error al obtener nombre del usuario:", error);
       }
 
       const newBitacora = {
         cliente_id: clienteId,
-        usuario_id: usuarioId, //
+        usuario_id: usuarioId,
         no_ticket: noTicket,
         fecha_servicio: fechaServicio,
         hora_llegada: new Date(`${fechaServicio}T${horaLlegada}`).toISOString(),
@@ -469,7 +462,6 @@ useEffect(() => {
         responsable,
       };
 
-
       // Guardar bitácora
       const res = await fetch("/api/bitacoras", {
         method: "POST",
@@ -483,7 +475,6 @@ useEffect(() => {
       }
 
       if (ventas && ventas.trim() !== "") {
-        console.log("HOLA");
 
         const notificacionRes = await fetch("/api/notificacion-ventas", {
           method: "POST",
