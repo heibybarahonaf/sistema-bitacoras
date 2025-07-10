@@ -126,10 +126,19 @@ const EncuestaPage = () => {
       });
 
       if (res.ok) {
-        localStorage.setItem(storageDoneKey, "true");
-        localStorage.removeItem(storageKey);
-        window.location.href = "https://www.posdehonduras.com";
-      } else {
+      localStorage.setItem(storageDoneKey, "true");
+      localStorage.removeItem(storageKey);
+
+      await Swal.fire({
+        icon: "success",
+        title: "¡Gracias por tu calificación!",
+        text: "Tu opinión ha sido registrada exitosamente.",
+        confirmButtonText: "Finalizar",
+      });
+
+      window.location.href = "https://www.posdehonduras.com";
+    }
+ else {
         alert("Error al enviar la calificación.");
       }
     } catch {
