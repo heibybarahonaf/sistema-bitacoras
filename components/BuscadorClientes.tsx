@@ -568,6 +568,7 @@ const BuscarCliente: React.FC = () => {
             {showNewBitacora && (
               <FormNuevaBitacora
                 clienteId={clienteSeleccionado.id}
+                nombreCliente={clienteSeleccionado.empresa}
                 onClose={() => setShowNewBitacora(false)}
                 onGuardar={() => {
                   cargarBitacoras(clienteSeleccionado.id);

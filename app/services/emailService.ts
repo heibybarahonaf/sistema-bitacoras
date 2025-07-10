@@ -111,23 +111,23 @@ export class EmailService {
 
 
     public static async enviarNotificacionVenta(destinatario: string, datosVenta: DatosVenta): Promise<void> {
-    const html = this.plantillaHtmlVentas(datosVenta);
+        const html = this.plantillaHtmlVentas(datosVenta);
 
-    try {
+        try {
 
-        await transporter.sendMail({
-            from: `"Notificaciones POS" <${process.env.EMAIL_USER}>`,
-            to: destinatario,
-            subject: `Nueva Oportunidad de Venta - ${datosVenta.cliente}`,
-            text: `Nueva oportunidad de venta reportada por ${datosVenta.tecnico}:
-                Cliente: ${datosVenta.cliente}
-                Teléfono: ${datosVenta.telefono}
-                Correo: ${datosVenta.correo}
-                RTN: ${datosVenta.rtn}
-                Detalles: ${datosVenta.ventas}
-                Técnico: ${datosVenta.tecnico}`,
-                html,
-            });
+            await transporter.sendMail({
+                from: `"Notificaciones POS" <${process.env.EMAIL_USER}>`,
+                to: destinatario,
+                subject: `Nueva Oportunidad de Venta - ${datosVenta.cliente}`,
+                text: `Nueva oportunidad de venta reportada por ${datosVenta.tecnico}:
+                    Cliente: ${datosVenta.cliente}
+                    Teléfono: ${datosVenta.telefono}
+                    Correo: ${datosVenta.correo}
+                    RTN: ${datosVenta.rtn}
+                    Detalles: ${datosVenta.ventas}
+                    Técnico: ${datosVenta.tecnico}`,
+                    html,
+                });
 
         } catch {
 
