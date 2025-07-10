@@ -377,6 +377,7 @@ export default function UsuariosPage() {
       zona_asignada: formData.get("zona_asignada") as string,
       telefono: formData.get("telefono") as string,
       activo: formData.get("activo") === "true",
+      comision: Number(formData.get("comision")),
       updateAt: new Date().toISOString(),
     };
 
