@@ -528,10 +528,12 @@ export default function ClientesPage() {
             { label: "Responsable", name: "responsable", type: "text", placeholder: "Responsable" },
             { label: "RTN/ID", name: "rtn", type: "text", placeholder: "RTN/ID" },
             { label: "Direccion", name: "direccion", type: "text", placeholder: "Direccion" },
-            { label: "Correo", name: "correo", type: "email", placeholder: "Correo" },
+            //{ label: "Correo", name: "correo", type: "email", placeholder: "Correo" },
           ].map(({ label, name, type, placeholder }) => (
             <label key={name} className="block mb-4 text-gray-800 font-medium text-xs">
-              <span className="text-gray-700">{label}:</span>
+              <span className="text-gray-700">
+                {label}: <span className="text-red-500 font-bold">*</span>
+              </span>
               <input
                 name={name}
                 type={type}
@@ -542,9 +544,19 @@ export default function ClientesPage() {
               />
             </label>
           ))}
+          <label className="block mb-4 text-gray-800 font-medium text-xs">
+            <span className="text-gray-700">Correo:</span>
+            <input
+              name="correo"
+              type="email"
+              placeholder="Correo"
+              defaultValue={clienteEditar ? clienteEditar.correo : ""}
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+            />
+          </label>
 
           <label className="block mb-4 text-gray-800 font-medium text-xs">
-            <span className="text-gray-700">Teléfono:</span>
+            Teléfono: <span className="text-red-500 font-bold">*</span>
             <input
               name="telefono"
               type="tel"
