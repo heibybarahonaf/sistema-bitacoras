@@ -574,7 +574,7 @@ export default function ClientesPage() {
           </label>
 
           {clienteEditar && (
-            <label className="block mb-4 text-gray-800 font-medium">
+            <label className="block mb-4 text-gray-800 font-medium text-xs">
               <span className="text-gray-700">Estado:</span>
               <select
                 name="activo"
