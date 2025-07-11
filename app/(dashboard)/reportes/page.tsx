@@ -132,7 +132,7 @@ export default function ReportesPage() {
           <input 
             type="text" 
             id="buscar-cliente-input"
-            class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#295d0c] focus:border-transparent"
+            class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#295d0c] focus:border-transparent text-sm"
             placeholder="Buscar por nombre o RTN..."
           />
         </div>
@@ -148,7 +148,7 @@ export default function ReportesPage() {
             </thead>
             <tbody id="clientes-resultados" class="bg-white divide-y divide-gray-200">
               <tr>
-                <td colspan="4" class="px-4 py-4 text-center text-gray-500">
+                <td colspan="4" class="px-4 py-4 text-center text-gray-500 text-sm">
                   Ingrese un término de búsqueda
                 </td>
               </tr>
@@ -195,7 +195,7 @@ export default function ReportesPage() {
           if (termino.length < 2) {
             resultados.innerHTML = `
               <tr>
-                <td colspan="4" class="px-4 py-4 text-center text-gray-500">
+                <td colspan="4" class="px-4 py-4 text-center text-gray-500 text-sm">
                   Ingrese al menos 2 caracteres
                 </td>
               </tr>
@@ -205,7 +205,7 @@ export default function ReportesPage() {
 
           resultados.innerHTML = `
             <tr>
-              <td colspan="4" class="px-4 py-4 text-center text-gray-500">
+              <td colspan="4" class="px-4 py-4 text-center text-gray-500 text-sm">
                 Buscando clientes...
               </td>
             </tr>
@@ -216,7 +216,7 @@ export default function ReportesPage() {
           if (clientes.length === 0) {
             resultados.innerHTML = `
               <tr>
-                <td colspan="4" class="px-4 py-4 text-center text-gray-500">
+                <td colspan="4" class="px-4 py-4 text-center text-gray-500 text-sm">
                   No se encontraron clientes
                 </td>
               </tr>
@@ -229,10 +229,10 @@ export default function ReportesPage() {
               (cliente) => `
             <tr class="cliente-seleccionado hover:bg-gray-50 cursor-pointer" 
                 data-cliente='${JSON.stringify(cliente)}'>
-              <td class="px-4 py-4 whitespace-nowrap">${cliente.empresa}</td>
-              <td class="px-4 py-4 whitespace-nowrap">${cliente.rtn}</td>
-              <td class="px-4 py-4 whitespace-nowrap">${cliente.telefono}</td>
-              <td class="px-4 py-4 whitespace-nowrap">
+              <td class="px-4 py-4 whitespace-nowrap text-sm">${cliente.empresa}</td>
+              <td class="px-4 py-4 whitespace-nowrap text-sm">${cliente.rtn}</td>
+              <td class="px-4 py-4 whitespace-nowrap text-sm">${cliente.telefono}</td>
+              <td class="px-4 py-4 whitespace-nowrap text-sm">
                 <span class="px-2 py-1 text-xs font-semibold rounded-full ${
                   cliente.activo
                     ? "bg-green-100 text-green-800"

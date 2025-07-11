@@ -391,7 +391,7 @@ export default function ClientesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 text-xs">
         <input
           type="text"
-          placeholder="Buscar por empresa, RTN, responsable o correo..."
+          placeholder="Buscar por Empresa o RTN/ID"
           value={filtroNombre}
           onChange={(e) => setFiltroNombre(e.target.value)}
           className="w-full sm:w-1/2 border border-gray-300 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
