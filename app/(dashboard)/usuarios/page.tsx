@@ -66,15 +66,6 @@ export default function UsuariosPage() {
   }, [filtroNombre]);
 
   useEffect(() => {
-    if (firmaTecnicoImg && firmaRef.current && usuarioEditar && modalOpen) {
-      firmaRef.current.clear();
-      firmaRef.current.fromDataURL(firmaTecnicoImg);
-    } else if (firmaRef.current) {
-      firmaRef.current.clear();
-    }
-  }, [firmaTecnicoImg, modalOpen, usuarioEditar]);
-
-  useEffect(() => {
     const canvas = firmaRef.current?.getCanvas();
     if (!canvas || !firmaRef.current) return;
 
@@ -359,6 +350,10 @@ export default function UsuariosPage() {
 
   // Abrir modal para editar usuario
   function abrirEditarUsuario(usuario: Usuario) {
+    if (firmaRef.current) {
+      firmaRef.current.clear(); // Limpiar antes de cargar nuevo
+    }
+    
     setUsuarioEditar(usuario);
     setModalOpen(true);
     cargarFirmaDelTecnico(usuario.id);
@@ -540,38 +535,38 @@ export default function UsuariosPage() {
 
           {/* Controles de paginación */}
           <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-sm text-gray-600">
+            <div className="text-xs text-gray-600">
               Página {meta.page} de {meta.totalPages} ({meta.total} total)
             </div>
             <div className="flex justify-center items-center gap-2">
               <button
                 onClick={() => setPaginaActual(1)}
                 disabled={meta.page === 1}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 text-xs rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Primera
               </button>
               <button
                 onClick={() => setPaginaActual(meta.page - 1)}
                 disabled={meta.page === 1}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 rounded text-xs border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Anterior
               </button>
-              <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">
+              <span className="px-3 py-1 bg-[#295d0c] text-xs text-white rounded font-medium">
                 {meta.page}
               </span>
               <button
                 onClick={() => setPaginaActual(meta.page + 1)}
                 disabled={meta.page === meta.totalPages}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Siguiente
               </button>
               <button
                 onClick={() => setPaginaActual(meta.totalPages)}
                 disabled={meta.page === meta.totalPages}
-                className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Última
               </button>
@@ -587,6 +582,10 @@ export default function UsuariosPage() {
         onClose={() => {
           setModalOpen(false);
           setUsuarioEditar(null);
+          setFirmaTecnicoImg(null);
+          if (firmaRef.current) {
+            firmaRef.current.clear();
+          }
         }}
       >
         <h2 className="text-xl font-semibold mb-6 text-gray-900">
@@ -631,7 +630,7 @@ export default function UsuariosPage() {
               ],
             },
           ].map(({ label, name, type, placeholder, options }) => (
-            <label key={name} className="block mb-4 text-gray-800 font-medium">
+            <label key={name} className="block mb-4 text-gray-800 font-medium text-sm">
               <span className="text-gray-700">{label}:</span>
 
               {type === "select" ? (
@@ -664,7 +663,7 @@ export default function UsuariosPage() {
             </label>
           ))}
 
-          <label className="block mb-4 text-gray-800 font-medium">
+          <label className="block mb-4 text-gray-800 font-medium text-sm">
             <span className="text-gray-700">Teléfono:</span>
             <input
               name="telefono"
@@ -680,7 +679,7 @@ export default function UsuariosPage() {
             />
           </label>
 
-          <label className="block mb-4 text-gray-800 font-medium">
+          <label className="block mb-4 text-gray-800 font-medium text-sm">
             <span className="text-gray-700">Comisión (%):</span>
             <input
               name="comision"
@@ -695,7 +694,7 @@ export default function UsuariosPage() {
           </label>
 
           {usuarioEditar && (
-            <label className="block mb-4 text-gray-800 font-medium">
+            <label className="block mb-4 text-gray-800 font-medium text-sm">
               <span className="text-gray-700">Estado:</span>
               <select
                 name="activo"
