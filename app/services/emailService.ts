@@ -156,7 +156,7 @@ export class EmailService {
                         
                         <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 30px 30px; text-align: center;">
                             <h1 style="margin: 0; color: white; font-size: 26px; font-weight: 600;">Oportunidad de Venta</h1>
-                            <p style="margin: 10px 0 0; color: #fecaca; font-size: 14px;">Notificación para Departamento de Marketing</p>
+                            <p style="margin: 10px 0 0; color: #fecaca; font-size: 14px;">Notificación para Departamento Comercial </p>
                         </div>
                         
                         <div style="padding: 40px 30px;">
