@@ -141,38 +141,42 @@ export class UsuarioService {
 
 
     public static async editarUsuario(id: number, usuarioData: EditarUsuarioDto): Promise<Usuario> {
+    const usuarioExistente = await this.obtenerUsuarioPorId(id);
+    const { correo, password } = usuarioData;
 
-        const usuarioExistente = await this.obtenerUsuarioPorId(id);
-        const { correo } = usuarioData;
-
-        if (correo && correo !== usuarioExistente.correo) {
-            const correoExiste = await prisma.usuario.findFirst({ where: { correo: correo }});
-
-            if (correoExiste) {
-                throw new ResponseDto(409, "El correo ya está registrado");
-            }
+    if (correo && correo !== usuarioExistente.correo) {
+        const correoExiste = await prisma.usuario.findFirst({ where: { correo: correo } });
+        if (correoExiste) {
+            throw new ResponseDto(409, "El correo ya está registrado");
         }
-
-        const datosActualizacion = GeneralUtils.filtrarCamposActualizables(usuarioData);
-        if (Object.keys(datosActualizacion).length === 0) {
-            throw new ResponseDto(400, "No se proporcionaron datos para actualizar");
-        }
-
-        try {
-            const usuarioActualizado = await prisma.usuario.update({
-                where: { id: id },
-                data: datosActualizacion,
-            });
-
-            return usuarioActualizado;
-
-        } catch {
-
-            throw new ResponseDto(500, "Error al actualizar el usuario");
-
-        }
-
     }
+
+    // Filtra campos actualizables según tu lógica
+    const datosActualizacion = GeneralUtils.filtrarCamposActualizables(usuarioData);
+
+    // Si viene password, haz hash y actualízalo en datosActualizacion
+    if (password && password.trim() !== "") {
+        const hashedPassword = await AuthUtils.hashPassword(password);
+        datosActualizacion.password = hashedPassword;
+    }
+
+    if (Object.keys(datosActualizacion).length === 0) {
+        throw new ResponseDto(400, "No se proporcionaron datos para actualizar");
+    }
+
+    try {
+        const usuarioActualizado = await prisma.usuario.update({
+            where: { id },
+            data: datosActualizacion,
+        });
+
+        return usuarioActualizado;
+
+    } catch {
+        throw new ResponseDto(500, "Error al actualizar el usuario");
+    }
+}
+
 
 
     public static async eliminarUsuario(id: number): Promise<Usuario> {

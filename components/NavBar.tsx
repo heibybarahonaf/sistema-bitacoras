@@ -20,6 +20,7 @@ export default function Navbar() {
   const isActive = (path: string) => pathname === path;
 
   const menuItems = [
+    { href: "/perfil", label: "Perfil", icon: User },
     { href: "/clientes", label: "Clientes", icon: Users },
     { href: "/bitacoras", label: "Bitácoras", icon: NotebookText },
     { href: "/pagos", label: "Pagos", icon: Receipt },
@@ -111,6 +112,14 @@ export default function Navbar() {
         {/* Usuario y botón salir */}
         <div className="flex items-center gap-4 text-sm">
           <span className="hidden sm:inline">{userName}</span>
+          <Link
+            href="/perfil"
+            className="hidden sm:inline-flex items-center gap-1 text-white hover:text-gray-300 transition"
+            title="Ver perfil"
+          >
+            <User className="w-4 h-4" />
+            <span>Perfil</span>
+          </Link>
           <button
             onClick={confirmarLogout}
             disabled={isLoggingOut}
@@ -135,11 +144,11 @@ export default function Navbar() {
 
       {/* Menú lateral */}
       <aside
-        className={`bg-black text-white w-64 fixed top-16 bottom-0 left-0 p-6 shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${
+        className={`bg-black text-white w-64 fixed top-16 bottom-0 left-0 p-4 shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <ul className="space-y-4 mt-16 flex flex-col h-[calc(100%-8rem)] justify-center">
+        <ul className="space-y-4 mt-3 text-sm">
           {menuItems.map((item) => {
             const IconComponent = item.icon;
             const active = isActive(item.href);
@@ -148,14 +157,14 @@ export default function Navbar() {
                 <Link
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200 text-sm ${
                     active
-                      ? "bg-red-700 text-white border-l-4 border-red-500 shadow-md"
+                      ? "bg-red-700 text-white border-l-4 border-red-500 shadow"
                       : "hover:bg-gray-800 hover:text-red-400"
                   }`}
                 >
                   <IconComponent className={`w-5 h-5 ${active ? "text-red-200" : ""}`} />
-                  <span className={`font-medium text-base truncate ${active ? "text-white" : ""}`}>
+                  <span className={`font-medium truncate ${active ? "text-white" : ""}`}>
                     {item.label}
                   </span>
                 </Link>
