@@ -14,7 +14,8 @@ export async function middleware(req: NextRequest) {
         "/api/firmas/finalizar",
         "/api/encuesta-bitacora",
         "/api/bitacoras/por-firma",
-        "/api/encuesta"
+        "/api/encuesta",
+        "/api/usuarios"
     ];
     
     const esPostPublico = 

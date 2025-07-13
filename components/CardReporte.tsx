@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FileText, Download, Eye } from "lucide-react";
+import Swal from "sweetalert2";
 
 interface CardReporteProps {
   title: string;
@@ -64,11 +65,25 @@ export default function CardReporte({
         const data = await response.json();
         setUsuarios(data.results || []);
       } else {
-        console.error('Error al cargar usuarios activos');
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "error",
+          title: "Error al cargar usuarios activos",
+        });
+ 
         setUsuarios([]);
       }
     } catch (error) {
-      console.error('Error de conexión al cargar usuarios:', error);
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error de conexión al cargar usuarios",
+      });
+    
       setUsuarios([]);
     } finally {
       setLoadingUsuarios(false);

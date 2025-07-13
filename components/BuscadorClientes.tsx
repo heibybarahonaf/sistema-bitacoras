@@ -56,8 +56,14 @@ const BuscarCliente: React.FC = () => {
       setBitacoraSeleccionada(bitacora);
       setModalDetalleOpen(true);
 
-    } catch (error) {
-      console.error("Error al cargar detalles", error);
+    } catch {
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al cargar detalles",
+      });
     }
 
   };
@@ -84,8 +90,15 @@ const BuscarCliente: React.FC = () => {
       setSistemas(dataSistemas.results || []);
       setEquipos(dataEquipos.results || []);
 
-    } catch (error) {
-      console.error("Error al cargar datos comunes", error);
+    } catch {
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al cargar los datos para crear bitacora",
+      });
+
     }
 
   };
@@ -198,7 +211,14 @@ const BuscarCliente: React.FC = () => {
       }
 
     } catch (error) {
-      console.error("Error al recargar cliente", error);
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al recargar cliente",
+      });
+
     }
   };
 
@@ -260,7 +280,14 @@ const BuscarCliente: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error("Error al hacer polling de firmas:", error);
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "error",
+          title: "Error al cargar firmas",
+        });
+
       }
     }, 5000); 
   }
@@ -333,12 +360,23 @@ const BuscarCliente: React.FC = () => {
   };
 
   const handleNuevaBitacora = async () => {
+
     try {
+
       await cargarDatosComunes();
       setShowNewBitacora(true);
-    } catch (error) {
-      console.error("Error al cargar datos", error);
+
+    } catch {
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al cargar datos",
+      });
+
     }
+
   };
 
   const bitacorasMostrar = bitacoras; 

@@ -117,7 +117,9 @@ export default function PerfilUsuarioPage() {
         }
       }
 
-      Swal.fire("¡Listo!", "Perfil actualizado correctamente", "success");
+      Swal.fire("¡Listo!", "Perfil actualizado correctamente", "success").then(() => {
+        window.location.href = "/";
+      });
     } catch (error: any) {
       Swal.fire("Error", error.message || "Error al conectar con el servidor", "error");
     }
