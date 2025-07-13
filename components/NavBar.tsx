@@ -39,8 +39,15 @@ export default function Navbar() {
         const data = await res.json();
         setUserName("@" + data.results?.[0].nombre || "@usuario");
       }
-    } catch (error) {
-      console.error("Error al obtener nombre del usuario:", error);
+    } catch {
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al obtener nombre del usuario",
+      });
+      
     }
   };
 
@@ -76,11 +83,17 @@ export default function Navbar() {
       if (response.ok) {
         setSidebarOpen(false);
         router.push("/login");
-      } else {
-        console.error("Error al cerrar sesión");
-      }
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
+      } 
+
+    } catch {
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al cerrar sesión",
+      });
+     
     } finally {
       setIsLoggingOut(false);
     }

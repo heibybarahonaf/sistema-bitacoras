@@ -72,8 +72,15 @@ export default function ModalDetalleBitacora({
           }
         }
 
-      } catch (error) {
-        console.error("Error cargando firmas:", error);
+      } catch {
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "error",
+          title: "Error cargando firmas",
+        });
+        
       }
     };
 
@@ -124,8 +131,15 @@ export default function ModalDetalleBitacora({
       } else {
         setNoSoportaClipboard(true);
       }
-    } catch (error) {
-      console.error("Error al copiar:", error);
+    } catch {
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al copiar",
+      });
+     
       setNoSoportaClipboard(true);
     }
   };

@@ -229,8 +229,15 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         setEquipos(dataEquipos.results || []);
         setFasesImplementacion(dataFases.results || []);
         setTipoServicio(dataServicios.results || []);
-      } catch (err) {
-        console.error("Error cargando sistemas, equipos, tipo de servicio o fases", err);
+      } catch {
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "error",
+          title: "Error cargando sistemas, equipos, tipo de servicio o fases",
+        });
+
       }
     };
 
@@ -292,13 +299,14 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             image.src = firmaBase64;
           }
         }
-      } catch (error) {
-        console.error("Error al cargar firma del técnico automáticamente:", error);
+      } catch {
+        
         Swal.fire(
           "Error",
           "Ocurrió un error al intentar cargar automáticamente la firma del técnico.",
           "error"
         );
+
       }
     };
 
@@ -324,8 +332,15 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             setUrlFirmaRemota(firma.url);
             setEsperandoFirmaCliente(true);
           }
-        } catch (error) {
-          console.error("Error generando enlace de firma:", error);
+        } catch {
+
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "error",
+            title: "Error generando enlace de firma",
+          });
+         
         }
       };
 
@@ -365,8 +380,15 @@ useEffect(() => {
         setEsperandoFirmaCliente(false);
         clearInterval(intervalo);
       }
-    } catch (error) {
-      console.error("Error verificando firma remota:", error);
+    } catch {
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error verificando firma remota",
+      });
+     
     }
   }, 10000); // cada 10s
 
@@ -435,7 +457,14 @@ useEffect(() => {
         }
 
       } catch (error) {
-        console.error("Error al obtener nombre del usuario:", error);
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "error",
+          title: "Error al obtener nombre del usuario",
+        });
+      
       }
 
       const newBitacora = {
@@ -487,8 +516,15 @@ useEffect(() => {
         });
 
         if (!notificacionRes.ok) {
-          const errorData = await notificacionRes.json();
-          console.error("Error al enviar notificación de venta:", errorData.message);
+          
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "error",
+            title:
+              "Error al enviar notificación de ventaError al cargar los datos para crear bitacora",
+          });
+          
         }
       }
 
@@ -782,7 +818,7 @@ useEffect(() => {
                             })
                           )
                           .catch((err) => {
-                            console.error("Error al copiar:", err);
+             
                             Swal.fire("Error", "No se pudo copiar el enlace.", "error");
                           })
                       }

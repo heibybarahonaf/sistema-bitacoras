@@ -21,14 +21,6 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-/*
-transporter.verify().then(() => {
-    console.log("Listo para enviar correos");
-}).catch((err) => {
-    console.error("Error al verificar el transporte de correo:", err);
-});*/
-
-
 export class EmailService {
 
     public static async enviarCodigoAcceso(destinatario: string, codigo: string): Promise<void> {

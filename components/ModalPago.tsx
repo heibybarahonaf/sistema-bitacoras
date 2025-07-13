@@ -74,8 +74,15 @@ export default function ModalPago({
             comision: conf.comision,
           });
         }
-      } catch (error) {
-        console.error("Error al cargar configuración", error);
+      } catch {
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "error",
+          title: "Error al cargar configuración",
+        });
+        
       }
     };
 
@@ -95,12 +102,17 @@ export default function ModalPago({
             const cliente = clienteData.results[0];
             setCliente(cliente.empresa || cliente.responsable || '');
 
-          } else {
-            console.error('La propiedad results no es un array o está vacía');
-          }
+          } 
 
-        } catch (error) {
-          console.error("Error al cargar cliente", error);
+        } catch {
+
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "error",
+            title: "Error al cargar cliente",
+          });
+          
         }
       };
 

@@ -58,8 +58,15 @@ export function useAuth() {
                 credentials: 'include',
             });
 
-        } catch (error) {
-            console.error('Error al cerrar sesión:', error);
+        } catch {
+
+            Swal.fire({
+              toast: true,
+              position: "top-end",
+              icon: "error",
+              title: "Error al cerrar sesión",
+            });
+      
         } finally {
             setUser(null);
             router.replace('/login');

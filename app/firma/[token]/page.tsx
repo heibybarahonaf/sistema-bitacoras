@@ -46,23 +46,39 @@ export default function FirmaClientePage() {
 
           // Obtener nombre del técnico
           try {
+            console.log("HOLA::",bitacoraData.usuario_id)
             const resUsuario = await fetch(
-              `${baseUrl}/api/usuarios/${bitacoraData.usuario_id}`
+              `/api/usuarios/${bitacoraData.usuario_id}`
             );
+            
             const dataUsuario = await resUsuario.json();
             if (resUsuario.ok && dataUsuario?.results?.[0]?.nombre) {
               setNombreTecnico(dataUsuario.results[0].nombre);
             }
-          } catch (error) {
-            console.error("Error al obtener el nombre del técnico:", error);
+          } catch {
+
+            Swal.fire({
+              toast: true,
+              position: "top-end",
+              icon: "error",
+              title: "Error al obtener el nombre del técnico",
+            });
+
           }
 
         } else {
           setBitacora(null);
         }
 
-      } catch (error) {
-        console.error("Error al validar token", error);
+      } catch {
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "error",
+          title: "Error al validar token",
+        });
+      
       } finally {
         setLoading(false);
       }

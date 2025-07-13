@@ -4,6 +4,7 @@ import axios from "axios";
 import Link from "next/link";
 import { Pregunta } from "@prisma/client";
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 export default function PreguntasPage() {
   const [mensaje, setMensaje] = useState("");
@@ -24,7 +25,12 @@ export default function PreguntasPage() {
       }
 
     } catch {
-      console.error("Error al obtener las preguntas");
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al ontener las preguntas",
+      });
     }
   };
 
