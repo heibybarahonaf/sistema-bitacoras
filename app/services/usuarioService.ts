@@ -116,7 +116,7 @@ export class UsuarioService {
         const emailExistente = await prisma.usuario.findFirst({ where: { correo: correo }});
 
         if (emailExistente) {
-            throw new ResponseDto(409, "El email ya está registrado");
+            throw new ResponseDto(409, "El email ya está registrado",[]);
         }
 
         const hashedPassword = await AuthUtils.hashPassword(password);

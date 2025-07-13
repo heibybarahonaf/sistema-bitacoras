@@ -244,13 +244,13 @@ export default function UsuariosPage() {
       });
 
       const data = await res.json();
-      const id = data.results[0].id;
 
       if (data.code !== 201) {
         mostrarErroresValidacion(data);
         return;
       }
 
+      const id = data.results[0].id;
       if (firmaRef.current && !firmaRef.current.isEmpty()) {
 
         const firmaBase64 = firmaRef.current.toDataURL();
@@ -278,12 +278,12 @@ export default function UsuariosPage() {
       setPaginaActual(1);
       setModalOpen(false);
 
-    } catch {
+    } catch {      
 
       Swal.fire({
         icon: "error",
         title: "Error de conexión",
-        text: "No se pudo conectar con el servidor1",
+        text:  "No se pudo conectar con el servidor",
         confirmButtonColor: "#295d0c",
       });
 

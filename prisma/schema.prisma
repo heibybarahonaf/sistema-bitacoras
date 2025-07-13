@@ -52,7 +52,7 @@ model Bitacora {
   cliente                Cliente             @relation(fields: [cliente_id], references: [id])
   equipo                 Equipo?             @relation(fields: [equipo_id], references: [id])
   fase_implementacion    Fase_Implementacion @relation(fields: [fase_implementacion_id], references: [id])
-  firmaCliente           Firma?              @relation("FirmaCliente", fields: [firmaCliente_id], references: [id])
+  firmaCliente           Firma?              @relation("FirmaCliente", fields: [firmaCliente_id], references: [id], onDelete: SetNull)
   sistema                Sistema?            @relation(fields: [sistema_id], references: [id])
   tipo_servicio          Tipo_Servicio       @relation(fields: [tipo_servicio_id], references: [id])
   usuario                Usuario             @relation(fields: [usuario_id], references: [id])

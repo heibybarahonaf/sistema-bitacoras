@@ -14,8 +14,7 @@ export async function middleware(req: NextRequest) {
         "/api/firmas/finalizar",
         "/api/encuesta-bitacora",
         "/api/bitacoras/por-firma",
-        "/api/encuesta",
-        "/api/usuarios"
+        "/api/encuesta"
     ];
     
     const esPostPublico = 
@@ -42,10 +41,15 @@ export async function middleware(req: NextRequest) {
         }
         
         const payload = await AuthEdgeUtils.verificarTokenSesion(token);
-        const rutasSoloAdmin = ["/configuracion", "/encuestas"];
+        const rutasSoloAdmin = ["/configuracion", "/encuestas", "/usuarios"];
 
         for (const ruta of rutasSoloAdmin) {
             if (pathname.startsWith(ruta) && payload.rol !== "admin") {
+
+                if (pathname.startsWith("/api/usuarios/") && (method === "GET" || method === "PATCH")) {
+                    break;
+                }
+
                 const url = new URL("/", req.url);
                 url.searchParams.set("error", "acceso-denegado");
                 return NextResponse.redirect(url);
