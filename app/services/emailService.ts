@@ -114,7 +114,7 @@ export class EmailService {
                 text: `Nueva oportunidad de venta reportada por ${datosVenta.tecnico}:
                     Cliente: ${datosVenta.cliente}
                     Teléfono: ${datosVenta.telefono}
-                    Correo: ${datosVenta.correo}
+                    Correo: ${datosVenta.correo || ""}
                     RTN: ${datosVenta.rtn}
                     Detalles: ${datosVenta.ventas}
                     Técnico: ${datosVenta.tecnico}`,
