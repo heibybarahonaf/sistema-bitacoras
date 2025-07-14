@@ -13,7 +13,7 @@ interface clienteActualizado {
   rtn: string,
   direccion: string,
   telefono: string,
-  correo: string,
+  correo: string | null;
   activo: boolean,
   updateAt: string
 }
@@ -201,13 +201,15 @@ export default function ClientesPage() {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
+    const correo = (formData.get("correo") as string)?.trim();
+
     const datosCliente = {
       empresa: formData.get("empresa") as string,
       responsable: formData.get("responsable") as string,
       rtn: formData.get("rtn") as string,
       direccion: formData.get("direccion") as string,
       telefono: formData.get("telefono") as string,
-      correo: formData.get("correo") as string,
+      correo: correo === "" ? null : correo,
       activo: true,
       horas_paquetes: 0,
       horas_individuales: 0,
@@ -323,21 +325,19 @@ export default function ClientesPage() {
     if (!clienteEditar) return;
 
     const formData = new FormData(event.currentTarget);
+    const nuevoCorreoRaw = (formData.get("correo") as string)?.trim();
+    const nuevoCorreo = nuevoCorreoRaw === "" ? null : nuevoCorreoRaw;
+
     const clienteActualizado: clienteActualizado = {
       empresa: formData.get("empresa") as string,
       responsable: formData.get("responsable") as string,
       rtn: formData.get("rtn") as string,
       direccion: formData.get("direccion") as string,
       telefono: formData.get("telefono") as string,
-      correo: formData.get("correo") as string,
+      correo: nuevoCorreo,
       activo: formData.get("activo") === "true",
       updateAt: new Date().toISOString(),
     };
-
-    const nuevoCorreo = formData.get("correo") as string;
-    if (nuevoCorreo !== clienteEditar.correo) {
-      clienteActualizado.correo = nuevoCorreo;
-    }
 
     try {
       const res = await fetch(`/api/clientes/${clienteEditar.id}`, {
@@ -554,7 +554,7 @@ export default function ClientesPage() {
               name="correo"
               type="email"
               placeholder="Correo"
-              defaultValue={clienteEditar ? clienteEditar.correo : ""}
+              defaultValue={clienteEditar ? (clienteEditar.correo ?? "") : ""}
               className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
             />
           </label>

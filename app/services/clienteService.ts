@@ -96,12 +96,7 @@ export class ClienteService {
     public static async crearCliente(clienteData: CrearClienteDto): Promise<Cliente> {
 
         const clienteExistente = await prisma.cliente.findFirst({ where: { empresa: clienteData.empresa }});
-        const emailExistente = await prisma.cliente.findFirst({ where: { correo: clienteData.correo }});
         const rtnExistente = await prisma.cliente.findFirst({ where: { rtn: clienteData.rtn }});
-        
-        if (emailExistente && clienteData.correo?.trim() !== "") {
-            throw new ResponseDto(409, "El email ya está registrado");
-        }
 
         if (clienteExistente) {
             throw new ResponseDto(409, "La empresa ya está registrada");
@@ -109,6 +104,16 @@ export class ClienteService {
 
         if (rtnExistente) {
             throw new ResponseDto(409, "El RTN/ID ya está registrado");
+        }
+
+        if (clienteData.correo && clienteData.correo.trim() !== "") {
+            const emailExistente = await prisma.cliente.findFirst({
+                where: { correo: clienteData.correo.trim() },
+            });
+
+            if (emailExistente) {
+                throw new ResponseDto(409, "El email ya está registrado");
+            }
         }
 
         const { correo } = clienteData;
