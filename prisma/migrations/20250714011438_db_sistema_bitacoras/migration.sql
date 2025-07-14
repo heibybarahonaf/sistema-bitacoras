@@ -60,8 +60,8 @@ CREATE TABLE "clientes" (
     "id" SERIAL NOT NULL,
     "responsable" VARCHAR(200) NOT NULL,
     "empresa" TEXT NOT NULL,
-    "rtn" VARCHAR(50) NOT NULL,
-    "direccion" VARCHAR(30) NOT NULL,
+    "rtn" VARCHAR(14) NOT NULL,
+    "direccion" VARCHAR(100) NOT NULL,
     "telefono" VARCHAR(10) NOT NULL,
     "correo" VARCHAR(100),
     "activo" BOOLEAN NOT NULL,
@@ -78,16 +78,16 @@ CREATE TABLE "clientes" (
 -- CreateTable
 CREATE TABLE "usuarios" (
     "id" SERIAL NOT NULL,
-    "nombre" VARCHAR(200) NOT NULL,
+    "nombre" VARCHAR(120) NOT NULL,
     "password" VARCHAR(400) NOT NULL,
     "correo" VARCHAR(100) NOT NULL,
     "rol" TEXT NOT NULL DEFAULT 'tecnico',
     "activo" BOOLEAN NOT NULL,
     "zona_asignada" VARCHAR(300) NOT NULL,
     "telefono" VARCHAR(10) NOT NULL,
-    "comision" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "comision" INTEGER NOT NULL DEFAULT 15,
 
     CONSTRAINT "usuarios_pkey" PRIMARY KEY ("id")
 );
@@ -95,7 +95,7 @@ CREATE TABLE "usuarios" (
 -- CreateTable
 CREATE TABLE "sistemas" (
     "id" SERIAL NOT NULL,
-    "sistema" VARCHAR(20) NOT NULL,
+    "sistema" VARCHAR(50) NOT NULL,
     "descripcion" TEXT NOT NULL,
     "activo" BOOLEAN NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -180,7 +180,7 @@ CREATE TABLE "encuesta_preguntas" (
 -- CreateTable
 CREATE TABLE "configuracion" (
     "id" SERIAL NOT NULL,
-    "correo_ventas" TEXT NOT NULL,
+    "correo_ventas" VARCHAR(110) NOT NULL,
     "comision" INTEGER NOT NULL,
     "valor_hora_individual" INTEGER NOT NULL,
     "valor_hora_paquete" INTEGER NOT NULL,
@@ -204,16 +204,16 @@ ALTER TABLE "firmas" ADD CONSTRAINT "firmas_tecnico_id_fkey" FOREIGN KEY ("tecni
 ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "clientes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_firmaCliente_id_fkey" FOREIGN KEY ("firmaCliente_id") REFERENCES "firmas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_sistema_id_fkey" FOREIGN KEY ("sistema_id") REFERENCES "sistemas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_equipo_id_fkey" FOREIGN KEY ("equipo_id") REFERENCES "equipos"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_fase_implementacion_id_fkey" FOREIGN KEY ("fase_implementacion_id") REFERENCES "fases_implementacion"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_firmaCliente_id_fkey" FOREIGN KEY ("firmaCliente_id") REFERENCES "firmas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_sistema_id_fkey" FOREIGN KEY ("sistema_id") REFERENCES "sistemas"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_tipo_servicio_id_fkey" FOREIGN KEY ("tipo_servicio_id") REFERENCES "tipos_servicios"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

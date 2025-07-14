@@ -3,8 +3,8 @@ import { z } from "zod";
 export const CrearUsuarioDto = z.object({
 
     nombre: z.string()
-        .min(3, "El nombre debe tener al menos 3 caracteres.")
-        .max(200, "El nombre no puede exceder los 200 caracteres."),
+        .min(5, "El nombre debe tener al menos 5 caracteres.")
+        .max(120, "El nombre no puede exceder los 200 caracteres."),
     correo: z.string()
         .email("El correo no es válido.")
         .transform(val => val.toLowerCase()),

@@ -76,10 +76,10 @@ model Cliente {
   id                 Int             @id @default(autoincrement())
   responsable        String          @db.VarChar(200)
   empresa            String
-  rtn                String          @db.VarChar(50)
-  direccion          String          @db.VarChar(30)
+  rtn                String          @db.VarChar(14)
+  direccion          String          @db.VarChar(100)
   telefono           String          @db.VarChar(10)
-  correo             String          @unique @db.VarChar(100)
+  correo             String?         @unique @db.VarChar(100)
   activo             Boolean
   horas_paquetes     Int
   horas_individuales Int
@@ -95,7 +95,7 @@ model Cliente {
 
 model Usuario {
   id            Int        @id @default(autoincrement())
-  nombre        String     @db.VarChar(200)
+  nombre        String     @db.VarChar(120)
   password      String     @db.VarChar(400)
   correo        String     @unique @db.VarChar(100)
   rol           String     @default("tecnico")
@@ -113,7 +113,7 @@ model Usuario {
 
 model Sistema {
   id          Int        @id @default(autoincrement())
-  sistema     String     @db.VarChar(20)
+  sistema     String     @db.VarChar(50)
   descripcion String
   activo      Boolean
   createdAt   DateTime   @default(now())
@@ -200,7 +200,7 @@ model EncuestaPregunta {
 
 model Configuracion {
   id                    Int    @id @default(autoincrement())
-  correo_ventas         String
+  correo_ventas         String @db.VarChar(110)
   comision              Int
   valor_hora_individual Int
   valor_hora_paquete    Int
