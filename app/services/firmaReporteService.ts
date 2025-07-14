@@ -451,32 +451,6 @@ export class FirmaReporteService {
         doc.text(nombreTextoTecnico, leftX + (firmaWidth - nombreTextoTecnicoWidth) / 2, currentY);
         doc.text(nombreTextoResponsable, rightX + (firmaWidth - nombreTextoResponsableWidth) / 2, currentY);
         
-        currentY += 8;
-        
-        doc.setFontSize(8);
-        doc.setFont("helvetica", "normal");
-
-        let fechaTecnico = firmaTecnico?.firma_base64;
-        if ( firmaTecnico && fechaTecnico && fechaTecnico.length > 10 && firmaTecnico.createdAt ) {
-            fechaTecnico = `${new Date(bitacora.createdAt).toLocaleDateString('es-ES')} - ${new Date(bitacora.fecha_servicio).toLocaleTimeString('es-ES')}`;
-        } else {
-            fechaTecnico = " - ";
-        }
-
-        let fechaCliente = firmaCliente?.firma_base64;
-        if ( fechaCliente && fechaCliente.length > 10 && firmaCliente && firmaCliente.createdAt ) {
-            fechaCliente = `${new Date(firmaCliente.createdAt).toLocaleDateString('es-ES')} - ${new Date(firmaCliente.createdAt).toLocaleTimeString('es-ES')}`;
-        } else {
-            fechaCliente = " - ";
-        }
-
-        
-        const fechaTecnicoWidth = doc.getTextWidth(fechaTecnico);
-        const fechaClienteWidth = doc.getTextWidth(fechaCliente);
-        
-        doc.text(fechaTecnico, leftX + (firmaWidth - fechaTecnicoWidth) / 2, currentY);
-        doc.text(fechaCliente, rightX + (firmaWidth - fechaClienteWidth) / 2, currentY);
-        
         return currentY + 10;
 
     }
