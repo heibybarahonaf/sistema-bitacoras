@@ -18,12 +18,7 @@ export const CrearClienteDto = z.object({
     telefono: z.string()
         .min(8, "El teléfono debe tener al menos 8 caracteres.")
         .max(10, "El teléfono no debe exceder los 10 caracteres."),
-    correo: z
-        .string()
-        .email("El correo no es válido.")
-        .optional()
-        .or(z.literal('')) 
-        .transform(val => (typeof val === 'string' ? val.toLowerCase() : val)),
+    correo: z.string().email().nullable().optional(),
     activo: z.boolean({
         invalid_type_error: "El estado activo debe ser un valor booleano.",
     }),
