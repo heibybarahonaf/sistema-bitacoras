@@ -136,7 +136,7 @@ export default function PerfilUsuarioPage() {
         </h1>
 
         <label className="block font-medium mb-1" htmlFor="nombre">
-          Nombre completo
+          Nombre
         </label>
         <input
           id="nombre"

@@ -444,7 +444,7 @@ export default function ClientesPage() {
                 <tr key={cliente.id} className="hover:bg-gray-50">
                   <td className="px-2 sm:px-4 py-2">{cliente.empresa}</td>
                   <td className="px-2 sm:px-4 py-2">{cliente.rtn}</td>
-                  <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{cliente.correo}</td>
+                  <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{cliente.correo || "N/A"}</td>
                   <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{formatearTelefono(cliente.telefono)}</td>
                   <td className="px-2 sm:px-4 py-2 text-center">{cliente.activo ? "✅" : "❌"}</td>
                   <td className="px-2 sm:px-4 py-3 text-center">
