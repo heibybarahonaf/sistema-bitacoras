@@ -84,7 +84,7 @@ export class UsuarioService {
     }
 
 
-    public static async obtenerNombreUsuarioPorId(id : number): Promise <String> {
+    public static async obtenerNombreUsuarioPorId(id : number): Promise <string> {
 
         const usuario = await prisma.usuario.findUnique({ where: { id }});
 
