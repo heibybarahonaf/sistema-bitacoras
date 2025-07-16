@@ -120,7 +120,7 @@ const EncuestaPage = () => {
 
     try {
       const res = await fetch(`/api/bitacoras/${bitacoraId}/calificacion`, {
-        method: "POST",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ calificacion: Math.round(calificacionBase10) }),
       });

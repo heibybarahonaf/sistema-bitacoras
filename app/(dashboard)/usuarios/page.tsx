@@ -728,7 +728,7 @@ export default function UsuariosPage() {
               <button
                 type="button"
                 onClick={() => firmaRef.current?.clear()}
-                className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                className="px-3 py-1 bg-red-600 text-xs text-white rounded hover:bg-red-700 transition"
               >
                 Limpiar
               </button>
@@ -739,13 +739,13 @@ export default function UsuariosPage() {
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="px-5 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
+              className="px-5 py-2 text-xs rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
+              className="px-5 py-2 text-xs rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
             >
               {usuarioEditar ? "Actualizar" : "Guardar"}
             </button>

@@ -288,7 +288,7 @@ export default function ModalDetalleBitacora({
         <div className="mt-8 flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-red-700 text-white rounded-md hover:bg-red-800 font-semibold transition"
+            className="px-6 py-2 bg-red-700 text-white text-xs rounded-md hover:bg-red-800 font-semibold transition"
           >
             Cerrar
           </button>
