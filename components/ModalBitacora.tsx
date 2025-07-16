@@ -10,6 +10,16 @@ interface FormNuevaBitacoraProps {
   nombreCliente: string;
   onClose: () => void;
   onGuardar: () => void;
+  horasPaquete: number;
+  horasIndividuales: number;
+}
+
+interface SelectSimpleProps {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  options: string[] | { value: string; label: string }[];
+  required?: boolean;
 }
 
 const InputField = ({
@@ -85,36 +95,34 @@ const SelectSimple = ({
   onChange,
   options,
   required = false,
-}: {
-  label: string;
-  value: string;
-  onChange: (val: string) => void;
-  options: string[];
-  required?: boolean;
-}) => (
+}: SelectSimpleProps) => {
+  const opciones = options.map(opt => 
+    typeof opt === 'string' ? { value: opt, label: opt } : opt
+  );
 
-  <label className="block">
-    <span className="text-gray-700 font-semibold">
-      {label} {required && <span className="text-red-600">*</span>}
-    </span>
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      required={required}
-      className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-    >
-      <option value="" disabled>
-        Seleccione una opción
-      </option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>
-          {opt}
+  return (
+    <label className="block">
+      <span className="text-gray-700 font-semibold">
+        {label} {required && <span className="text-red-600">*</span>}
+      </span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+      >
+        <option value="" disabled>
+          Seleccione una opción
         </option>
-      ))}
-    </select>
-  </label>
-
-);
+        {opciones.map((opcion) => (
+          <option key={opcion.value} value={opcion.value}>
+            {opcion.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+};
 
 const TextAreaField = ({
   label,
@@ -140,7 +148,6 @@ const TextAreaField = ({
       rows={4}
     />
   </label>
-
 );
 
 const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
@@ -148,6 +155,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   nombreCliente,
   onClose,
   onGuardar,
+  horasPaquete,
+  horasIndividuales
 }) => {
   const [ventas, setVentas] = useState("");
   const [noTicket, setNoTicket] = useState("");
@@ -178,7 +187,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const sigCanvasCliente = useRef<SignatureCanvas>(null);
   const [cargarFirmaTecnico, setCargarFirmaTecnico] = useState(false);
   const [esperandoFirmaCliente, setEsperandoFirmaCliente] = useState(false);
-
+  const [horasDisponibles, setHorasDisponibles] = useState({paquete: horasPaquete, individual: horasIndividuales});
 
   useEffect(() => {
     if (sigCanvas.current) {
@@ -253,6 +262,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
       const horas = Math.floor(diferenciaMin / 60);
       const minutos = diferenciaMin % 60;
       const total = minutos > 15 ? horas + 1 : horas;
+
       setHorasConsumidas(diferenciaMin > 0 ? total : 0);
     }
   }, [horaLlegada, horaSalida, fechaServicio]);
@@ -360,21 +370,6 @@ useEffect(() => {
     try {
       const res = await fetch(`/api/firmas/verificar/${firmaClienteRemotaId}`);
       const json = await res.json();
-
-      //if (json.vencida) {
-      //  clearInterval(intervalo);
-      //  setEsperandoFirmaCliente(false);
-      //  setFirmaClienteRemotaId(null);
-      //  setUrlFirmaRemota(null);
-
-      //  Swal.fire({
-      //    icon: "warning",
-      //    title: "El enlace ha expirado",
-      //    text: "Debe generar un nuevo enlace para que el cliente firme.",
-      //  });
-
-      //  return;
-      //}
 
       if (json.firmada) {
         setEsperandoFirmaCliente(false);
@@ -558,58 +553,58 @@ useEffect(() => {
           onGuardar();
           onClose();
         });
+
       } else {
         const data = await res.json();
-      const nuevaBitacora = data.results?.[0];
-      const encuestaUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/encuesta/${nuevaBitacora?.id}`;
+        const nuevaBitacora = data.results?.[0];
+        const encuestaUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/encuesta/${nuevaBitacora?.id}`;
 
-      const clipboardSoportado = typeof navigator.clipboard !== "undefined";
+        const clipboardSoportado = typeof navigator.clipboard !== "undefined";
 
-      Swal.fire({
-  icon: "success",
-  title: "Bitácora guardada",
-  html: `
-    La bitácora se ha guardado correctamente.<br/>
-    Puedes compartir este enlace con el cliente para la encuesta:<br/><br/>
-    <input type="text" id="encuestaLink" class="swal2-input" value="${encuestaUrl}" readonly />
-    ${
-      typeof navigator.clipboard !== "undefined"
-        ? `<button type="button" id="copyEncuestaBtn" class="swal2-confirm swal2-styled" style="margin-top: 10px;">
-             Copiar enlace
-           </button>`
-        : `<p class="text-sm text-gray-600 italic mt-2">
-             Mantén presionado el campo de texto para copiar el enlace manualmente.
-           </p>`
-    }
-  `,
-  showConfirmButton: false,
-  didOpen: () => {
-    const input = document.getElementById("encuestaLink") as HTMLInputElement;
-    input?.select();
+        Swal.fire({
+          icon: "success",
+          title: "Bitácora guardada",
+          html: `
+            La bitácora se ha guardado correctamente.<br/>
+            Puedes compartir este enlace con el cliente para la encuesta:<br/><br/>
+            <input type="text" id="encuestaLink" class="swal2-input" value="${encuestaUrl}" readonly />
+            ${
+              typeof navigator.clipboard !== "undefined"
+                ? `<button type="button" id="copyEncuestaBtn" class="swal2-confirm swal2-styled" style="margin-top: 10px;">
+                    Copiar enlace
+                  </button>`
+                : `<p class="text-sm text-gray-600 italic mt-2">
+                    Mantén presionado el campo de texto para copiar el enlace manualmente.
+                  </p>`
+            }
+          `,
+          showConfirmButton: false,
+          didOpen: () => {
+            const input = document.getElementById("encuestaLink") as HTMLInputElement;
+            input?.select();
 
-    if (typeof navigator.clipboard !== "undefined") {
-      const copyBtn = document.getElementById("copyEncuestaBtn");
-      copyBtn?.addEventListener("click", () => {
-        navigator.clipboard.writeText(encuestaUrl).then(() => {
-          Swal.fire({
-            toast: true,
-            position: "top-end",
-            icon: "success",
-            title: "Enlace copiado al portapapeles",
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true,
-          }).then(() => {
-            onGuardar();
-            onClose();
-          });
+            if (typeof navigator.clipboard !== "undefined") {
+              const copyBtn = document.getElementById("copyEncuestaBtn");
+              copyBtn?.addEventListener("click", () => {
+                navigator.clipboard.writeText(encuestaUrl).then(() => {
+                  Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    icon: "success",
+                    title: "Enlace copiado al portapapeles",
+                    showConfirmButton: false,
+                    timer: 1500,
+                    timerProgressBar: true,
+                  }).then(() => {
+                    onGuardar();
+                    onClose();
+                  });
+                });
+              });
+            }
+          },
         });
-      });
-    }
-  },
-});
       }
-
 
     } catch (error) {
       Swal.fire({
@@ -617,6 +612,7 @@ useEffect(() => {
         title: "Error al guardar",
         text: error instanceof Error ? error.message : String(error),
       });
+
     }finally {
       setGuardando(false); 
     }
@@ -702,7 +698,7 @@ useEffect(() => {
             onChange={setNombresCapacitados}
           />
           <InputField
-            label="Ventas"
+            label="Oportunidad de negocio"
             value={ventas}
             onChange={setVentas}
           />
@@ -729,7 +725,16 @@ useEffect(() => {
             label="Tipo de Horas"
             value={tipoHoras}
             onChange={setTipoHoras}
-            options={["Paquete", "Individual"]}
+            options={[
+              { 
+                value: "Paquete", 
+                label: `Paquete (${horasDisponibles.paquete}h disponibles)` 
+              },
+              { 
+                value: "Individual", 
+                label: `Individual (${horasDisponibles.individual}h disponibles)` 
+              }
+            ]}
             required
           />
 
