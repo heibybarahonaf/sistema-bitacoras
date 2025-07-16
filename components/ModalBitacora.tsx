@@ -157,7 +157,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [horaLlegada, setHoraLlegada] = useState("");
   const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [fechaServicio, setFechaServicio] = useState("");
-  const [modalidad, setModalidad] = useState("Presencial");
+  const [modalidad, setModalidad] = useState("");
   const [horasConsumidas, setHorasConsumidas] = useState(0);
   const [nombresCapacitados, setNombresCapacitados] = useState("");
   const [descripcionServicio, setDescripcionServicio] = useState("");
@@ -412,17 +412,17 @@ useEffect(() => {
       if (!tipoHoras) throw new Error("Tipo de horas es obligatorio");
 
       // Firma cliente solo si modalidad presencial
-      if (modalidad === "Presencial" && sigCanvasCliente.current?.isEmpty()) {
+      if ((modalidad === "Presencial" || modalidad === "En Oficina") && sigCanvasCliente.current?.isEmpty()) {
         throw new Error("Por favor, capture la firma del cliente.");
       }
 
       const firmaCliente =
-        modalidad === "Presencial"
+        modalidad === "Presencial" || modalidad === "En Oficina"
           ? sigCanvasCliente.current?.getCanvas().toDataURL("image/png")
           : null;
 
       let firmaClienteId: number | null = null;
-      if (modalidad === "Presencial" && firmaCliente) {
+      if ((modalidad === "Presencial" || modalidad === "En Oficina") && firmaCliente) {
 
         const resFirmaCliente = await fetch("/api/firmas", {
           method: "POST",
@@ -686,7 +686,7 @@ useEffect(() => {
             label="Modalidad"
             value={modalidad}
             onChange={setModalidad}
-            options={["Presencial", "Remoto"]}
+            options={["Presencial", "Remoto", "En Oficina"]}
             required
           />
           <SelectField
@@ -702,7 +702,7 @@ useEffect(() => {
             onChange={setNombresCapacitados}
           />
           <InputField
-            label="Ventas"
+            label="Oportunidad de Negocio"
             value={ventas}
             onChange={setVentas}
           />
@@ -755,7 +755,7 @@ useEffect(() => {
             </div>
 
             {/* Firma cliente presencial o mensaje enlace remoto */}
-            {modalidad === "Presencial" ? (
+            {modalidad === "Presencial" || modalidad === "En Oficina" ? (
               <div className="flex-1 shadow-md rounded-md p-4 bg-white max-w-xs">
                 <span className="text-gray-800 font-semibold block mb-1">
                   Firma del Cliente <span className="text-red-600">*</span>

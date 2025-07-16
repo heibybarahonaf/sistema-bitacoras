@@ -44,7 +44,7 @@ export default function EquiposPage() {
   
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [equipoEditar, setEquipoEditar] = useState<Equipo | null>(null);
-  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 5,totalPages: 0});
+  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 10,totalPages: 0});
 
   useEffect(() => {
     const timer = setTimeout(() => {

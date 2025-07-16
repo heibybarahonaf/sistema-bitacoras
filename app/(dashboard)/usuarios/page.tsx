@@ -49,7 +49,7 @@ export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [usuarioEditar, setUsuarioEditar] = useState<Usuario | null>(null);
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
-  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 5, totalPages: 0});
+  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0});
 
   //Detectar cliente para evitar render server
   useEffect(() => {

@@ -41,7 +41,7 @@ export default function SistemasPage() {
 
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [sistemaEditar, setSistemaEditar] = useState<Sistema | null>(null);
-  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 5, totalPages: 0});
+  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0});
 
   useEffect(() => {
     setIsClient(true);

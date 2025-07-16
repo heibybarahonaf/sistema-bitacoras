@@ -43,7 +43,7 @@ const BuscarCliente: React.FC = () => {
   const [paginaActualClientes, setPaginaActualClientes] = useState(1);
   const [paginaActualBitacoras, setPaginaActualBitacoras] = useState(1);
   const [isDownloading, setIsDownloading] = useState<number | null>(null);
-  const [metaClientes, setMetaClientes] = useState<PaginationMeta>({total: 0, page: 1, limit: 5, totalPages: 0});
+  const [metaClientes, setMetaClientes] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0});
   const [metaBitacoras, setMetaBitacoras] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0 });
 
   const formatoLempiras = (valor: number) => valor.toLocaleString("es-HN", { style: "currency", currency: "HNL" });

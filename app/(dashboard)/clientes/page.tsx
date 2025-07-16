@@ -61,7 +61,7 @@ export default function ClientesPage() {
 
   // Paginación estados - ahora manejados por el backend
   const [paginaActual, setPaginaActual] = useState(1);
-  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 5, totalPages: 0});
+  const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0});
 
   // Debounce para búsqueda
   useEffect(() => {

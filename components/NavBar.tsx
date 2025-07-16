@@ -151,7 +151,7 @@ export default function Navbar() {
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40"
-          onClick={() => setSidebarOpen(false)}
+          //onClick={() => setSidebarOpen(false)}
         />
       )}
 
