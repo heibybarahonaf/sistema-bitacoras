@@ -613,6 +613,8 @@ const BuscarCliente: React.FC = () => {
                   cargarClientePorId(clienteSeleccionado.id);
                   setShowNewBitacora(false);
                 }}
+                horasPaquete={clienteSeleccionado.horas_paquetes}
+                horasIndividuales={clienteSeleccionado.horas_individuales}
               />
             )}
 
