@@ -150,19 +150,19 @@ export default function CrearEncuestaPage() {
           placeholder="Título de la encuesta"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
-          className="w-full px-3 py-2 border rounded"
+          className="w-full px-3 py-2 border rounded text-xs"
         />
         <h2 className="font-semibold mb-2">Descripción</h2>
         <textarea
           placeholder="Descripción de la encuesta"
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
-          className="w-full px-3 py-2 border rounded"
+          className="w-full px-3 py-2 border rounded text-xs"
         />
         <div className="flex items-center justify-between">
           <Link
             href="/preguntas"
-            className="text-sm text-blue-600 hover:underline border px-3 py-1 rounded"
+            className="text-xs text-blue-600 hover:underline border px-3 py-1 rounded"
           >
             + Crear Pregunta
           </Link>
@@ -177,7 +177,7 @@ export default function CrearEncuestaPage() {
           {preguntasAsociadas.length === 0 && <p>No hay preguntas asociadas</p>}
           <ul>
             {preguntasAsociadas.map((p) => (
-              <li key={p.id} className="flex justify-between items-center border p-2 rounded mb-1">
+              <li key={p.id} className="flex justify-between items-center border p-2 rounded mb-1 text-xs">
                 <span>{p.pregunta}</span>
                 <button
                   onClick={() => quitarPregunta(p)}
@@ -196,7 +196,7 @@ export default function CrearEncuestaPage() {
           {preguntasDisponibles.length === 0 && <p>No hay preguntas disponibles</p>}
           <ul>
             {preguntasDisponibles.map((p) => (
-              <li key={p.id} className="flex justify-between items-center border p-2 rounded mb-1">
+              <li key={p.id} className="flex justify-between items-center border p-2 rounded mb-1 text-xs">
                 <span>{p.pregunta}</span>
                 <button
                   onClick={() => agregarPregunta(p)}
@@ -215,7 +215,7 @@ export default function CrearEncuestaPage() {
         <button
           onClick={guardarCambios}
           disabled={cargando}
-          className="bg-[#295d0c] text-white px-5 py-2 rounded hover:bg-[#23480a]"
+          className="bg-[#295d0c] text-white text-xs px-5 py-2 rounded hover:bg-[#23480a]"
         >
           Guardar
         </button>

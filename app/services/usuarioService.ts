@@ -84,6 +84,19 @@ export class UsuarioService {
     }
 
 
+    public static async obtenerNombreUsuarioPorId(id : number): Promise <String> {
+
+        const usuario = await prisma.usuario.findUnique({ where: { id }});
+
+        if(!usuario){
+            throw new ResponseDto(404, "Técnico no encontrado");
+        }
+        
+        return usuario.nombre;
+
+    }
+
+
     public static async obtenerUsuarioPorCorreo(correo: string): Promise<Usuario> {
 
         const usuario = await prisma.usuario.findFirst({ where: { correo: correo }});

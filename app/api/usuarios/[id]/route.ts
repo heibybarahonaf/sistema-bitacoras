@@ -39,9 +39,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         const body = await req.json();
         const parsed = EditarUsuarioDto.safeParse(body);
 
-        console.log("HOLA")
-        console.log(parsed)
-
         if (!parsed.success) {
             GeneralUtils.zodValidationError(parsed.error);
         }

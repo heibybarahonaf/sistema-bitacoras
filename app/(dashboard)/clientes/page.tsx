@@ -591,13 +591,13 @@ export default function ClientesPage() {
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="px-5 py-2 text-sm rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
+              className="px-5 py-2 text-xs rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-sm rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
+              className="px-5 py-2 text-xs rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
             >
               {clienteEditar ? "Actualizar" : "Crear"}
             </button>

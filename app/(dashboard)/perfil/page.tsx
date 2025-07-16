@@ -184,7 +184,7 @@ export default function PerfilUsuarioPage() {
                 setFirmaImg(null);
               }
             }}
-            className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition"
+            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition"
           >
             Limpiar firma
           </button>
@@ -194,7 +194,7 @@ export default function PerfilUsuarioPage() {
       <div className="flex justify-end gap-2">
         <button
           type="submit"
-          className="px-5 py-2 rounded-md bg-[#295d0c] text-sm text-white font-semibold hover:bg-[#23480a]"
+          className="px-5 py-2 rounded-md bg-[#295d0c] text-xs text-white font-semibold hover:bg-[#23480a]"
         >
           Guardar cambios
         </button>

@@ -372,7 +372,7 @@ export default function ConfiguracionPage() {
           <button
             type="submit"
             disabled={saving}
-            className={`text-white font-semibold px-4 py-2 rounded ${
+            className={`text-white text-xs font-semibold px-4 py-2 rounded ${
               saving
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-green-700 hover:bg-green-800"
@@ -389,7 +389,7 @@ export default function ConfiguracionPage() {
         <h3 className="text-xl font-semibold">Tipos de Servicio</h3>
         <button
           onClick={() => mostrarFormularioTipoServicio()}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-xs"
         >
           Agregar
         </button>
@@ -413,13 +413,13 @@ export default function ConfiguracionPage() {
             <div className="flex gap-2 mt-2 sm:mt-0">
               <button
                 onClick={() => mostrarFormularioTipoServicio(s)}
-                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm"
+                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-xs"
               >
                 Editar
               </button>
               <button
                 onClick={() => toggleActivoTipoServicio(s)}
-                className={`px-3 py-1 rounded text-sm text-white ${
+                className={`px-3 py-1 rounded text-xs text-white ${
                   s.activo
                     ? "bg-red-600 hover:bg-red-700"
                     : "bg-green-600 hover:bg-green-700"

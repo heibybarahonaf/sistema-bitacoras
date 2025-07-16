@@ -311,7 +311,7 @@ export default function SistemasPage() {
         Gestión de Sistemas
       </h1>
 
-      <div className="flex flex-col text-sm sm:flex-row justify-between items-center mb-6 gap-4">
+      <div className="flex flex-col text-xs sm:flex-row justify-between items-center mb-6 gap-4">
         <input
           type="text"
           placeholder="Buscar sistema por nombre..."
@@ -482,13 +482,13 @@ export default function SistemasPage() {
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="px-5 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
+              className="px-5 py-2 text-xs rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
+              className="px-5 py-2 text-xs rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
             >
               {sistemaEditar ? "Actualizar" : "Guardar"}
             </button>

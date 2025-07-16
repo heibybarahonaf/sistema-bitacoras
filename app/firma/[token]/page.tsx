@@ -8,28 +8,34 @@ import { useEffect, useRef, useState } from "react";
 
 export default function FirmaClientePage() {
   const { token } = useParams();
+  const [loading, setLoading] = useState(true);
   const sigCanvas = useRef<SignatureCanvas>(null);
   const [firmaId, setFirmaId] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
   const [bitacora, setBitacora] = useState<Bitacora | null>(null);
   const [nombreTecnico, setNombreTecnico] = useState<string | null>(null);
+
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
 
   useEffect(() => {
+
     const validarToken = async () => {
+
       try {
         const res = await fetch(`/api/firmas/validar/${token}`);
         const data = await res.json();
 
         if (!res.ok || !data.results?.[0]) {
+
           Swal.fire({
             icon: "error",
             title: "Enlace inválido",
             text: data.error || "El enlace ya ha sido utilizado.",
             confirmButtonText: "OK",
+
           }).then(() => {
             window.location.href = "https://www.posdehonduras.com";
           });
+
           return;
         }
 
@@ -39,22 +45,25 @@ export default function FirmaClientePage() {
         // Obtener la bitácora relacionada
         const resBitacora = await fetch(`/api/bitacoras/por-firma/${firma.id}`);
         const dataBitacora = await resBitacora.json();
+        console.log("Data: ",dataBitacora.result)
 
         if (resBitacora.ok && dataBitacora?.result) {
           const bitacoraData = dataBitacora.result;
           setBitacora(bitacoraData);
+          //console.log("BITA::",bitacoraData)
+          //console.log("ID:",bitacoraData?.id)
 
           // Obtener nombre del técnico
           try {
-            console.log("HOLA::",bitacoraData.usuario_id)
             const resUsuario = await fetch(
-              `/api/usuarios/${bitacoraData.usuario_id}`
+              `/api/usuarios/nombre/${bitacoraData.tecnico_ref}`
             );
             
             const dataUsuario = await resUsuario.json();
-            if (resUsuario.ok && dataUsuario?.results?.[0]?.nombre) {
-              setNombreTecnico(dataUsuario.results[0].nombre);
+            if (resUsuario.ok) {
+              setNombreTecnico(dataUsuario.results[0]);
             }
+
           } catch {
 
             Swal.fire({
@@ -119,24 +128,30 @@ export default function FirmaClientePage() {
       });
 
       if (res.ok) {
+
         Swal.fire({
           icon: "success",
           title: "¡Gracias!",
           text: "Tu firma ha sido registrada.",
           confirmButtonText: "OK",
-        }).then(() => {
+        })
+
+        .then(() => {
+          
           if (bitacora?.id) {
             window.location.href = `/encuesta/${bitacora.id}`;
           } else {
             window.location.href = "/encuesta";
           }
         });
+
       } else {
         Swal.fire("Error", "No se pudo guardar la firma", "error");
       }
     } catch {
       Swal.fire("Error", "Error al enviar firma", "error");
     }
+    
   };
 
   if (loading)

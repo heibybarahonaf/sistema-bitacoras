@@ -4,7 +4,7 @@ import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { BitacoraService } from "@/app/services/bitacoraService";
 import { ActualizarCalificacionDto } from "@/app/dtos/actualizarCalificacion.dto"; 
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
 
     try {
       

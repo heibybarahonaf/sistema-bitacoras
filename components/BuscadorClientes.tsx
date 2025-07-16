@@ -577,13 +577,13 @@ const BuscarCliente: React.FC = () => {
                     onClick={handleNuevaBitacora}
                     className="px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
                   >
-                    Nueva
+                    Nueva +
                   </button>
                   <button
                     onClick={() => setShowPago(true)}
                     className="px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
                   >
-                    Pago
+                    Pago $
                   </button>
                 </div>
               </div>
