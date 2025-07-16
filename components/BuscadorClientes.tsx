@@ -512,21 +512,21 @@ const BuscarCliente: React.FC = () => {
 
             {/* Horas y saldos */}
             <div className="flex-1 space-y-2 text-left sm:text-right">
-              <p className="font-bold text-sm text-gray-700">HORAS - SALDOS</p>
+              <p className="font-bold text-sm text-gray-700">HORAS | SALDOS</p>
               <p>
                 <strong>Paquetes:</strong> {clienteSeleccionado.horas_paquetes}{" "}
-                - {formatoLempiras(clienteSeleccionado.monto_paquetes)}
+                | {formatoLempiras(clienteSeleccionado.monto_paquetes)}
               </p>
               <p>
                 <strong>Individuales:</strong>{" "}
-                {clienteSeleccionado.horas_individuales} -{" "}
+                {clienteSeleccionado.horas_individuales} |{" "}
                 {formatoLempiras(clienteSeleccionado.monto_individuales)}
               </p>
               <p className="mt-4 border-t pt-2 font-semibold">
                 <strong>Total:</strong>{" "}
                 {clienteSeleccionado.horas_paquetes +
                   clienteSeleccionado.horas_individuales}{" "}
-                -{" "}
+                |{" "}
                 {formatoLempiras(
                   clienteSeleccionado.monto_paquetes +
                     clienteSeleccionado.monto_individuales
