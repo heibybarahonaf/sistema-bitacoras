@@ -6,6 +6,12 @@ export async function middleware(req: NextRequest) {
     const method = req.method;
     const calificacion_regex = /^\/api\/bitacoras\/[^/]+\/calificacion$/;
 
+    const securityHeaders = {
+        'X-Frame-Options': 'DENY',
+        'X-Content-Type-Options': 'nosniff',
+        'Referrer-Policy': 'strict-origin-when-cross-origin'
+    };
+
     const rutasPublicas = ["/login"];
     const esRutaPublica = rutasPublicas.includes(pathname) || pathname.startsWith("/firma/") || pathname.startsWith("/bitacoras/");
 
@@ -30,7 +36,13 @@ export async function middleware(req: NextRequest) {
 
     const esEncuestaIndividual = /^\/encuesta\/\d+$/.test(pathname);
     if (esRutaPublica || esApiPublica || esEncuestaIndividual) {
-        return NextResponse.next();
+        const response = NextResponse.next();
+
+        Object.entries(securityHeaders).forEach(([key, value]) => {
+            response.headers.set(key, value);
+        });
+
+        return response;
     }
     
     try {
