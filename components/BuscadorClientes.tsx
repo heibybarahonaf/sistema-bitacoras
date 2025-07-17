@@ -506,7 +506,7 @@ const BuscarCliente: React.FC = () => {
                 <strong>Teléfono:</strong> {clienteSeleccionado.telefono}
               </p>
               <p>
-                <strong>Correo:</strong> {clienteSeleccionado.correo}
+                <strong>Correo || "N/A" :</strong> {clienteSeleccionado.correo}
               </p>
             </div>
 

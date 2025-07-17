@@ -23,12 +23,12 @@ export default function ModalSistema({ isOpen, onClose, children }: ModalProps) 
       role="dialog"
       aria-labelledby="modal-title"
       className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
-      onClick={onClose}
+      //onClick={onClose}
       style={{ overflowY: "auto" }}
     >
       <div
         className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-auto shadow-lg"
-        onClick={(e) => e.stopPropagation()}
+        //onClick={(e) => e.stopPropagation()}
       >
         {children}
       </div>
