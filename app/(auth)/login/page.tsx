@@ -96,32 +96,41 @@ export default function LoginInterface() {
             });
 
             const data = await response.json();
-
-            if (!response.ok) {
+            if (data.message === "Código enviado con éxito") {
             
                 if (data.message?.toLowerCase().includes("correo")) {
                     setErrors({ correo: data.message });
                 } else {
+                    
                     Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: data.message || 'Error al enviar el código'
+                      icon: "error",
+                      title: "Error",
+                      text: data.message || "Error al enviar el código",
                     });
+                    
                 }
-                return;
-            }
 
-            Swal.fire({
-                toast: true,
-                position: "top-end",
-                icon: "success",
-                title: data.message || "Código enviado correctamente",
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-            });
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    icon: "success",
+                    title: data.message || "Código enviado correctamente",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
 
-            setStep(2);
+                setStep(2);
+
+            }else{
+
+                Swal.fire({
+                  icon: "error",
+                  title: "Error",
+                  text: data.message+", Intentalo nuevamente" || "Error al enviar el código",
+                });
+
+            }  
 
         } catch {
 
