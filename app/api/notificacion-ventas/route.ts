@@ -10,6 +10,7 @@ interface DatosVenta {
     ventas?: string;
     tecnico?: string;
     rtn?: string;
+    zona?: string;
     telefono?: string;
     correo?: string;
 }
@@ -37,8 +38,9 @@ export async function POST(req: Request) {
             tecnico: nombreTecnico,
             cliente: nombreCliente,
             telefono: cliente.telefono,
-            correo: cliente?.correo || "",
+            correo: cliente?.correo || "N/A",
             rtn: cliente.rtn,
+            zona: cliente.direccion,
             ventas
         };
 

@@ -351,7 +351,7 @@ function renderInfoCliente(doc: jsPDF, y: number, info: DatosExtrasReporte): num
 
     if (info.direccion) {
         doc.setFont("helvetica", "bold");
-        doc.text("Dirección:", leftX, y);
+        doc.text("Zona:", leftX, y);
         doc.setFont("helvetica", "normal");
         doc.text(safe(info.direccion), leftX + doc.getTextWidth("Dirección:") + offset, y);
     }
