@@ -6,6 +6,7 @@ interface DatosVenta {
     ventas?: string;
     tecnico?: string;
     rtn?: string;
+    zona?: string;
     telefono?: string;
     correo?: string;
 }
@@ -116,6 +117,7 @@ export class EmailService {
                     Teléfono: ${datosVenta.telefono}
                     Correo: ${datosVenta.correo || ""}
                     RTN: ${datosVenta.rtn}
+                    Zona: ${datosVenta.zona}
                     Detalles: ${datosVenta.ventas}
                     Técnico: ${datosVenta.tecnico}`,
                     html,
@@ -190,6 +192,14 @@ export class EmailService {
                                             </td>
                                             <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: 'Courier New', monospace;">
                                                 ${datos.rtn}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px 0; width: 30%; vertical-align: top;">
+                                                <strong style="color: #475569; font-size: 14px;">Zona:</strong>
+                                            </td>
+                                            <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: 'Courier New', monospace;">
+                                                ${datos.zona}
                                             </td>
                                         </tr>
                                     </table>

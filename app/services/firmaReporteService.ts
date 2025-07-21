@@ -158,7 +158,7 @@ export class FirmaReporteService {
         
         if (bitacora.cliente?.direccion) {
             doc.setFont("helvetica", "bold");
-            doc.text("Dirección:", leftX, currentY);
+            doc.text("Zona:", leftX, currentY);
             doc.setFont("helvetica", "normal");
             
             const direccionCompleta = bitacora.cliente.direccion;
