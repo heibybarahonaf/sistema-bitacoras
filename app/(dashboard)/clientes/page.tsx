@@ -531,7 +531,7 @@ export default function ClientesPage() {
             { label: "Empresa", name: "empresa", type: "text", placeholder: "Nombre de la empresa" },
             { label: "Responsable", name: "responsable", type: "text", placeholder: "Responsable" },
             { label: "RTN/ID", name: "rtn", type: "text", placeholder: "RTN/ID" },
-            { label: "Zona", name: "zona", type: "text", placeholder: "Zona" },
+            { label: "Zona", name: "direccion", type: "text", placeholder: "Zona" },
             //{ label: "Correo", name: "correo", type: "email", placeholder: "Correo" },
           ].map(({ label, name, type, placeholder }) => (
             <label key={name} className="block mb-4 text-gray-800 font-medium text-xs">
