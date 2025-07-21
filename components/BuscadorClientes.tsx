@@ -500,7 +500,7 @@ const BuscarCliente: React.FC = () => {
                 <strong>RTN:</strong> {clienteSeleccionado.rtn}
               </p>
               <p>
-                <strong>Dirección:</strong> {clienteSeleccionado.direccion}
+                <strong>Zona:</strong> {clienteSeleccionado.direccion}
               </p>
               <p>
                 <strong>Teléfono:</strong> {clienteSeleccionado.telefono}
