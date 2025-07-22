@@ -10,11 +10,11 @@ datasource db {
 
 model Firma {
   id              Int        @id @default(autoincrement())
-  token           String
+  token           String?
   tecnico_id      Int?
   firma_base64    String?
-  usada           Boolean
-  url             String
+  usada           Boolean?
+  url             String?
   createdAt       DateTime?  @default(now())
   updatedAt       DateTime?  @default(now())
   clienteBitacora Bitacora[] @relation("FirmaCliente")
@@ -107,13 +107,14 @@ model Usuario {
   comision      Int        @default(15)
   bitacora      Bitacora[]
   firmasTecnico Firma[]
+  Pagos_Cliente Pagos_Cliente[]
 
   @@map("usuarios")
 }
 
 model Sistema {
   id          Int        @id @default(autoincrement())
-  sistema     String     @db.VarChar(50)
+  sistema     String     @db.VarChar(200)
   descripcion String
   activo      Boolean
   createdAt   DateTime   @default(now())
@@ -162,15 +163,17 @@ model Fase_Implementacion {
 model Pagos_Cliente {
   id           Int      @id @default(autoincrement())
   cliente_id   Int
+  usuario_id   Int
   no_factura   String   @db.VarChar(20)
   forma_pago   String   @db.VarChar(50)
-  detalle_pago String   @db.VarChar(50)
+  detalle_pago String   @db.VarChar(200)
   monto        Int
   tipo_horas   String   @db.VarChar(20)
   cant_horas   Int
   createdAt    DateTime @default(now())
   updatedAt    DateTime @default(now())
   cliente      Cliente  @relation(fields: [cliente_id], references: [id])
+  usuario      Usuario  @relation(fields: [usuario_id], references: [id])
 
   @@map("pagos_clientes")
 }

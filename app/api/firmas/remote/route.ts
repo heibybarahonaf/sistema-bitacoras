@@ -7,6 +7,7 @@ import { GeneralUtils } from "@/app/common/utils/general.utils";
 export async function POST() {
 
     try {
+        
         const token = uuidv4();
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
         const url = `${baseUrl}/firma/${token}`;

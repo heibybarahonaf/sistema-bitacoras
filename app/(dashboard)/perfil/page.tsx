@@ -7,13 +7,17 @@ import SignatureCanvas from "react-signature-canvas";
 import { User } from "lucide-react";
 
 export default function PerfilUsuarioPage() {
+
+  const firmaRef = useRef<SignatureCanvas | null>(null);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [firmaImg, setFirmaImg] = useState<string | null>(null);
-  const firmaRef = useRef<SignatureCanvas | null>(null);
 
   useEffect(() => {
+
     async function fetchUsuarioLogueado() {
+
       try {
+
         const res = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
         const data = await res.json();
 
@@ -23,15 +27,20 @@ export default function PerfilUsuarioPage() {
         } else {
           Swal.fire("Error", "No se pudo obtener el usuario logueado.", "error");
         }
+
       } catch {
         Swal.fire("Error", "Error al conectar con el servidor.", "error");
       }
+
     }
+
     fetchUsuarioLogueado();
   }, []);
 
   async function cargarFirma(usuarioId: number) {
+
     try {
+
       const res = await fetch(`/api/firmas/tecnico/${usuarioId}`);
       const data = await res.json();
 
@@ -40,9 +49,11 @@ export default function PerfilUsuarioPage() {
       } else {
         setFirmaImg(null);
       }
+
     } catch {
       setFirmaImg(null);
     }
+
   }
 
   // Escalar y pintar la firma en el canvas
@@ -67,10 +78,12 @@ export default function PerfilUsuarioPage() {
       const y = (height - img.height * scale) / 2;
       ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
     };
+
     img.src = firmaImg;
   }, [firmaImg]);
 
   async function handleGuardar(e: React.FormEvent<HTMLFormElement>) {
+
     e.preventDefault();
     if (!usuario) return;
 
@@ -87,6 +100,7 @@ export default function PerfilUsuarioPage() {
     try {
       // Actualizar password si existe
       if (Object.keys(usuarioActualizado).length > 0) {
+        
         const res = await fetch(`/api/usuarios/${usuario.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

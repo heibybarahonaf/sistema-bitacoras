@@ -275,7 +275,7 @@ export function generarPDFPorCliente(bitacoras: BitacoraCompleta[], fechaInicio:
 
 function formatearFecha(fecha: Date) {
 
-    return new Date(fecha).toLocaleDateString('es-ES');
+    return new Date(fecha).toISOString().split("T")[0];
 
 }
 
@@ -294,11 +294,11 @@ function renderInfoTecnico(doc: jsPDF, y: number, info: DatosExtrasReporte): num
     const offset = 2;
 
     doc.setFontSize(9);
-
     doc.setFont("helvetica", "bold");
     doc.text("Técnico:", leftX, y);
     doc.setFont("helvetica", "normal");
     doc.text(safe(info.tecnico), leftX + doc.getTextWidth("Técnico:") + offset, y);
+
     y += 4;
 
     if (info.correoUsuario) {
@@ -334,11 +334,11 @@ function renderInfoCliente(doc: jsPDF, y: number, info: DatosExtrasReporte): num
     const offset = 2; 
 
     doc.setFontSize(9);
-
     doc.setFont("helvetica", "bold");
     doc.text("Cliente:", leftX, y);
     doc.setFont("helvetica", "normal");
     doc.text(safe(info.cliente), leftX + doc.getTextWidth("Cliente:") + offset, y);
+
     y += 4;
 
     if (info.responsable) {
@@ -346,6 +346,7 @@ function renderInfoCliente(doc: jsPDF, y: number, info: DatosExtrasReporte): num
         doc.text("Responsable:", leftX, y);
         doc.setFont("helvetica", "normal");
         doc.text(safe(info.responsable), leftX + doc.getTextWidth("Responsable:") + offset, y);
+        
         y += 4;
     }
 

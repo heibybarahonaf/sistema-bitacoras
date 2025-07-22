@@ -12,6 +12,7 @@ const FinalizarFirmaDto = z.object({
 export async function POST(req: Request) {
   
     try {
+        
         const body = await req.json();
         const parsed = FinalizarFirmaDto.safeParse(body);
 

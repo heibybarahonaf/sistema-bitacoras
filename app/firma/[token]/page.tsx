@@ -45,13 +45,10 @@ export default function FirmaClientePage() {
         // Obtener la bitácora relacionada
         const resBitacora = await fetch(`/api/bitacoras/por-firma/${firma.id}`);
         const dataBitacora = await resBitacora.json();
-        console.log("Data: ",dataBitacora.result)
 
         if (resBitacora.ok && dataBitacora?.result) {
           const bitacoraData = dataBitacora.result;
           setBitacora(bitacoraData);
-          //console.log("BITA::",bitacoraData)
-          //console.log("ID:",bitacoraData?.id)
 
           // Obtener nombre del técnico
           try {
@@ -170,7 +167,9 @@ export default function FirmaClientePage() {
             </p>
             <p>
               <strong>Fecha del Servicio:</strong>{" "}
-              {new Date(bitacora.fecha_servicio).toLocaleDateString("es-HN")}
+              {typeof bitacora.fecha_servicio === "string"
+                ? (bitacora.fecha_servicio as string).split("T")[0]
+                : (bitacora.fecha_servicio as Date).toISOString().split("T")[0]}
             </p>
             <p>
               <strong>Técnico:</strong>{" "}

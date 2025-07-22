@@ -56,6 +56,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     
     try {
+        
         const payload = await obtenerPayloadSesion();
         if (payload.rol !== "admin") {
             return NextResponse.json(new ResponseDto(403, "No tienes permiso para realizar esta acción!"));

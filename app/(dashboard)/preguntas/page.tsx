@@ -2,9 +2,9 @@
 
 import axios from "axios";
 import Link from "next/link";
+import Swal from "sweetalert2";
 import { Pregunta } from "@prisma/client";
 import { useEffect, useState } from "react";
-import Swal from "sweetalert2";
 
 export default function PreguntasPage() {
   const [mensaje, setMensaje] = useState("");
@@ -25,12 +25,14 @@ export default function PreguntasPage() {
       }
 
     } catch {
+
       Swal.fire({
         toast: true,
         position: "top-end",
         icon: "error",
         title: "Error al ontener las preguntas",
       });
+
     }
   };
 
@@ -58,6 +60,7 @@ export default function PreguntasPage() {
       setCargando(false);
       setTimeout(() => setMensaje(""), 3000);
     }
+    
   };
 
   const editar = (p: Pregunta) => {

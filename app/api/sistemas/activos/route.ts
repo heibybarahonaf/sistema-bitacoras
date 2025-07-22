@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { ResponseDto } from "../../../common/dtos/response.dto";
-import { SistemaService } from "../../../services/sistemaService";
-import { GeneralUtils } from "../../../common/utils/general.utils";
+import { ResponseDto } from "@/app/common/dtos/response.dto";
+import { SistemaService } from "@/app/services/sistemaService";
+import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function GET() {
 

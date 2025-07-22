@@ -22,6 +22,7 @@ export async function GET() {
 export async function POST(req: Request) {
 
     try {
+        
         const body = await req.json();
         const parsed = CrearEncuestaDto.safeParse(body);
 

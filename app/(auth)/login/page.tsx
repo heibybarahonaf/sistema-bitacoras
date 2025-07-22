@@ -19,13 +19,8 @@ interface FormErrors {
 export default function LoginInterface() {
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
-    
     const [errors, setErrors] = useState<FormErrors>({});
-    const [formData, setFormData] = useState<FormData>({
-        correo: '',
-        password: '',
-        codigo: ''
-    });
+    const [formData, setFormData] = useState<FormData>({ correo: '', password: '', codigo: '' });
 
     const validateEmail = (email:string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -127,7 +122,7 @@ export default function LoginInterface() {
                 Swal.fire({
                   icon: "error",
                   title: "Error",
-                  text: data.message+", Intentalo nuevamente" || "Error al enviar el código",
+                  text: data.message + ", Intentalo nuevamente" || "Error al enviar el código",
                 });
 
             }  

@@ -1,11 +1,11 @@
 -- CreateTable
 CREATE TABLE "firmas" (
     "id" SERIAL NOT NULL,
-    "token" TEXT NOT NULL,
+    "token" TEXT,
     "tecnico_id" INTEGER,
     "firma_base64" TEXT,
-    "usada" BOOLEAN NOT NULL,
-    "url" TEXT NOT NULL,
+    "usada" BOOLEAN,
+    "url" TEXT,
     "createdAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
 
@@ -95,7 +95,7 @@ CREATE TABLE "usuarios" (
 -- CreateTable
 CREATE TABLE "sistemas" (
     "id" SERIAL NOT NULL,
-    "sistema" VARCHAR(50) NOT NULL,
+    "sistema" VARCHAR(200) NOT NULL,
     "descripcion" TEXT NOT NULL,
     "activo" BOOLEAN NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -144,9 +144,10 @@ CREATE TABLE "fases_implementacion" (
 CREATE TABLE "pagos_clientes" (
     "id" SERIAL NOT NULL,
     "cliente_id" INTEGER NOT NULL,
+    "usuario_id" INTEGER NOT NULL,
     "no_factura" VARCHAR(20) NOT NULL,
     "forma_pago" VARCHAR(50) NOT NULL,
-    "detalle_pago" VARCHAR(50) NOT NULL,
+    "detalle_pago" VARCHAR(200) NOT NULL,
     "monto" INTEGER NOT NULL,
     "tipo_horas" VARCHAR(20) NOT NULL,
     "cant_horas" INTEGER NOT NULL,
@@ -223,6 +224,9 @@ ALTER TABLE "bitacoras" ADD CONSTRAINT "bitacoras_usuario_id_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "pagos_clientes" ADD CONSTRAINT "pagos_clientes_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "clientes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "pagos_clientes" ADD CONSTRAINT "pagos_clientes_usuario_id_fkey" FOREIGN KEY ("usuario_id") REFERENCES "usuarios"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "encuesta_preguntas" ADD CONSTRAINT "encuesta_preguntas_encuesta_id_fkey" FOREIGN KEY ("encuesta_id") REFERENCES "encuestas"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

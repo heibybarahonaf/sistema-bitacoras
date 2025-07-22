@@ -286,7 +286,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           const firmaData = await firmaRes.json();
 
           if (firmaData.code !== 200) {
-            console.warn("No se encontró firma del técnico.");
+            //console.warn("No se encontró firma del técnico.");
             return;
           }
 
@@ -294,7 +294,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           const firmaBase64 = firma?.firma_base64;
 
           if (!firmaBase64) {
-            console.warn("El técnico no tiene firma registrada.");
+            //console.warn("El técnico no tiene firma registrada.");
             return;
           }
 

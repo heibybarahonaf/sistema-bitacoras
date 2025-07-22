@@ -106,13 +106,15 @@ export class PagoService {
         const cliente = await ClienteService.obtenerClientePorId(pagoData.cliente_id);
 
         try {
+            
             const pagoExistente = await prisma.pagos_Cliente.findFirst({ where: { no_factura: pagoData.no_factura } });
 
             if (pagoExistente) {
                 throw new ResponseDto(400, "Ya existe un pago con el mismo número de factura");
             }
 
-            const pagoCreado = await prisma.pagos_Cliente.create({ data: pagoData });
+            const { cliente_id, usuario_id, no_factura, forma_pago, detalle_pago, monto, tipo_horas, cant_horas } = pagoData
+            const pagoCreado = await prisma.pagos_Cliente.create({ data: { cliente_id, usuario_id, no_factura, forma_pago, detalle_pago, monto, tipo_horas, cant_horas } });
 
             let datosActualizacion: { 
                 horas_paquetes?: number; horas_individuales?: number; monto_paquetes?: number; monto_individuales?: number; 

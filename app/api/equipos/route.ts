@@ -30,6 +30,7 @@ export async function GET(request: Request) {
                 limit: 1,
                 totalPages: equipo ? 1 : 0
             };
+            
         } else {
             result = await EquipoService.obtenerEquiposPaginados(page, limit, search);
         }

@@ -16,6 +16,7 @@ interface PagoConCliente extends Pagos_Cliente {
     telefono: string;
     correo: string;
     activo: boolean;
+    usuario_id: number;
     horas_paquetes: number;
     horas_individuales: number;
     monto_paquetes: number;
@@ -25,12 +26,35 @@ interface PagoConCliente extends Pagos_Cliente {
   };
 }
 
-function mostrarDetallePago(pago: PagoConCliente) {
+
+async function mostrarDetallePago(pago: PagoConCliente) {
+  let usuario = "";
+
+    try {
+      const res = await fetch(`/api/usuarios/${pago.usuario_id}`);
+      const usuarioData = await res.json();
+
+      if (usuarioData.results.length > 0) {
+        usuario = usuarioData.results[0].nombre;
+      }
+
+    } catch {
+
+      Swal.fire({
+        toast: true,
+        position: "top-end",
+        icon: "error",
+        title: "Error al cargar el técnico",
+      });
+
+    }
+
   Swal.fire({
     title: "Detalle de Pago",
     html: `
       <strong>Factura:</strong> ${pago.no_factura} <br/><br/>
       <strong>Cliente:</strong> ${pago.cliente?.empresa || pago.cliente?.responsable} <br/><br/>
+      <strong>Técnico:</strong> ${usuario} <br/><br/>
       <strong>Forma de pago:</strong> ${pago.forma_pago} <br/><br/>
       <strong>Detalle:</strong> ${pago.detalle_pago} <br/><br/>
       <strong>Monto:</strong> L.${pago.monto} <br/><br/>
@@ -59,9 +83,7 @@ export default function PagosPage() {
   const [metaPagos, setMetaPagos] = useState({total: 0, page: 1, limit: 10, totalPages: 0});
 
   const [pagos, setPagos] = useState<PagoConCliente[]>([]);
-  const [modalPago, setModalPago] = useState<{ open: boolean; pago?: PagoConCliente }>({
-    open: false,
-  });
+  const [modalPago, setModalPago] = useState<{ open: boolean; pago?: PagoConCliente }>({ open: false });
 
   // Filtros
   const [fechaFin, setFechaFin] = useState("");
@@ -228,7 +250,7 @@ export default function PagosPage() {
                   <td className="px-2 sm:px-4 py-3">L.{pago.monto}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.cant_horas}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.tipo_horas}</td>
-                  <td className="px-2 sm:px-4 py-3">{new Date(pago.createdAt).toLocaleDateString()}</td>
+                  <td className="px-2 sm:px-4 py-3">{new Date(pago.createdAt).toISOString().split("T")[0]}</td>
                   <td className="px-2 sm:px-4 py-3 text-center">
                     <div className="flex justify-center gap-2">
                       <button
