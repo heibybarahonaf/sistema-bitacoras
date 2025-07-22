@@ -257,7 +257,7 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Hora llegada:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.hora_llegada ? new Date(bitacora.hora_llegada).toLocaleTimeString("es-HN", {
+        doc.text(bitacora.hora_llegada ? new Date(bitacora.hora_llegada).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false
@@ -277,7 +277,7 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Hora salida:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.hora_salida ? new Date(bitacora.hora_salida).toLocaleTimeString("es-HN", {
+        doc.text(bitacora.hora_salida ? new Date(bitacora.hora_salida).toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
             hour12: false
