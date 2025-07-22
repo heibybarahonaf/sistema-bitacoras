@@ -84,7 +84,17 @@ export class FirmaReporteService {
         doc.text(`Bitácora #${bitacora.id}`, 20, 28);
         
         doc.setFontSize(10);
-        doc.text(`Generado: ${new Date().toLocaleDateString('es-ES')} ${new Date().toLocaleTimeString('es-ES')}`, 20, 33);
+        const ahora = new Date();
+        const fechaHora = ahora.toLocaleString('es-HN', {
+            timeZone: 'America/Tegucigalpa',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+        doc.text(`Generado: ${fechaHora}`, 20, 33);
         
         doc.setLineWidth(0.5);
         doc.line(20, 38, 190, 38);
@@ -257,11 +267,7 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Hora llegada:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.hora_llegada ? new Date(bitacora.hora_llegada).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-        }): "N/A", rightLabelAlignment + 8, currentY);
+        doc.text(this.formatearHora(bitacora.hora_llegada), rightLabelAlignment + 8, currentY);
 
         const sistemaHeight = (sistemaLines.length - 1) * 4;
         const sistemaBlockHeight = Math.max(6, sistemaHeight + 6);
@@ -277,11 +283,7 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Hora salida:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.hora_salida ? new Date(bitacora.hora_salida).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-        }) : "N/A", rightLabelAlignment+9, currentY);
+        doc.text(this.formatearHora(bitacora.hora_salida), rightLabelAlignment + 9, currentY);
         
         const equipoHeight = (equipoLines.length - 1) * 4;
         const equipoBlockHeight = Math.max(6, equipoHeight + 6); 
@@ -478,6 +480,34 @@ export class FirmaReporteService {
         
         return currentY + 10;
 
+    }
+
+
+    private static formatearHora(horaString: string | Date | null): string {
+        if (!horaString) return "N/A";
+        
+        try {
+            let fecha: Date;
+            
+            if (typeof horaString === 'string' && /^\d{2}:\d{2}(:\d{2})?$/.test(horaString)) {
+
+                const hoy = new Date().toISOString().split('T')[0];
+                fecha = new Date(`${hoy}T${horaString}`);
+
+            } else {
+                fecha = new Date(horaString);
+            }
+            
+            return fecha.toLocaleTimeString('es-HN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+                timeZone: 'America/Tegucigalpa'
+            });
+
+        } catch{
+            return "N/A";
+        }
     }
 
 }
