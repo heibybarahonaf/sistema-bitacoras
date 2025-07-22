@@ -257,7 +257,11 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Hora llegada:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.hora_llegada ? new Date(bitacora.hora_llegada).toLocaleTimeString('es-HN') : "N/A", rightLabelAlignment + 8, currentY);
+        doc.text(bitacora.hora_llegada ? new Date(bitacora.hora_llegada).toLocaleTimeString("es-HN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        }): "N/A", rightLabelAlignment + 8, currentY);
 
         const sistemaHeight = (sistemaLines.length - 1) * 4;
         const sistemaBlockHeight = Math.max(6, sistemaHeight + 6);
@@ -273,7 +277,11 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Hora salida:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.hora_salida ? new Date(bitacora.hora_salida).toLocaleTimeString('es-ES') : "N/A", rightLabelAlignment+9, currentY);
+        doc.text(bitacora.hora_salida ? new Date(bitacora.hora_salida).toLocaleTimeString("es-HN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        }) : "N/A", rightLabelAlignment+9, currentY);
         
         const equipoHeight = (equipoLines.length - 1) * 4;
         const equipoBlockHeight = Math.max(6, equipoHeight + 6); 
