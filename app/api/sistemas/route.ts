@@ -15,13 +15,12 @@ export async function GET(request: Request) {
         const search = url.searchParams.get("search") || "";
 
         if (page < 1 || limit < 1) {
-            return NextResponse.json(
-                new ResponseDto(400, "Los parámetros de paginación deben ser mayores a 0")
-            );
+            return NextResponse.json(new ResponseDto(400, "Los parámetros de paginación deben ser mayores a 0"));
         }
 
         let result;
         if (nombre) {
+
             const sistema = await SistemaService.obtenerSistemaPorNombre(nombre);
             result = {
                 data: sistema ? [sistema] : [],
@@ -30,6 +29,7 @@ export async function GET(request: Request) {
                 limit: 1,
                 totalPages: sistema ? 1 : 0
             };
+
         } else {
             result = await SistemaService.obtenerSistemasPaginados(page, limit, search);
         }

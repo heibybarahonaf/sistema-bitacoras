@@ -51,9 +51,7 @@ export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
   const [clienteEditar, setClienteEditar] = useState<Cliente | null>(null);
-  const [modalPagoCliente, setModalPagoCliente] = useState<{ open: boolean; clienteId?: number }>({
-    open: false,
-  });
+  const [modalPagoCliente, setModalPagoCliente] = useState<{ open: boolean; clienteId?: number }>({ open: false });
 
   // Estado para filtro
   const [filtroNombre, setFiltroNombre] = useState("");
@@ -68,7 +66,7 @@ export default function ClientesPage() {
     const timer = setTimeout(() => {
       if (filtroNombre !== filtroActual) {
         setFiltroActual(filtroNombre);
-        setPaginaActual(1); // Reset a página 1 cuando cambie el filtro
+        setPaginaActual(1); 
       }
     }, 500); // 500ms de debounce
 

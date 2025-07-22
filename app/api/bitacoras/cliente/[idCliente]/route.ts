@@ -25,7 +25,7 @@ export async function GET( req: Request, { params }: { params: Promise<{ idClien
 
     } catch (error) {
 
-            return GeneralUtils.generarErrorResponse(error);
+        return GeneralUtils.generarErrorResponse(error);
 
     }
 

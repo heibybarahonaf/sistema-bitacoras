@@ -35,7 +35,7 @@ const LoadingSpinner = () => (
 );
 
 export default function UsuariosPage() {
-  // Estados
+
   const [loading, setLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -51,7 +51,7 @@ export default function UsuariosPage() {
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
   const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0});
 
-  //Detectar cliente para evitar render server
+  // Detectar cliente para evitar render server
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -221,6 +221,17 @@ export default function UsuariosPage() {
   async function handleSubmitUsuario(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
+    if (!firmaRef.current || firmaRef.current.isEmpty()) {
+        Swal.fire({
+          icon: "warning",
+          title: "Firma requerida",
+          text: "Coloque una firma de ejemplo, luego el usuario podrá modificarla.",
+          confirmButtonColor: "#295d0c",
+        });
+
+        return;
+    }
+
     const formData = new FormData(event.currentTarget);
     const valorComision = formData.get("comision") as string;
     const comision = valorComision && valorComision.trim() !== "" ? Number(valorComision) : 15;
@@ -351,7 +362,7 @@ export default function UsuariosPage() {
   // Abrir modal para editar usuario
   function abrirEditarUsuario(usuario: Usuario) {
     if (firmaRef.current) {
-      firmaRef.current.clear(); // Limpiar antes de cargar nuevo
+      firmaRef.current.clear(); 
     }
     
     setUsuarioEditar(usuario);

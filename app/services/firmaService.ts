@@ -95,7 +95,7 @@ export class FirmaService {
             },
         });
 
-        return { id: firma.id, url: firma.url };
+        return { id: firma.id, url: firma.url || ""};
 
     }
 

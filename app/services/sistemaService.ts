@@ -93,7 +93,7 @@ export class SistemaService {
 
     public static async crearSistema(sistemaData: CrearSistemaDto): Promise<Sistema> {
 
-        const sistemaExistente = await prisma.sistema.findFirst({ where: { sistema: { contains: sistemaData.sistema, mode: "insensitive" } } });
+        const sistemaExistente = await prisma.sistema.findFirst({ where: { sistema:  sistemaData.sistema  } });
 
         if (sistemaExistente) {
             throw new ResponseDto(409, "Ya existe un sistema con ese nombre");

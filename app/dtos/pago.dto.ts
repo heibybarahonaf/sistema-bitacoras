@@ -6,6 +6,10 @@ export const CrearPagoDto = z.object({
         required_error: "El ID del cliente es obligatorio.",
         invalid_type_error: "El ID del cliente debe ser un número.",
     }),
+    usuario_id: z.number({
+        required_error: "El ID del técnico es obligatorio.",
+        invalid_type_error: "El ID del técnico debe ser un número.",
+    }),
     no_factura: z.string()
         .max(20, "El número de factura no debe exceder los 20 caracteres.")
         .min(1, "El número de factura es obligatorio."),
@@ -13,7 +17,7 @@ export const CrearPagoDto = z.object({
         .max(50, "La forma de pago no debe exceder los 50 caracteres.")
         .min(1, "La forma de pago es obligatoria."),
     detalle_pago: z.string()
-        .max(50, "El detalle del pago no debe exceder los 50 caracteres.")
+        .max(200, "El detalle del pago no debe exceder los 200 caracteres.")
         .min(1, "El detalle del pago es obligatorio."),
     monto: z.number({
             required_error: "El monto es obligatorio.",

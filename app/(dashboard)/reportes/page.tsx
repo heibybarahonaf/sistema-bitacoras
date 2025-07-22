@@ -70,6 +70,7 @@ export default function ReportesPage() {
   };
 
   const mostrarAlertaAdvertencia = (mensaje: string) => {
+
     Swal.fire({
       icon: "warning",
       title: "Advertencia",
@@ -78,9 +79,10 @@ export default function ReportesPage() {
       timer: 3000,
       showConfirmButton: false,
     });
+
   };
 
-  // --- Formateos ---
+  // Formateos 
   const formatearFecha = (fecha: string) => {
     if (!fecha) return "";
     const d = new Date(fecha);
@@ -103,7 +105,7 @@ export default function ReportesPage() {
     return `${horas}:${minutos}`;
   };
 
-  // --- Función para buscar clientes (usada en modal) ---
+  // Función para buscar clientes 
   const buscarClientes = async (termino: string): Promise<Cliente[]> => {
 
     try {
@@ -122,7 +124,7 @@ export default function ReportesPage() {
     }
   };
 
-  // --- Modal para búsqueda y selección de cliente ---
+  // Modal para búsqueda y selección de cliente 
   const mostrarModalBusquedaClientes = async (): Promise<Cliente | null> => {
     const { value: selectedCliente } = await Swal.fire({
       title: "Buscar Cliente",
@@ -263,7 +265,7 @@ export default function ReportesPage() {
     return selectedCliente as Cliente | null;
   };
 
-  // --- Función para generar reporte y descargar PDF ---
+  // Función para generar reporte y descargar PDF
   const generarReporte = async (
     tipo: "general" | "cliente" | "usuario" | "ventas",
     fechaInicio: string,
@@ -373,7 +375,7 @@ export default function ReportesPage() {
     }
   };
 
-  // --- Función para previsualizar reporte ---
+  // Función para previsualizar reporte 
   const previsualizarReporte = async (
     tipo: "general" | "cliente" | "usuario" | "ventas",
     fechaInicio: string,
@@ -788,7 +790,7 @@ export default function ReportesPage() {
                                   {bitacora.tecnico}
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                  {formatearHora(bitacora.horas)}
+                                  {(bitacora.horas)}
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                   {bitacora.tipo_horas}

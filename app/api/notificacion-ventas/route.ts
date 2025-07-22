@@ -18,6 +18,7 @@ interface DatosVenta {
 export async function POST(req: Request) {
 
     try {
+        
         const { nombreTecnico, nombreCliente, ventas } = await req.json();
 
         if (!nombreCliente) {

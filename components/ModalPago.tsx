@@ -20,6 +20,7 @@ interface PagoConCliente extends Pagos_Cliente {
     telefono: string;
     correo: string;
     activo: boolean;
+    usuario_id: number;
     horas_paquetes: number;
     horas_individuales: number;
     monto_paquetes: number;
@@ -35,28 +36,27 @@ export default function ModalPago({
   onGuardar,
   pago,
 }: ModalPagoProps) {
-  const [cantHoras, setCantHoras] = useState(0);
-  const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [monto, setMonto] = useState(0);
-  const [noFactura, setNoFactura] = useState("");
+  const [cantHoras, setCantHoras] = useState(0);
+
   const [cliente, setCliente] = useState("");
-  const [formaPago, setFormaPago] = useState("Efectivo");
+  const [noFactura, setNoFactura] = useState("");
   const [detallePago, setDetallePago] = useState("");
-  const [config, setConfig] = useState({
-    valor_hora_paquete: 0,
-    valor_hora_individual: 0,
-    comision: 0,
-  });
+  const [tipoHoras, setTipoHoras] = useState("Paquete");
+  const [formaPago, setFormaPago] = useState("Efectivo");
+  const [usuario, setUsuario] = useState({ nombre: "", id:0});
+  const [config, setConfig] = useState({ valor_hora_paquete: 0, valor_hora_individual: 0, comision: 0 });
 
   useEffect(() => {
     if (pago) {
+      setMonto(pago.monto || 0);
+      setCantHoras(pago.cant_horas || 0);
+
       setNoFactura(pago.no_factura || "");
       setCliente(pago.cliente.empresa || "");
-      setFormaPago(pago.forma_pago || "Efectivo");
       setDetallePago(pago.detalle_pago || "");
       setTipoHoras(pago.tipo_horas || "Paquete");
-      setCantHoras(pago.cant_horas || 0);
-      setMonto(pago.monto || 0);
+      setFormaPago(pago.forma_pago || "Efectivo");
     }
   }, [pago]);
 
@@ -67,6 +67,7 @@ export default function ModalPago({
         const res = await fetch("/api/configuracion/1");
         const json = await res.json();
         const conf = json.results?.[0];
+
         if (conf) {
           setConfig({
             valor_hora_paquete: conf.valor_hora_paquete,
@@ -74,6 +75,7 @@ export default function ModalPago({
             comision: conf.comision,
           });
         }
+
       } catch {
 
         Swal.fire({
@@ -121,6 +123,36 @@ export default function ModalPago({
   }, [clienteId, pago]);
 
   useEffect(() => {
+
+      const fetchUsuario = async () => {
+        try {
+          const res = await fetch(`/api/auth/obtener-sesion`);
+          const usuarioData = await res.json();
+          
+          if (Array.isArray(usuarioData.results) && usuarioData.results.length > 0) {
+
+            const usuario = usuarioData.results[0];
+            setUsuario(usuario);
+
+          } 
+
+        } catch {
+
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "error",
+            title: "Error al cargar el técnico",
+          });
+          
+        }
+      };
+
+      fetchUsuario();
+
+  }, []);
+
+  useEffect(() => {
     const precioPorHora =
       tipoHoras === "Paquete"
         ? config.valor_hora_paquete + (config.valor_hora_paquete*(config.comision/100))
@@ -146,6 +178,7 @@ export default function ModalPago({
 
   const datosPago = {
     cliente_id: clienteId,
+    usuario_id: usuario.id,
     no_factura: noFactura,
     forma_pago: formaPago,
     detalle_pago: detallePago,
@@ -164,6 +197,7 @@ export default function ModalPago({
   });
 
   if (res.ok) {
+
     Swal.fire({
       icon: "success",
       title: "Éxito",
@@ -175,19 +209,24 @@ export default function ModalPago({
 
     onGuardar();
     onClose();
+
   } else if (res.status === 403) {
+
     Swal.fire({
       icon: "error",
       title: "Error",
       text: "No tienes permiso para realizar esta acción!",
     });
+
   } else {
+
     Swal.fire({
       icon: "error",
       title: "Error",
       text: "No se permiten facturas duplicadas!",
     });
   }
+
 };
 
   return (
@@ -217,6 +256,17 @@ export default function ModalPago({
             <input
               type="text"
               value={pago?.cliente?.empresa || cliente}
+              readOnly
+              className="mt-1 w-full border border-gray-300 bg-gray-100 rounded-md px-3 py-2 text-gray-700"
+            />
+          </label>
+
+          {/* Nombre del cliente - SIEMPRE MOSTRAR */}
+          <label className="block">
+            <span className="text-gray-800 font-semibold">Técnico</span>
+            <input
+              type="text"
+              value={usuario.nombre}
               readOnly
               className="mt-1 w-full border border-gray-300 bg-gray-100 rounded-md px-3 py-2 text-gray-700"
             />

@@ -8,7 +8,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ rtn: str
     try {
         
         const rtnParams = (await params).rtn;
-        if (rtnParams.length<13) {
+        if (rtnParams.length < 13) {
             throw new ResponseDto(400, "RTN/ID inválido"); 
         }
 

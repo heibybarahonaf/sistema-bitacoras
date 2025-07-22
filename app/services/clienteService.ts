@@ -128,9 +128,8 @@ export class ClienteService {
 
             return cliente;
 
-        } catch (error){
+        } catch {
 
-            console.log(error)
             throw new ResponseDto(500, "Error al crear el cliente");
 
         }

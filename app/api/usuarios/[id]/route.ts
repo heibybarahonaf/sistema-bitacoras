@@ -6,9 +6,7 @@ import { UsuarioService } from "@/app/services/usuarioService";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { obtenerPayloadSesion } from "@/app/common/utils/session.utils";
 
-const EditarUsuarioDto = CrearUsuarioDto.partial().extend({
-  password: z.string().optional(),
-});
+const EditarUsuarioDto = CrearUsuarioDto.partial().extend({ password: z.string().optional(),});
 type EditarUsuarioDto = z.infer<typeof EditarUsuarioDto>;
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {

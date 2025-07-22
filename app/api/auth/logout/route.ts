@@ -5,6 +5,7 @@ import { GeneralUtils } from "@/app/common/utils/general.utils";
 export async function POST() {
 
     try{
+        
         const response = NextResponse.json(new ResponseDto(200, "Sesión cerrada exitosamente"));
 
         response.cookies.set("session_token", "", {

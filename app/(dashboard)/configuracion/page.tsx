@@ -440,7 +440,7 @@ export default function ConfiguracionPage() {
         <h3 className="text-xl font-semibold">Fases de Implementación</h3>
         <button
           onClick={() => mostrarFormularioFase()}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-xs"
         >
           Agregar
         </button>
@@ -464,13 +464,13 @@ export default function ConfiguracionPage() {
             <div className="flex gap-2 mt-2 sm:mt-0">
               <button
                 onClick={() => mostrarFormularioFase(f)}
-                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-sm"
+                className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 text-xs"
               >
                 Editar
               </button>
               <button
                 onClick={() => toggleActivoFase(f)}
-                className={`px-3 py-1 rounded text-sm text-white ${
+                className={`px-3 py-1 rounded text-xs text-white ${
                   f.activa
                     ? "bg-red-600 hover:bg-red-700"
                     : "bg-green-600 hover:bg-green-700"

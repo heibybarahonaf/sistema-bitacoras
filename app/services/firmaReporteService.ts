@@ -72,7 +72,7 @@ export class FirmaReporteService {
             }
 
         } catch {
-            console.log("Logo no encontrado, continuando sin logo");
+            // Logo no encontrado, continuando sin logo
         }
 
         doc.setFontSize(14);
@@ -210,27 +210,36 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Fecha:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(new Date(bitacora.fecha_servicio).toLocaleDateString('es-ES'), rightLabelAlignment, currentY);
+        let fechaServicioStr = "N/A";
+        if (typeof bitacora.fecha_servicio === "string" && bitacora.fecha_servicio) {
+            fechaServicioStr = (bitacora.fecha_servicio as string).split("T")[0];
+        } else if (bitacora.fecha_servicio instanceof Date) {
+            fechaServicioStr = bitacora.fecha_servicio.toISOString().split("T")[0];
+        }
+        doc.text(fechaServicioStr, rightLabelAlignment, currentY);
 
         currentY += 6;
         
         doc.setFont("helvetica", "bold");
         doc.text("Servicio:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(tipo_servicio || "N/A", labelAlignment, currentY);
-        
+        const servicioText = bitacora.tipo_servicio.tipo_servicio || "N/A";
+        const servicioLines = doc.splitTextToSize(servicioText, rightX - labelAlignment - 10);
+        doc.text(servicioLines, labelAlignment, currentY);
+        const servicioHeight = (servicioLines.length - 1) * 4;
+
         doc.setFont("helvetica", "bold");
         doc.text("Técnico:", rightX, currentY);
         doc.setFont("helvetica", "normal");
         doc.text(bitacora.usuario?.nombre || "N/A", rightLabelAlignment, currentY);
 
-        currentY += 6;
+        currentY += Math.max(6, servicioHeight + 6);
 
         doc.setFont("helvetica", "bold");
         doc.text("Tipo Hora:", leftX, currentY);
         doc.setFont("helvetica", "normal");
         doc.text(bitacora.tipo_horas || "N/A", labelAlignment, currentY);
-        
+
         doc.setFont("helvetica", "bold");
         doc.text("Monto:", rightX, currentY);
         doc.setFont("helvetica", "normal");
@@ -241,26 +250,34 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Sistema:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.sistema?.sistema || "N/A", labelAlignment, currentY);
-        
+        const sistemaText = bitacora.sistema?.sistema || "N/A";
+        const sistemaLines = doc.splitTextToSize(sistemaText, rightX - labelAlignment - 10);
+        doc.text(sistemaLines, labelAlignment, currentY);
+
         doc.setFont("helvetica", "bold");
         doc.text("Hora llegada:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.hora_llegada ? new Date(bitacora.hora_llegada).toLocaleTimeString('es-ES') : "N/A", rightLabelAlignment+8, currentY);
-        
-        currentY += 6;
-        
+        doc.text(bitacora.hora_llegada ? new Date(bitacora.hora_llegada).toLocaleTimeString('es-HN') : "N/A", rightLabelAlignment + 8, currentY);
+
+        const sistemaHeight = (sistemaLines.length - 1) * 4;
+        const sistemaBlockHeight = Math.max(6, sistemaHeight + 6);
+        currentY += sistemaBlockHeight;
+
         doc.setFont("helvetica", "bold");
         doc.text("Equipo:", leftX, currentY);
         doc.setFont("helvetica", "normal");
-        doc.text(bitacora.equipo?.equipo || "N/A", labelAlignment, currentY);
+        const equipoText = bitacora.equipo?.equipo || "N/A";
+        const equipoLines = doc.splitTextToSize(equipoText, rightX - labelAlignment - 10);
+        doc.text(equipoLines, labelAlignment, currentY);
         
         doc.setFont("helvetica", "bold");
         doc.text("Hora salida:", rightX, currentY);
         doc.setFont("helvetica", "normal");
         doc.text(bitacora.hora_salida ? new Date(bitacora.hora_salida).toLocaleTimeString('es-ES') : "N/A", rightLabelAlignment+9, currentY);
         
-        currentY += 6;
+        const equipoHeight = (equipoLines.length - 1) * 4;
+        const equipoBlockHeight = Math.max(6, equipoHeight + 6); 
+        currentY += equipoBlockHeight;
         
         doc.setFont("helvetica", "bold");
         doc.text("Capacitados:", leftX, currentY);
