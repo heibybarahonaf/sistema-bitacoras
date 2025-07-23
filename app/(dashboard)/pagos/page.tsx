@@ -60,7 +60,7 @@ async function mostrarDetallePago(pago: PagoConCliente) {
       <strong>Monto:</strong> L.${pago.monto} <br/><br/>
       <strong>Cantidad de horas:</strong> ${pago.cant_horas} <br/><br/>
       <strong>Tipo de horas:</strong> ${pago.tipo_horas} <br/><br/>
-      <strong>Fecha de pago:</strong> ${new Date(pago.createdAt).toLocaleString()}
+      <strong>Fecha de pago:</strong> ${new Date(pago.createdAt).toLocaleString("es-HN")}
     `,
     icon: "info",
     confirmButtonText: "Cerrar",
@@ -154,6 +154,19 @@ export default function PagosPage() {
     }
   };
 
+
+  const formatearFecha = (fecha: string) => {
+    if (!fecha) return "";
+    const d = new Date(fecha);
+
+    if (isNaN(d.getTime())) return "Fecha inválida";
+
+    const dia = d.getUTCDate().toString().padStart(2, "0");
+    const mes = (d.getUTCMonth() + 1).toString().padStart(2, "0");
+    const año = d.getUTCFullYear();
+
+    return `${dia}/${mes}/${año}`;
+};
 
   return (
     <div className="p-6 bg-white min-h-screen mb-8">
@@ -251,9 +264,7 @@ export default function PagosPage() {
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.cant_horas}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.tipo_horas}</td>
                   <td className="px-2 sm:px-4 py-3">
-                    {new Date(pago.createdAt).toLocaleDateString('es-HN', {
-                      timeZone: 'America/Tegucigalpa',
-                    })}
+                    {new Date(pago.createdAt).toLocaleDateString("es-HN")}
                   </td>
                   <td className="px-2 sm:px-4 py-3 text-center">
                     <div className="flex justify-center gap-2">
