@@ -1,6 +1,6 @@
+import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import { FileText, Download, Eye } from "lucide-react";
-import Swal from "sweetalert2";
 
 interface CardReporteProps {
   title: string;
@@ -39,9 +39,9 @@ export default function CardReporte({
   onGenerate,
   onPreview,
 }: CardReporteProps) {
-  const [fechaInicio, setFechaInicio] = useState("");
-  const [fechaFinal, setFechaFinal] = useState("");
   const [entidadId, setEntidadId] = useState("");
+  const [fechaFinal, setFechaFinal] = useState("");
+  const [fechaInicio, setFechaInicio] = useState("");
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loadingUsuarios, setLoadingUsuarios] = useState(false);
 

@@ -38,11 +38,17 @@ export class BitacoraService {
 
     public static async obtenerBitacorasRangoFechas(fechaInicio: string, fechaFinal: string) {
 
+        const fechaIni = new Date(fechaInicio);
+        const fechaFin = new Date(fechaFinal);
+        
+        const fechaFinInclusive = new Date(fechaFin);
+        fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
+
         const bitacoras = await prisma.bitacora.findMany({
             where: {
                 fecha_servicio: {
-                    gte: new Date(fechaInicio),
-                    lte: new Date(fechaFinal),
+                    gte: fechaIni,
+                    lt: fechaFinInclusive, 
                 },
             },
             include: {
@@ -53,7 +59,7 @@ export class BitacoraService {
                 tipo_servicio: true,
             },
             orderBy: {
-                fecha_servicio: "asc",
+                fecha_servicio: "desc",
             },
         });
 
@@ -136,13 +142,19 @@ export class BitacoraService {
 
     public static async obtenerBitacorasClienteFechas(rtn: string, fechaInicio: string, fechaFinal: string) {
 
+        const fechaIni = new Date(fechaInicio);
+        const fechaFin = new Date(fechaFinal);
+        
+        const fechaFinInclusive = new Date(fechaFin);
+        fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
+
         const cliente = await ClienteService.obtenerClientePorRtn(rtn);
         const bitacoras = await prisma.bitacora.findMany({
             where: {
                 cliente_id: cliente.id,
                 fecha_servicio: {
-                    gte: new Date(fechaInicio),
-                    lte: new Date(fechaFinal),
+                    gte: fechaIni,
+                    lt: fechaFinInclusive, 
                 },
             },
             include: {
@@ -167,13 +179,19 @@ export class BitacoraService {
 
     public static async obtenerBitacorasTecnicoFechas(nombre: string, fechaInicio: string, fechaFinal: string) {
 
+        const fechaIni = new Date(fechaInicio);
+        const fechaFin = new Date(fechaFinal);
+        
+        const fechaFinInclusive = new Date(fechaFin);
+        fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
+
         const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
         const bitacoras = await prisma.bitacora.findMany({
             where: {
                 usuario_id: tecnico.id,
                 fecha_servicio: {
-                    gte: new Date(fechaInicio),
-                    lte: new Date(fechaFinal),
+                    gte: fechaIni,
+                    lt: fechaFinInclusive, 
                 },
             },
             include: {
@@ -197,13 +215,19 @@ export class BitacoraService {
 
     public static async obtenerBitacorasTecnicoVentasFechas(nombre: string, fechaInicio: string, fechaFinal: string) {
 
+        const fechaIni = new Date(fechaInicio);
+        const fechaFin = new Date(fechaFinal);
+        
+        const fechaFinInclusive = new Date(fechaFin);
+        fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
+
         const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
         const bitacoras = await prisma.bitacora.findMany({
             where: {
                 usuario_id: tecnico.id,
                 fecha_servicio: {
-                    gte: new Date(fechaInicio),
-                    lte: new Date(fechaFinal),
+                    gte: fechaIni,
+                    lt: fechaFinInclusive, 
                 },
                 ventas: {
                     not: {

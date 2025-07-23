@@ -220,12 +220,7 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Fecha:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        let fechaServicioStr = "N/A";
-        if (typeof bitacora.fecha_servicio === "string" && bitacora.fecha_servicio) {
-            fechaServicioStr = (bitacora.fecha_servicio as string).split("T")[0];
-        } else if (bitacora.fecha_servicio instanceof Date) {
-            fechaServicioStr = bitacora.fecha_servicio.toISOString().split("T")[0];
-        }
+        let fechaServicioStr = formatearFecha(bitacora.fecha_servicio.toISOString());
         doc.text(fechaServicioStr, rightLabelAlignment, currentY);
 
         currentY += 6;
@@ -511,3 +506,17 @@ export class FirmaReporteService {
     }
 
 }
+
+
+const formatearFecha = (fecha: string) => {
+    if (!fecha) return "";
+    const d = new Date(fecha);
+
+    if (isNaN(d.getTime())) return "Fecha inválida";
+
+    const dia = d.getUTCDate().toString().padStart(2, "0");
+    const mes = (d.getUTCMonth() + 1).toString().padStart(2, "0");
+    const año = d.getUTCFullYear();
+
+    return `${dia}/${mes}/${año}`;
+};
