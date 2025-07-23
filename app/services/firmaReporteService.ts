@@ -220,8 +220,7 @@ export class FirmaReporteService {
         doc.setFont("helvetica", "bold");
         doc.text("Fecha:", rightX, currentY);
         doc.setFont("helvetica", "normal");
-        let fechaServicioStr = formatearFecha(bitacora.fecha_servicio.toISOString());
-        doc.text(fechaServicioStr, rightLabelAlignment, currentY);
+        doc.text(formatearFecha(bitacora.fecha_servicio.toISOString()), rightLabelAlignment, currentY);
 
         currentY += 6;
         
