@@ -75,8 +75,6 @@ export class PagoService {
             prisma.pagos_Cliente.count({ where })
         ]);
 
-        console.log(pagos)
-
         const totalPages = Math.ceil(total / limit);
 
         return new ResponseDto(
