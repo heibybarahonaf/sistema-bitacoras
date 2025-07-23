@@ -30,8 +30,16 @@ export class PagoService {
         
         if (fechaInicio || fechaFin) {
             where.createdAt = {};
-            if (fechaInicio) where.createdAt.gte = new Date(fechaInicio);
-            if (fechaFin) where.createdAt.lte = new Date(fechaFin);
+            
+            if (fechaInicio) {
+                const fechaInicioDate = new Date(fechaInicio + 'T00:00:00');
+                where.createdAt.gte = fechaInicioDate;
+            }
+            
+            if (fechaFin) {
+                const fechaFinDate = new Date(fechaFin + 'T23:59:59.999');
+                where.createdAt.lte = fechaFinDate;
+            }
         }
 
         if (cliente) {

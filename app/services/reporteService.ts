@@ -115,12 +115,12 @@ export function generarPDFBitacoras(bitacoras: BitacoraCompleta[], fechaInicio: 
     ];
 
     const datos = bitacoras.map(b => [
-        formatearFecha(b.fecha_servicio),
+        formatearFecha(b.fecha_servicio.toISOString()),
         b.no_ticket || campo_vacio,
         b.cliente?.empresa || `ID: ${b.cliente_id}`,
         b.usuario?.nombre || `ID: ${b.usuario_id}`,
-        formatearHora(b.hora_llegada),
-        formatearHora(b.hora_salida),
+        formatearHora(b.hora_llegada.toISOString()),
+        formatearHora(b.hora_salida.toISOString()),
         b.tipo_servicio?.descripcion || campo_vacio,
         b.modalidad || campo_vacio,
         b.horas_consumidas || campo_vacio,
@@ -155,7 +155,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
         total += monto;
 
         return [
-            formatearFecha(b.fecha_servicio),
+            formatearFecha(b.fecha_servicio.toISOString()),
             b.id,
             b.no_ticket ?? campo_vacio,
             b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
@@ -203,7 +203,7 @@ export async function generarPDFPorVentasTecnico(bitacoras: BitacoraCompleta[], 
     const datos = bitacoras.map(b => {
 
         return [
-            formatearFecha(b.fecha_servicio),
+            formatearFecha(b.fecha_servicio.toISOString()),
             b.id,
             b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
             b.ventas ?? campo_vacio
@@ -239,7 +239,7 @@ export function generarPDFPorCliente(bitacoras: BitacoraCompleta[], fechaInicio:
     ];
 
     const datos = bitacoras.map(b => [
-        formatearFecha(b.fecha_servicio),
+        formatearFecha(b.fecha_servicio.toISOString()),
         b.no_ticket,
         b.tipo_servicio?.descripcion,
         b.modalidad,
@@ -273,18 +273,28 @@ export function generarPDFPorCliente(bitacoras: BitacoraCompleta[], fechaInicio:
 }
 
 
-function formatearFecha(fecha: Date) {
+const formatearFecha = (fecha: string) => {
+    if (!fecha) return "";
+    const d = new Date(fecha);
 
-    return new Date(fecha).toISOString().split("T")[0];
+    if (isNaN(d.getTime())) return "Fecha inválida";
 
-}
+    const dia = d.getUTCDate().toString().padStart(2, "0");
+    const mes = (d.getUTCMonth() + 1).toString().padStart(2, "0");
+    const año = d.getUTCFullYear();
+
+    return `${dia}/${mes}/${año}`;
+};
 
 
-function formatearHora(fecha: Date) {
+const formatearHora = (hora: string) => {
+    if (!hora) return "";
+    const d = new Date(hora);
+    const horas = d.getHours().toString().padStart(2, "0");
+    const minutos = d.getMinutes().toString().padStart(2, "0");
 
-    return new Date(fecha).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-
-}
+    return `${horas}:${minutos}`;
+};
 
 
 function renderInfoTecnico(doc: jsPDF, y: number, info: DatosExtrasReporte): number {

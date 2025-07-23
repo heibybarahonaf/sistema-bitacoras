@@ -250,7 +250,11 @@ export default function PagosPage() {
                   <td className="px-2 sm:px-4 py-3">L.{pago.monto}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.cant_horas}</td>
                   <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.tipo_horas}</td>
-                  <td className="px-2 sm:px-4 py-3">{new Date(pago.createdAt).toISOString().split("T")[0]}</td>
+                  <td className="px-2 sm:px-4 py-3">
+                    {new Date(pago.createdAt).toLocaleDateString('es-HN', {
+                      timeZone: 'America/Tegucigalpa',
+                    })}
+                  </td>
                   <td className="px-2 sm:px-4 py-3 text-center">
                     <div className="flex justify-center gap-2">
                       <button
