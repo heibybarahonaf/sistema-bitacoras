@@ -22,23 +22,37 @@ export class PagoService {
     ): Promise<ResponseDto<Pagos_Cliente>> {
 
         const skip = (page - 1) * limit;
-                const where: any = {};
+        const where: any = {};
         
         if (filtroFactura) {
             where.no_factura = { contains: filtroFactura, mode: 'insensitive' };
         }
         
         if (fechaInicio || fechaFin) {
-            where.createdAt = {};
-            
-            if (fechaInicio) {
-                const fechaInicioDate = new Date(fechaInicio + 'T00:00:00');
-                where.createdAt.gte = fechaInicioDate;
-            }
-            
-            if (fechaFin) {
-                const fechaFinDate = new Date(fechaFin + 'T23:59:59.999');
-                where.createdAt.lte = fechaFinDate;
+            if (fechaInicio && fechaFin) {
+                where.AND = [
+                    {
+                        createdAt: {
+                            gte: new Date(fechaInicio + 'T06:00:00.000Z'), 
+                        }
+                    },
+                    {
+                        createdAt: {
+                            lte: new Date(fechaFin + 'T05:59:59.999Z'), 
+                        }
+                    }
+                ];
+
+                } else if (fechaInicio) {
+                    where.createdAt = {
+                        gte: new Date(fechaInicio + 'T06:00:00.000Z'),
+                    };
+
+                } else if (fechaFin) {
+                    where.createdAt = {
+                    lte: new Date(fechaFin + 'T05:59:59.999Z'),
+                };
+
             }
         }
 
@@ -60,6 +74,8 @@ export class PagoService {
             }),
             prisma.pagos_Cliente.count({ where })
         ]);
+
+        console.log(pagos)
 
         const totalPages = Math.ceil(total / limit);
 
