@@ -12,6 +12,10 @@ interface FormNuevaBitacoraProps {
   onGuardar: () => void;
   horasPaquete: number;
   horasIndividuales: number;
+  sistemas: Sistema[];
+  equipos: Equipo[];
+  tipoServicio: Tipo_Servicio[];
+  fases: Fase_Implementacion[];
 }
 
 interface SelectSimpleProps {
@@ -156,36 +160,38 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   onClose,
   onGuardar,
   horasPaquete,
-  horasIndividuales
+  horasIndividuales,
+  fases,
+  sistemas,
+  equipos,
+  tipoServicio,
 }) => {
   const [ventas, setVentas] = useState("");
+  const [usuario, setUsuario] = useState("");
   const [noTicket, setNoTicket] = useState("");
+  const [modalidad, setModalidad] = useState("");
   const [horaSalida, setHoraSalida] = useState("");
   const [comentarios, setComentarios] = useState("");
   const [responsable, setResponsable] = useState("");
   const [horaLlegada, setHoraLlegada] = useState("");
   const [tipoHoras, setTipoHoras] = useState("Paquete");
   const [fechaServicio, setFechaServicio] = useState("");
-  const [modalidad, setModalidad] = useState("");
   const [horasConsumidas, setHorasConsumidas] = useState(0);
   const [nombresCapacitados, setNombresCapacitados] = useState("");
   const [descripcionServicio, setDescripcionServicio] = useState("");
   
-  const [equipos, setEquipos] = useState<Equipo[]>([]);
-  const [sistemas, setSistemas] = useState<Sistema[]>([]);
+  const [usuarioId, setUsuarioId] = useState<number>(1);
   const [equipoId, setEquipoId] = useState<number | null>(null);
   const [sistemaId, setSistemaId] = useState<number | null>(null);
-  const [tipoServicio, setTipoServicio] = useState<Tipo_Servicio[]>([]);
   const [tipoServicioId, setTipoServicioId] = useState<number | null>(null);
   const [urlFirmaRemota, setUrlFirmaRemota] = useState<string | null>(null);
   const [firmaClienteRemotaId, setFirmaClienteRemotaId] = useState<number | null>(null);
   const [faseImplementacionId, setFaseImplementacionId] = useState<number | null>(null);
-  const [fasesImplementacion, setFasesImplementacion] = useState<Fase_Implementacion[]>([]);
   
   const sigCanvas = useRef<SignatureCanvas>(null);
   const [guardando, setGuardando] = useState(false);
   const sigCanvasCliente = useRef<SignatureCanvas>(null);
-  const [cargarFirmaTecnico, setCargarFirmaTecnico] = useState(false);
+  //const [cargarFirmaTecnico, setCargarFirmaTecnico] = useState(false);
   const [esperandoFirmaCliente, setEsperandoFirmaCliente] = useState(false);
   const [horasDisponibles, setHorasDisponibles] = useState({paquete: horasPaquete, individual: horasIndividuales});
 
@@ -196,7 +202,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   }, []);
 
 
-  const generarNuevoEnlaceFirma = async () => {
+  /*const generarNuevoEnlaceFirma = async () => {
     try {
 
       const res = await fetch("/api/firmas/remote", {
@@ -216,42 +222,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
     } catch {
       Swal.fire("Error", "No se pudo generar un nuevo enlace de firma.", "error");
     }
-  };
+  };*/
 
-  useEffect(() => {
-
-    const fetchData = async () => {
-      try {
-        const [resSistemas, resEquipos, resFases, resServicios] = await Promise.all([
-          fetch("/api/sistemas/activos"),
-          fetch("/api/equipos/activos"),
-          fetch("/api/fase-implementacion/activas"),
-          fetch("/api/tipo-servicio/activos"),
-        ]);
-
-        const dataSistemas = await resSistemas.json();
-        const dataEquipos = await resEquipos.json();
-        const dataFases = await resFases.json();
-        const dataServicios = await resServicios.json();
-
-        setSistemas(dataSistemas.results || []);
-        setEquipos(dataEquipos.results || []);
-        setFasesImplementacion(dataFases.results || []);
-        setTipoServicio(dataServicios.results || []);
-      } catch {
-
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "error",
-          title: "Error cargando sistemas, equipos, tipo de servicio o fases",
-        });
-
-      }
-    };
-
-    fetchData();
-  }, []);
 
   useEffect(() => {
 
@@ -271,15 +243,18 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
 
     const cargarFirmaTecnico = async () => {
 
+
       try {
         const res = await fetch("/api/auth/obtener-sesion", {
           credentials: "include",
         });
-
+        
         if (!res.ok) throw new Error("No se pudo obtener la sesión del usuario");
-
+        
         const data = await res.json();
-        const tecnicoId = data.results?.[0]?.id;
+        const tecnicoId = Number(data.results[0].id);
+        setUsuarioId(tecnicoId);
+        setUsuario(String(data.results[0].nombre));
 
         if (tecnicoId) {
           const firmaRes = await fetch(`/api/firmas/tecnico/${tecnicoId}`);
@@ -367,7 +342,9 @@ useEffect(() => {
   
 
   const intervalo = setInterval(async () => {
+
     try {
+
       const res = await fetch(`/api/firmas/verificar/${firmaClienteRemotaId}`);
       const json = await res.json();
 
@@ -375,6 +352,7 @@ useEffect(() => {
         setEsperandoFirmaCliente(false);
         clearInterval(intervalo);
       }
+
     } catch {
 
       Swal.fire({
@@ -395,16 +373,17 @@ useEffect(() => {
     setGuardando(true);
 
     try {
+
       if (!modalidad) throw new Error("Seleccione la modalidad");
       if (!noTicket) throw new Error("No. Ticket es obligatorio");
-      if (!fechaServicio) throw new Error("Fecha del servicio es obligatoria");
-      if (!horaLlegada) throw new Error("Hora de llegada es obligatoria");
-      if (!horaSalida) throw new Error("Hora de salida es obligatoria");
       if (!responsable) throw new Error("Responsable es obligatorio");
-      if (!tipoServicio) throw new Error("Tipo de servicio es obligatorio");
-      if (!descripcionServicio) throw new Error("Descripción del servicio es obligatoria");
-      if (!fasesImplementacion) throw new Error("Fase de implementación es obligatoria");
       if (!tipoHoras) throw new Error("Tipo de horas es obligatorio");
+      if (!horaSalida) throw new Error("Hora de salida es obligatoria");
+      if (!horaLlegada) throw new Error("Hora de llegada es obligatoria");
+      if (!tipoServicioId) throw new Error("Tipo de servicio es obligatorio");
+      if (!fechaServicio) throw new Error("Fecha del servicio es obligatoria");
+      if (!faseImplementacionId) throw new Error("Fase de implementación es obligatoria");
+      if (!descripcionServicio) throw new Error("Descripción del servicio es obligatoria");
 
       // Firma cliente solo si modalidad presencial
       if ((modalidad === "Presencial" || modalidad === "En Oficina") && sigCanvasCliente.current?.isEmpty()) {
@@ -441,26 +420,8 @@ useEffect(() => {
 
       }
 
-      let usuarioId = 1, usuarioNombre = "";
-      try {
-
-        const res = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
-        if (res.ok) {
-          const data = await res.json();
-          usuarioId = data.results[0].id;
-          usuarioNombre = data.results[0].nombre;
-        }
-
-      } catch (error) {
-
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "error",
-          title: "Error al obtener nombre del usuario",
-        });
-      
-      }
+      console.log("ID:: ", usuarioId);
+      console.log("Nombre:: ", usuario);
 
       const newBitacora = {
         cliente_id: clienteId,
@@ -504,7 +465,7 @@ useEffect(() => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            nombreTecnico: usuarioNombre,
+            nombreTecnico: usuario,
             nombreCliente: nombreCliente,    
             ventas,
           }),
@@ -689,7 +650,7 @@ useEffect(() => {
             label="Fase de Implementación"
             value={faseImplementacionId}
             onChange={setFaseImplementacionId}
-            options={fasesImplementacion.map((f) => ({ id: f.id, sistema: f.fase }))}
+            options={fases.map((f) => ({ id: f.id, sistema: f.fase }))}
             required
           />
           <InputField

@@ -8,13 +8,12 @@ let tipo_servicio = "";
 type BitacoraConRelaciones = Prisma.BitacoraGetPayload<{
   include: {
     cliente: true;
-    usuario: true;
-    tipo_servicio: true;
-    servicio: true;
-    equipo: true;
-    sistema: true;
-    firmaCliente: true;
-    firmaTecnico: true;
+    usuario: { select: { nombre: true } };  //nombre
+    tipo_servicio: { select: { tipo_servicio: true } }; //ripo_servicio | descripcion
+    servicio: {select:{tipo_servicio: true}}; 
+    equipo: { select: { equipo: true} };
+    sistema: { select: { sistema: true } };
+    firmaCliente: { select: { firma_base64: true } };
   };
 }>;
 
@@ -28,11 +27,11 @@ export class FirmaReporteService {
             where: { id: bitacoraId },
             include: {
                 cliente: true,
-                usuario: true,
-                tipo_servicio: true,
-                equipo: true,
-                sistema: true,
-                firmaCliente: true
+                usuario: { select: { nombre: true }  },
+                tipo_servicio: { select: { tipo_servicio: true } },
+                equipo: { select: { equipo: true} },
+                sistema: { select: {sistema: true} },
+                firmaCliente: { select: { firma_base64: true } },
             },
         }) as BitacoraConRelaciones;
 

@@ -12,16 +12,20 @@ export default function HomeContent() {
 
   useEffect(() => {
     if (error === "acceso-denegado") {
+
       Swal.fire({
         icon: "warning",
         title: "Acceso Denegado",
         text: "No tienes permisos para acceder a esta sección.",
         confirmButtonText: "Entendido",
       });
+
     }
+
     const url = new URL(window.location.href);
     url.searchParams.delete("error");
     router.replace(url.pathname);
+    
   }, [router, error]);
 
   return (

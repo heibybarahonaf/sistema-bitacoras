@@ -4,12 +4,20 @@ import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 import { BitacoraService } from "@/app/services/bitacoraService";
 
-type BitacoraConRelaciones = Prisma.BitacoraGetPayload<{
-    include: {
-        cliente: true;
-        usuario: true;
-    };
-}>;
+type Bitacora = {
+    id: number;
+    fecha_servicio: Date;
+    cliente_id: number;
+    usuario_id: number;
+    ventas: string | null;
+    cliente?: { empresa: string } | null;
+    usuario?: { 
+        nombre: string;
+        correo: string | null;
+        telefono: string | null;
+        zona_asignada: string | null;
+    } | null;
+};
 
 export async function GET(request: Request) {
 
@@ -33,11 +41,11 @@ export async function GET(request: Request) {
             throw new ResponseDto(404, "No se encontraron bitácoras para el técnico en el rango de fechas especificado");
         }
 
-        const bitacoras_filtradas = bitacoras.map((bitacora: BitacoraConRelaciones) => ({
+        const bitacoras_filtradas = bitacoras.map((bitacora: Bitacora) => ({
             id: bitacora.id,
-            fecha: bitacora.fecha_servicio ?? bitacora.fecha_servicio,
-            cliente: bitacora.cliente.empresa,
-            tecnico: bitacora.usuario.nombre,
+            fecha: bitacora.fecha_servicio,
+            cliente: bitacora.cliente?.empresa,
+            tecnico: bitacora.usuario?.nombre,
             venta: bitacora.ventas
         }));
 

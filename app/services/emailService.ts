@@ -37,9 +37,14 @@ export class EmailService {
                 html,
             });
 
-        } catch {
+        } catch (error) {
 
-            throw new ResponseDto(500, "Error al enviar el correo");
+            if (error instanceof Error) {
+                if(/Invalid login|535|BadCredentials/.test(error.message)){}
+                throw new ResponseDto(500, "El Correo de notificaciones esta fuera de servicio, Contacta con Soporte o");
+            }
+
+            throw new ResponseDto(500, "Error al enviar el correo");            
         
         }
 
