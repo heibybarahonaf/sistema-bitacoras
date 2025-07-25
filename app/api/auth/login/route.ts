@@ -42,13 +42,13 @@ export async function POST(req: Request) {
             throw new ResponseDto(401, "Contraseña incorrecta");
         }
 
-        const tokenSesion = AuthUtils.generarTokenSesion({ correo: usuario.correo, rol: usuario.rol }, 5 * 3600);
+        const tokenSesion = AuthUtils.generarTokenSesion({ correo: usuario.correo, rol: usuario.rol }, 4 * 3600);
         const response = NextResponse.json(new ResponseDto(200, "Inicio de sesión exitoso"));
         
         response.cookies.set("session_token", tokenSesion, {
             httpOnly: true,
             secure: false,
-            maxAge: 5 * 3600, 
+            maxAge: 4 * 3600, 
             path: "/",
             sameSite: "lax",
         });

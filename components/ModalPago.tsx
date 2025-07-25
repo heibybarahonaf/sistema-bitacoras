@@ -158,7 +158,7 @@ export default function ModalPago({
         ? config.valor_hora_paquete + (config.valor_hora_paquete*(config.comision/100))
         : config.valor_hora_individual + (config.valor_hora_individual*(config.comision/100));
         setMonto(cantHoras * precioPorHora);
-      }, [cantHoras, tipoHoras, config]);
+  }, [cantHoras, tipoHoras, config]);
 
   const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();

@@ -3,16 +3,76 @@ import path from "path";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { ConfiguracionService } from "../services/configService";
-import { Bitacora, Sistema, Equipo, Usuario, Cliente, Tipo_Servicio } from "@prisma/client";
 
 const campo_vacio = "-";
 
-export type BitacoraCompleta = Bitacora & {
-    sistema?: Sistema | null;
-    equipo?: Equipo | null;
-    cliente?: Cliente | null;
-    usuario?: Usuario | null;
-    tipo_servicio?: Tipo_Servicio | null;
+export type BitacoraReporteGeneral = {
+    id: number;
+    fecha_servicio: Date;
+    no_ticket: string | null;
+    cliente_id: number;
+    usuario_id: number;
+    hora_llegada: Date;
+    hora_salida: Date;
+    modalidad: string | null;
+    horas_consumidas: number | null;
+    tipo_horas: string | null;
+    descripcion_servicio: string | null;
+    cliente?: { empresa: string } | null;
+    usuario?: { nombre: string } | null;
+    tipo_servicio?: { descripcion: string } | null;
+};
+
+export type BitacoraReporteComisiones = {
+    id: number;
+    fecha_servicio: Date;
+    no_ticket: string | null;
+    cliente_id: number;
+    usuario_id: number;
+    horas_consumidas: number | null;
+    tipo_horas: string | null;
+    cliente?: { empresa: string } | null;
+    usuario?: { 
+        nombre: string;
+        comision: number | null;
+        correo: string | null;
+        telefono: string | null;
+        zona_asignada: string | null;
+    } | null;
+};
+
+export type BitacoraReporteVentas = {
+    id: number;
+    fecha_servicio: Date;
+    cliente_id: number;
+    usuario_id: number;
+    ventas: string | null;
+    cliente?: { empresa: string } | null;
+    usuario?: { 
+        nombre: string;
+        correo: string | null;
+        telefono: string | null;
+        zona_asignada: string | null;
+    } | null;
+};
+
+export type BitacoraReporteCliente = {
+    fecha_servicio: Date;
+    no_ticket: string | null;
+    modalidad: string | null;
+    horas_consumidas: number | null;
+    tipo_horas: string | null;
+    descripcion_servicio: string | null;
+    usuario?: { nombre: string } | null;
+    tipo_servicio?: { descripcion: string } | null;
+    cliente?: {
+        empresa: string;
+        responsable: string | null;
+        rtn: string | null;
+        direccion: string | null;
+        telefono: string | null;
+        correo: string | null;
+    } | null;
 };
 
 type DatosExtrasReporte = {
@@ -30,7 +90,7 @@ type DatosExtrasReporte = {
 
 function generarReporte(
     titulo: string,
-    bitacoras: BitacoraCompleta[],
+    bitacoras: any[],
     fechaInicio: string,
     fechaFinal: string,
     columnas: string[],
@@ -107,7 +167,7 @@ function generarReporte(
 }
 
 
-export function generarPDFBitacoras(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Buffer {
+export function generarPDFBitacoras(bitacoras: BitacoraReporteGeneral[], fechaInicio: string, fechaFinal: string): Buffer {
     
     const columnas = [
         "Fecha","Ticket", "Cliente", "Técnico",  "Llegada", "Salida", "Servicio",
@@ -134,7 +194,7 @@ export function generarPDFBitacoras(bitacoras: BitacoraCompleta[], fechaInicio: 
 }
 
 
-export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
+export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
     
     const config = await ConfiguracionService.obtenerConfiguracionPorId(1);
     const precioIndividual = config.valor_hora_individual;
@@ -193,7 +253,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraCompleta[], fechaI
 }
 
 
-export async function generarPDFPorVentasTecnico(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
+export async function generarPDFPorVentasTecnico(bitacoras: BitacoraReporteVentas[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
    
     const usuario = bitacoras[0]?.usuario ?? null;
     const columnas = [
@@ -232,7 +292,7 @@ export async function generarPDFPorVentasTecnico(bitacoras: BitacoraCompleta[], 
 }
 
 
-export function generarPDFPorCliente(bitacoras: BitacoraCompleta[], fechaInicio: string, fechaFinal: string): Buffer {
+export function generarPDFPorCliente(bitacoras: BitacoraReporteCliente[], fechaInicio: string, fechaFinal: string): Buffer {
     
     const columnas = [
         "Fecha", "Ticket", "Servicio", "Modalidad", "Horas", "Tipo Horas", "Técnico", "Descripción"

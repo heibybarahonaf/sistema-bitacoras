@@ -50,7 +50,7 @@ export class PagoService {
 
                 } else if (fechaFin) {
                     where.createdAt = {
-                    lte: new Date(fechaFin + 'T05:59:59.999Z'),
+                        lte: new Date(fechaFin + 'T05:59:59.999Z'),
                 };
 
             }
@@ -69,7 +69,7 @@ export class PagoService {
                 where,
                 skip,
                 take: limit,
-                include: { cliente: true },
+                include: { cliente: { select: { empresa: true }} },
                 orderBy: { createdAt: "desc" }
             }),
             prisma.pagos_Cliente.count({ where })
@@ -94,8 +94,7 @@ export class PagoService {
     public static async obtenerPagoPorId(id: number): Promise<Pagos_Cliente> {
 
         const pago = await prisma.pagos_Cliente.findUnique({ 
-            where: { id },
-            include: { cliente: true } 
+            where: { id }
         });
 
         if (!pago) {
@@ -130,7 +129,6 @@ export class PagoService {
         try {
             
             const pagoExistente = await prisma.pagos_Cliente.findFirst({ where: { no_factura: pagoData.no_factura } });
-
             if (pagoExistente) {
                 throw new ResponseDto(400, "Ya existe un pago con el mismo número de factura");
             }

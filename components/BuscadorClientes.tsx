@@ -2,18 +2,11 @@
 
 import Swal from "sweetalert2";
 import ModalPago from "@/components/ModalPago";
-import React, { useEffect, useState, useCallback } from "react";
 import { Eye, Notebook, Download } from "lucide-react";
 import FormNuevaBitacora from "@/components/ModalBitacora";
+import React, { useEffect, useState, useCallback } from "react";
 import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
-import {
-  Bitacora,
-  Cliente,
-  Sistema,
-  Equipo,
-  Tipo_Servicio,
-  Fase_Implementacion,
-} from "@prisma/client";
+import { Bitacora, Cliente, Sistema, Equipo, Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
 
 interface PaginationMeta {
   total: number;
@@ -33,19 +26,20 @@ const BuscarCliente: React.FC = () => {
   const [fase_implementacion, setFaseImplementacion] = useState<Fase_Implementacion[]>([]);
 
   const [showPago, setShowPago] = useState(false);
-  const [loadingBitacoras, setLoadingBitacoras] = useState(false);
+  const [intervaloActivo, setIntervaloActivo] = useState(false);
   const [showNewBitacora, setShowNewBitacora] = useState(false);
   const [modalDetalleOpen, setModalDetalleOpen] = useState(false);
+  const [loadingBitacoras, setLoadingBitacoras] = useState(false);
+
   const [filtro, setFiltro] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("todas");
   const [filtroActual, setFiltroActual] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState("todas");
 
   const [paginaActualClientes, setPaginaActualClientes] = useState(1);
   const [paginaActualBitacoras, setPaginaActualBitacoras] = useState(1);
   const [isDownloading, setIsDownloading] = useState<number | null>(null);
   const [metaClientes, setMetaClientes] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0});
   const [metaBitacoras, setMetaBitacoras] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0 });
-
   const formatoLempiras = (valor: number) => valor.toLocaleString("es-HN", { style: "currency", currency: "HNL" });
 
   const mostrarDetalleBitacora = async (bitacora: Bitacora) => {
@@ -64,8 +58,8 @@ const BuscarCliente: React.FC = () => {
         icon: "error",
         title: "Error al cargar detalles",
       });
-    }
 
+    }
   };
 
   const cargarDatosComunes = async () => {
@@ -100,11 +94,12 @@ const BuscarCliente: React.FC = () => {
       });
 
     }
-
   };
 
   const fetchClientes = useCallback(async () => {
+
     try {
+
       const params = new URLSearchParams({
         page: paginaActualClientes.toString(),
         limit: metaClientes.limit.toString(),
@@ -122,6 +117,7 @@ const BuscarCliente: React.FC = () => {
           limit: metaClientes.limit,
           totalPages: 0,
         });
+
         return;
       }
 
@@ -136,6 +132,7 @@ const BuscarCliente: React.FC = () => {
       }
 
     } catch (error) {
+
       Swal.fire({
         icon: "error",
         title: "Error al cargar clientes",
@@ -146,71 +143,77 @@ const BuscarCliente: React.FC = () => {
         confirmButtonColor: "#295d0c",
       });
     }
+
   }, [paginaActualClientes, filtroActual, metaClientes.limit]);
 
   useEffect(() => {
     fetchClientes();
   }, [fetchClientes, paginaActualClientes, filtroActual]);
 
-  const cargarBitacoras = useCallback(async (clienteId: number, page: number = 1) => {
-    setLoadingBitacoras(true);
+  const cargarBitacoras = useCallback(
+    async (clienteId: number, page: number = 1) => {
+      setLoadingBitacoras(true);
 
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: metaBitacoras.limit.toString(),
-        ...(filtroEstado !== "todas" && { estado: filtroEstado }),
-      });
+      try {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: metaBitacoras.limit.toString(),
+          ...(filtroEstado !== "todas" && { estado: filtroEstado }),
+        });
 
-      const res = await fetch(`/api/bitacoras/cliente/${clienteId}?${params}`);
-
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
-
-      const data = await res.json();
-
-      if (data.code === 200) {
-        setBitacoras(data.results || []);
-        setMetaBitacoras(
-          data.meta || {
-            total: 0,
-            page: 1,
-            limit: 10,
-            totalPages: 0,
-          }
+        const res = await fetch(
+          `/api/bitacoras/cliente/${clienteId}?${params}`
         );
+
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+
+        const data = await res.json();
+
+        if (data.code === 200) {
+          setBitacoras(data.results || []);
+          setMetaBitacoras(
+            data.meta || {
+              total: 0,
+              page: 1,
+              limit: 10,
+              totalPages: 0,
+            }
+          );
+        }
+
+      } catch (error) {
+
+        Swal.fire({
+          icon: "error",
+          title: "Error al cargar bitacoras",
+          text:
+            error instanceof Error
+              ? error.message
+              : "Error inesperado al cargar las bitacoras",
+          confirmButtonColor: "#295d0c",
+        });
+
+        setBitacoras([]);
+      } finally {
+        setLoadingBitacoras(false);
       }
-
-    } catch (error) {
-
-      Swal.fire({
-        icon: "error",
-        title: "Error al cargar bitacoras",
-        text:
-          error instanceof Error
-            ? error.message
-            : "Error inesperado al cargar las bitacoras",
-        confirmButtonColor: "#295d0c",
-      });
-
-      setBitacoras([]);
-
-    } finally {
-      setLoadingBitacoras(false);
-    }
-  }, [filtroEstado, metaBitacoras.limit]);
+    },
+    [filtroEstado, metaBitacoras.limit]
+  );
 
   const cargarClientePorId = async (clienteId: number) => {
+
     try {
-      
+
       const res = await fetch(`/api/clientes/${clienteId}`);
       const data = await res.json();
       if (data.code === 200 && data.results?.length > 0) {
         setClienteSeleccionado(data.results[0]);
       }
 
-    } catch (error) {
+    } catch {
 
       Swal.fire({
         toast: true,
@@ -248,17 +251,31 @@ const BuscarCliente: React.FC = () => {
     const timer = setTimeout(() => {
       if (filtro !== filtroActual) {
         setFiltroActual(filtro);
-        setPaginaActualClientes(1); 
+        setPaginaActualClientes(1);
       }
-    }, 500);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [filtro, filtroActual]);
 
   useEffect(() => {
+    setIntervaloActivo(false); 
+
+    if (clienteSeleccionado?.id) {
+      cargarBitacoras(clienteSeleccionado.id);
+    }
+  }, [clienteSeleccionado?.id]);
+
+  useEffect(() => {
+    return () => {
+      setIntervaloActivo(false);
+    };
+  }, []);
+
+  useEffect(() => {
   let intervalId: NodeJS.Timeout;
 
-  if (clienteSeleccionado?.id) {
+  if (clienteSeleccionado?.id && intervaloActivo) {
     intervalId = setInterval(async () => {
       try {
         const params = new URLSearchParams({
@@ -289,14 +306,13 @@ const BuscarCliente: React.FC = () => {
         });
 
       }
-    }, 5000); 
+    }, 60000); 
   }
 
   return () => {
     if (intervalId) clearInterval(intervalId);
   };
-}, [metaBitacoras,clienteSeleccionado?.id, paginaActualBitacoras, filtroEstado, bitacoras]);
-
+}, [metaBitacoras,clienteSeleccionado?.id, paginaActualBitacoras, filtroEstado, bitacoras, intervaloActivo]);
 
   const mostrarAlertaError = (mensaje: string) => {
     Swal.fire({
@@ -327,6 +343,7 @@ const BuscarCliente: React.FC = () => {
       if (!res.ok) {
         const text = await res.text();
         let mensaje = "Error al generar el PDF";
+
         try {
           const data = JSON.parse(text);
           mensaje = data.message || mensaje;
@@ -376,11 +393,9 @@ const BuscarCliente: React.FC = () => {
       });
 
     }
-
   };
 
-  const bitacorasMostrar = bitacoras; 
-  const totalPaginasBitacoras = metaBitacoras.totalPages;
+  const bitacorasMostrar = bitacoras;
 
   return (
     <div className="w-full p-6 pb-20 bg-white min-h-screen">
@@ -477,6 +492,7 @@ const BuscarCliente: React.FC = () => {
               onClick={() => {
                 setClienteSeleccionado(null);
                 setFiltro("");
+                setIntervaloActivo(false);
               }}
               className="px-4 py-2 bg-gray-200 text-sm text-gray-700 rounded hover:bg-gray-300 transition"
             >
@@ -559,15 +575,17 @@ const BuscarCliente: React.FC = () => {
                     onClick={() => {
                       cargarClientePorId(clienteSeleccionado.id);
                       cargarBitacoras(clienteSeleccionado.id, paginaActualBitacoras);
+
                       Swal.fire({
                         toast: true,
                         position: "top-end",
                         icon: "success",
-                        title:"Datos actualizados",
+                        title: "Datos actualizados",
                         showConfirmButton: false,
                         timer: 2000,
                         timerProgressBar: true,
                       });
+
                     }}
                     className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
                   >
@@ -612,9 +630,14 @@ const BuscarCliente: React.FC = () => {
                   cargarBitacoras(clienteSeleccionado.id);
                   cargarClientePorId(clienteSeleccionado.id);
                   setShowNewBitacora(false);
+                  setIntervaloActivo(true);
                 }}
                 horasPaquete={clienteSeleccionado.horas_paquetes}
                 horasIndividuales={clienteSeleccionado.horas_individuales}
+                sistemas={sistemas}
+                equipos={equipos}
+                tipoServicio={tipo_servicio}
+                fases={fase_implementacion}
               />
             )}
 

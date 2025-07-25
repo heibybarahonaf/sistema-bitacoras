@@ -11,6 +11,15 @@ import { EncuestaService } from "../services/encuestaService";
 import { ConfiguracionService } from "../services/configService";
 
 type CrearBitacoraDto = z.infer<typeof CrearBitacoraDto>;
+type BitacoraCliente = {
+    id: number;
+    no_ticket: string;
+    fecha_servicio: Date;
+    usuario_id: number;
+    descripcion_servicio: string;
+    modalidad: string;
+    horas_consumidas: number;
+}
 
 export class BitacoraService {
 
@@ -51,12 +60,27 @@ export class BitacoraService {
                     lt: fechaFinInclusive, 
                 },
             },
-            include: {
-                sistema: true,
-                equipo: true,
-                cliente: true,
-                usuario: true,
-                tipo_servicio: true,
+            select: {
+                id: true,
+                fecha_servicio: true,
+                no_ticket: true,
+                cliente_id: true,
+                usuario_id: true,
+                hora_llegada: true,
+                hora_salida: true,
+                modalidad: true,
+                horas_consumidas: true,
+                tipo_horas: true,
+                descripcion_servicio: true,
+                cliente: {
+                    select: { empresa: true }
+                },
+                usuario: {
+                    select: { nombre: true }
+                },
+                tipo_servicio: {
+                    select: { descripcion: true }
+                },
             },
             orderBy: {
                 fecha_servicio: "desc",
@@ -110,11 +134,11 @@ export class BitacoraService {
                 where,
                 orderBy: { fecha_servicio: "desc" },
                 include: {
-                    fase_implementacion: true,
-                    tipo_servicio: true,
-                    sistema: true,
-                    equipo: true,
-                    firmaCliente: true,
+                    fase_implementacion: {select: {fase: true}},
+                    tipo_servicio: {select:{tipo_servicio:true}},
+                    sistema: {select: {sistema: true}},
+                    equipo: {select: {equipo: true}},
+                    firmaCliente: {select: {firma_base64: true, url: true}},
                 },
                 skip,
                 take: limit,
@@ -157,13 +181,29 @@ export class BitacoraService {
                     lt: fechaFinInclusive, 
                 },
             },
-            include: {
-                cliente: true,
-                usuario: true,
-                sistema: true,
-                equipo: true,
-                tipo_servicio: true,
-                fase_implementacion: true,
+            select: {
+                fecha_servicio: true,
+                no_ticket: true,
+                modalidad: true,
+                horas_consumidas: true,
+                tipo_horas: true,
+                descripcion_servicio: true,
+                usuario: {
+                    select: { nombre: true }
+                },
+                tipo_servicio: {
+                    select: { descripcion: true }
+                },
+                cliente: {
+                    select: {
+                        empresa: true,
+                        responsable: true,
+                        rtn: true,
+                        direccion: true,
+                        telefono: true,
+                        correo: true
+                    }
+                },
             },
             orderBy: { fecha_servicio: "desc" }
         });
@@ -194,12 +234,26 @@ export class BitacoraService {
                     lt: fechaFinInclusive, 
                 },
             },
-            include: {
-                cliente: true,
-                usuario: true,
-                sistema: true,
-                equipo: true,
-                tipo_servicio: true,
+            select: {
+                id: true,
+                fecha_servicio: true,
+                no_ticket: true,
+                cliente_id: true,
+                usuario_id: true,
+                horas_consumidas: true,
+                tipo_horas: true,
+                cliente: {
+                    select: { empresa: true }
+                },
+                usuario: {
+                    select: { 
+                        nombre: true,
+                        comision: true,
+                        correo: true,
+                        telefono: true,
+                        zona_asignada: true
+                    }
+                },
             },
             orderBy: { fecha_servicio: "desc" }
         });
@@ -222,7 +276,7 @@ export class BitacoraService {
         fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
 
         const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
-        const bitacoras = await prisma.bitacora.findMany({
+         const bitacoras = await prisma.bitacora.findMany({
             where: {
                 usuario_id: tecnico.id,
                 fecha_servicio: {
@@ -235,12 +289,23 @@ export class BitacoraService {
                     },
                 },
             },
-            include: {
-                cliente: true,
-                usuario: true,
-                sistema: true,
-                equipo: true,
-                tipo_servicio: true,
+            select: {
+                id: true,
+                fecha_servicio: true,
+                cliente_id: true,
+                usuario_id: true,
+                ventas: true,
+                cliente: {
+                    select: { empresa: true }
+                },
+                usuario: {
+                    select: { 
+                        nombre: true,
+                        correo: true,
+                        telefono: true,
+                        zona_asignada: true
+                    }
+                },
             },
             orderBy: { fecha_servicio: "desc" }
         });
@@ -359,17 +424,19 @@ export class BitacoraService {
     }
 
 
-    public static async obtenerBitacoraPorFirmaClienteId(firmaClienteId: number): Promise<Bitacora> {
+    public static async obtenerBitacoraPorFirmaClienteId(firmaClienteId: number): Promise<BitacoraCliente> {
 
         const bitacora = await prisma.bitacora.findFirst({
             where: { firmaCliente_id: firmaClienteId },
-            include: {
-                cliente: true,
-                usuario: true,
-                sistema: true,
-                equipo: true,
-                firmaCliente: true,
-            },
+            select:{
+                id: true,
+                no_ticket: true,
+                fecha_servicio: true,
+                usuario_id: true,
+                descripcion_servicio: true,
+                modalidad: true,
+                horas_consumidas: true
+            }
         });
 
         if (!bitacora) {

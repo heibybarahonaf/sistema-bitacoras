@@ -10,7 +10,6 @@ type EncuestaPreguntas = {
     descripcion: string;
     activa: boolean;
     preguntas: {
-        id: number;
         texto: string;
     }[];
 };
@@ -40,7 +39,7 @@ export class EncuestaService {
             include: {
             preguntas: {
                 include: {
-                pregunta: true,
+                    pregunta: true,
                 },
             },
             },
@@ -71,7 +70,7 @@ export class EncuestaService {
 
     public static async obtenerEncuestasPreguntas(): Promise<EncuestaPreguntas[]> {
 
-        const encuestas = await prisma.encuesta.findMany({include:{preguntas:{include:{pregunta:true}}}});
+        const encuestas = await prisma.encuesta.findMany({ include: { preguntas: { include: { pregunta: true }}}});
 
         if(encuestas.length == 0){
             throw new ResponseDto(400, "No hay encuestas registradas");

@@ -64,7 +64,7 @@ export async function middleware(req: NextRequest) {
 
         const tiempoActual = Math.floor(Date.now() / 1000);
         const tiempoRestante = (payload.exp ?? 0) - tiempoActual;
-        if (tiempoRestante > 0 && tiempoRestante <= 600) {
+        if (tiempoRestante > 0 && tiempoRestante <= 900) {
             response.headers.set("x-tiempo-restante", tiempoRestante.toString());
         }
 

@@ -144,7 +144,7 @@ export class UsuarioService {
 
             return usuario;
 
-        } catch (error){
+        } catch {
 
             throw new ResponseDto(500, "Error al crear el usuario");
 
@@ -165,7 +165,6 @@ export class UsuarioService {
             }
         }
 
-        // Filtra campos actualizables 
         const datosActualizacion = GeneralUtils.filtrarCamposActualizables(usuarioData);
 
         if (password && password.trim() !== "") {
@@ -200,8 +199,8 @@ export class UsuarioService {
         await this.obtenerUsuarioPorId(id);
 
         try {
-            const usuarioEliminado = await prisma.usuario.delete({ where: { id: id }});
 
+            const usuarioEliminado = await prisma.usuario.delete({ where: { id: id }});
             return usuarioEliminado;
 
         } catch {
