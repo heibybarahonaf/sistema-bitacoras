@@ -69,7 +69,6 @@ const SelectField = ({
   onChange: (val: number | null) => void;
   required?: boolean;
 }) => (
-
   <label className="block">
     <span className="text-gray-700 font-semibold">
       {label} {required && <span className="text-red-600">*</span>}
@@ -90,7 +89,6 @@ const SelectField = ({
       ))}
     </select>
   </label>
-
 );
 
 const SelectSimple = ({
@@ -139,7 +137,6 @@ const TextAreaField = ({
   onChange: (val: string) => void;
   required?: boolean;
 }) => (
-
   <label className="block md:col-span-2">
     <span className="text-gray-700 font-semibold">
       {label} {required && <span className="text-red-600">*</span>}
@@ -166,6 +163,10 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   equipos,
   tipoServicio,
 }) => {
+  // Estado para controlar si es bitácora normal o especial
+  const [tipoBitacora, setTipoBitacora] = useState<"normal" | "especial" | "">("");
+  
+  // Campos comunes
   const [ventas, setVentas] = useState("");
   const [usuario, setUsuario] = useState("");
   const [noTicket, setNoTicket] = useState("");
@@ -188,10 +189,19 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [firmaClienteRemotaId, setFirmaClienteRemotaId] = useState<number | null>(null);
   const [faseImplementacionId, setFaseImplementacionId] = useState<number | null>(null);
   
+  const [marca, setMarca] = useState("");
+  const [modelo, setModelo] = useState("");
+  const [noSerie, setNoSerie] = useState("");
+  const [millaje, setMillaje] = useState("");
+  const [accesorios, setAccesorios] = useState("");
+  const [estadoFisico, setEstadoFisico] = useState("");
+  const [fallaDetectada, setFallaDetectada] = useState("");
+  const [cantidadImpresiones, setCantidadImpresiones] = useState("");
+  const [fechaVisitaSiguiente, setFechaVisitaSiguiente] = useState("");
+
   const sigCanvas = useRef<SignatureCanvas>(null);
   const [guardando, setGuardando] = useState(false);
   const sigCanvasCliente = useRef<SignatureCanvas>(null);
-  //const [cargarFirmaTecnico, setCargarFirmaTecnico] = useState(false);
   const [esperandoFirmaCliente, setEsperandoFirmaCliente] = useState(false);
   const [horasDisponibles, setHorasDisponibles] = useState({paquete: horasPaquete, individual: horasIndividuales});
 
@@ -201,32 +211,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
     }
   }, []);
 
-
-  /*const generarNuevoEnlaceFirma = async () => {
-    try {
-
-      const res = await fetch("/api/firmas/remote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-      const json = await res.json();
-      const firma = json.results?.[0];
-
-      if (firma) {
-        setFirmaClienteRemotaId(firma.id);
-        setUrlFirmaRemota(firma.url);
-        setEsperandoFirmaCliente(true);
-      }
-
-    } catch {
-      Swal.fire("Error", "No se pudo generar un nuevo enlace de firma.", "error");
-    }
-  };*/
-
-
   useEffect(() => {
-
     if (horaLlegada && horaSalida && fechaServicio) {
       const llegada = new Date(`${fechaServicio}T${horaLlegada}`);
       const salida = new Date(`${fechaServicio}T${horaSalida}`);
@@ -240,10 +225,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   }, [horaLlegada, horaSalida, fechaServicio]);
 
   useEffect(() => {
-
     const cargarFirmaTecnico = async () => {
-
-
       try {
         const res = await fetch("/api/auth/obtener-sesion", {
           credentials: "include",
@@ -261,7 +243,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           const firmaData = await firmaRes.json();
 
           if (firmaData.code !== 200) {
-            //console.warn("No se encontró firma del técnico.");
             return;
           }
 
@@ -269,7 +250,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           const firmaBase64 = firma?.firma_base64;
 
           if (!firmaBase64) {
-            //console.warn("El técnico no tiene firma registrada.");
             return;
           }
 
@@ -285,24 +265,20 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           }
         }
       } catch {
-        
         Swal.fire(
           "Error",
           "Ocurrió un error al intentar cargar automáticamente la firma del técnico.",
           "error"
         );
-
       }
     };
 
     cargarFirmaTecnico();
   }, []);
 
-
   useEffect(() => {
     if (modalidad === "Remoto") {
       const generarEnlace = async () => {
-
         try {
           const res = await fetch("/api/firmas/remote", {
             method: "POST",
@@ -318,14 +294,12 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             setEsperandoFirmaCliente(true);
           }
         } catch {
-
           Swal.fire({
             toast: true,
             position: "top-end",
             icon: "error",
             title: "Error generando enlace de firma",
           });
-         
         }
       };
 
@@ -337,43 +311,36 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
     }
   }, [modalidad]);
 
-useEffect(() => {
-  if (!firmaClienteRemotaId) return;
-  
+  useEffect(() => {
+    if (!firmaClienteRemotaId) return;
+    
+    const intervalo = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/firmas/verificar/${firmaClienteRemotaId}`);
+        const json = await res.json();
 
-  const intervalo = setInterval(async () => {
-
-    try {
-
-      const res = await fetch(`/api/firmas/verificar/${firmaClienteRemotaId}`);
-      const json = await res.json();
-
-      if (json.firmada) {
-        setEsperandoFirmaCliente(false);
-        clearInterval(intervalo);
+        if (json.firmada) {
+          setEsperandoFirmaCliente(false);
+          clearInterval(intervalo);
+        }
+      } catch {
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "error",
+          title: "Error verificando firma remota",
+        });
       }
+    }, 10000); // cada 10s
 
-    } catch {
-
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        icon: "error",
-        title: "Error verificando firma remota",
-      });
-     
-    }
-  }, 10000); // cada 10s
-
-  return () => clearInterval(intervalo);
-}, [firmaClienteRemotaId]);
+    return () => clearInterval(intervalo);
+  }, [firmaClienteRemotaId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setGuardando(true);
 
     try {
-
       if (!modalidad) throw new Error("Seleccione la modalidad");
       if (!noTicket) throw new Error("No. Ticket es obligatorio");
       if (!responsable) throw new Error("Responsable es obligatorio");
@@ -397,7 +364,6 @@ useEffect(() => {
 
       let firmaClienteId: number | null = null;
       if ((modalidad === "Presencial" || modalidad === "En Oficina") && firmaCliente) {
-
         const resFirmaCliente = await fetch("/api/firmas", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -410,18 +376,12 @@ useEffect(() => {
         }
 
         firmaClienteId = dataFirmaCliente.results[0].id;
-
       } else if (modalidad === "Remoto") {
-
         if (!firmaClienteRemotaId) {
           throw new Error("No se ha generado la firma remota del cliente.");
         }
         firmaClienteId = firmaClienteRemotaId;
-
       }
-
-      console.log("ID:: ", usuarioId);
-      console.log("Nombre:: ", usuario);
 
       const newBitacora = {
         cliente_id: clienteId,
@@ -445,7 +405,20 @@ useEffect(() => {
         firmaCliente_id: firmaClienteId,
         modalidad,
         responsable,
+        ...(tipoBitacora === "especial" && {
+          fecha_visita_siguiente: fechaVisitaSiguiente,
+          millaje,
+          cantidad_impresiones: cantidadImpresiones,
+          marca,
+          modelo,
+          no_serie: noSerie,
+          estado_fisico: estadoFisico,
+          falla_detectada: fallaDetectada,
+          accesorios,
+        }),
       };
+
+      console.log("Nueva bitácora:", newBitacora);
 
       // Guardar bitácora
       const res = await fetch("/api/bitacoras", {
@@ -460,7 +433,6 @@ useEffect(() => {
       }
 
       if (ventas && ventas.trim() !== "") {
-
         const notificacionRes = await fetch("/api/notificacion-ventas", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -472,15 +444,12 @@ useEffect(() => {
         });
 
         if (!notificacionRes.ok) {
-          
           Swal.fire({
             toast: true,
             position: "top-end",
             icon: "error",
-            title:
-              "Error al enviar notificación de ventaError al cargar los datos para crear bitacora",
+            title: "Error al enviar notificación de venta",
           });
-          
         }
       }
 
@@ -514,7 +483,6 @@ useEffect(() => {
           onGuardar();
           onClose();
         });
-
       } else {
         const data = await res.json();
         const nuevaBitacora = data.results?.[0];
@@ -566,25 +534,62 @@ useEffect(() => {
           },
         });
       }
-
     } catch (error) {
       Swal.fire({
         icon: "error",
         title: "Error al guardar",
         text: error instanceof Error ? error.message : String(error),
       });
-
-    }finally {
+    } finally {
       setGuardando(false); 
     }
   };
 
+  // Si no se ha seleccionado el tipo de bitácora, mostramos la selección
+  if (!tipoBitacora) {
+    return (
+      <div className="fixed inset-0 text-xs bg-black bg-opacity-40 flex items-center justify-center z-50 p-4 overflow-auto">
+        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <h2 className="text-lg font-bold mb-6 text-gray-900">Seleccione el tipo de bitácora</h2>
+          
+          <div className="grid grid-cols-1 gap-4">
+            <button
+              onClick={() => setTipoBitacora("normal")}
+              className="px-6 py-3 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a] transition"
+            >
+              Bitácora General
+            </button>
+            
+            <button
+              onClick={() => setTipoBitacora("especial")}
+              className="px-6 py-3 rounded-md bg-[#2e3763] text-white font-semibold hover:bg-[#252a50] transition"
+            >
+              Bitácora Mantenimiento
+            </button>
+            
+            <button
+              onClick={onClose}
+              className="px-6 py-3 rounded-md bg-red-700 text-white font-semibold hover:bg-red-800 transition mt-4"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 text-xs bg-black bg-opacity-40 flex items-center justify-center z-50 p-4 overflow-auto">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-bold mb-6 text-gray-900">Nueva Bitácora</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold text-gray-900">
+            Nueva Bitácora {tipoBitacora === "especial" ? "Especial" : ""}
+          </h2>
+        </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Campos comunes */}
           <InputField
             label="No. Ticket"
             value={noTicket}
@@ -630,14 +635,12 @@ useEffect(() => {
             value={equipoId}
             onChange={setEquipoId}
             options={equipos.map((e) => ({ id: e.id, sistema: e.equipo }))}
-            
           />
           <SelectField
             label="Sistema"
             value={sistemaId}
             onChange={setSistemaId}
             options={sistemas.map((s) => ({ id: s.id, sistema: s.sistema }))}
-            
           />
           <SelectSimple
             label="Modalidad"
@@ -699,6 +702,60 @@ useEffect(() => {
             required
           />
 
+          {/* Campos específicos para bitácora especial */}
+          {tipoBitacora === "especial" && (
+            <>
+              <InputField
+                label="Fecha Siguiente Visita"
+                type="date"
+                value={fechaVisitaSiguiente}
+                onChange={setFechaVisitaSiguiente}
+              />
+              <InputField
+                label="Millaje"
+                type="number"
+                value={millaje}
+                onChange={setMillaje}
+              />
+              <InputField
+                label="Cantidad de Impresiones"
+                type="number"
+                value={cantidadImpresiones}
+                onChange={setCantidadImpresiones}
+              />
+              <InputField
+                label="Marca"
+                value={marca}
+                onChange={setMarca}
+              />
+              <InputField
+                label="Modelo"
+                value={modelo}
+                onChange={setModelo}
+              />
+              <InputField
+                label="No. Serie"
+                value={noSerie}
+                onChange={setNoSerie}
+              />
+              <TextAreaField
+                label="Estado Físico Actual del Equipo"
+                value={estadoFisico}
+                onChange={setEstadoFisico}
+              />
+              <TextAreaField
+                label="Falla detectada"
+                value={fallaDetectada}
+                onChange={setFallaDetectada}
+              />
+              <TextAreaField
+                label="Accesorios"
+                value={accesorios}
+                onChange={setAccesorios}
+              />
+            </>
+          )}
+
           {/* Firmas y enlace remoto lado a lado */}
           <div className="md:col-span-2 flex flex-col sm:flex-row gap-6 justify-center items-start">
             {/* Firma técnico siempre visible */}
@@ -715,9 +772,7 @@ useEffect(() => {
                   className: "border border-gray-300 rounded-md w-full shadow-sm",
                 }}
               />
-
               <p className="mt-2 text-sm text-gray-500 italic"></p>
-
             </div>
 
             {/* Firma cliente presencial o mensaje enlace remoto */}
@@ -750,54 +805,52 @@ useEffect(() => {
                 </span>
 
                 {urlFirmaRemota ? (
-                <div className="mt-2 text-sm text-gray-700 text-center">
-                  <p className="text-sm text-gray-700 mb-2">Enlace para firma remota.</p>
+                  <div className="mt-2 text-sm text-gray-700 text-center">
+                    <p className="text-sm text-gray-700 mb-2">Enlace para firma remota.</p>
 
-                  {typeof navigator.clipboard === "undefined" ? (
-                    <div className="space-y-2">
-                      <input
-                        type="text"
-                        value={urlFirmaRemota}
-                        readOnly
-                        onFocus={(e) => e.target.select()}
-                        className="border px-2 py-1 rounded w-full text-sm"
-                      />
-                      <p className="text-xs text-gray-600">
-                        <strong>Mantén presionado para copiar el enlace</strong>
-                      </p>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        navigator.clipboard
-                          .writeText(urlFirmaRemota)
-                          .then(() =>
-                            Swal.fire({
-                              toast: true,
-                              position: "top-end",
-                              icon: "success",
-                              title: "Enlace copiado",
-                              showConfirmButton: false,
-                              timer: 1500,
-                              timerProgressBar: true,
+                    {typeof navigator.clipboard === "undefined" ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={urlFirmaRemota}
+                          readOnly
+                          onFocus={(e) => e.target.select()}
+                          className="border px-2 py-1 rounded w-full text-sm"
+                        />
+                        <p className="text-xs text-gray-600">
+                          <strong>Mantén presionado para copiar el enlace</strong>
+                        </p>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigator.clipboard
+                            .writeText(urlFirmaRemota)
+                            .then(() =>
+                              Swal.fire({
+                                toast: true,
+                                position: "top-end",
+                                icon: "success",
+                                title: "Enlace copiado",
+                                showConfirmButton: false,
+                                timer: 1500,
+                                timerProgressBar: true,
+                              })
+                            )
+                            .catch((err) => {
+                              Swal.fire("Error", "No se pudo copiar el enlace.", "error");
                             })
-                          )
-                          .catch((err) => {
-             
-                            Swal.fire("Error", "No se pudo copiar el enlace.", "error");
-                          })
-                      }
-                      className="text-blue-600 underline hover:text-blue-800 text-sm"
-                    >
-                      Copiar enlace de firma
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 italic">Generando enlace...</p>
-              )}
-
+                        }
+                        className="text-blue-600 underline hover:text-blue-800 text-sm"
+                      >
+                        Copiar enlace de firma
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 italic">Generando enlace...</p>
+                )}
               </div>
             )}
           </div>
@@ -829,4 +882,3 @@ useEffect(() => {
 };
 
 export default FormNuevaBitacora;
-

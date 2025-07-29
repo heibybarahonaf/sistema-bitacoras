@@ -149,8 +149,13 @@ export default function ModalDetalleBitacora({
   const tipoServicioNombre = tipo_servicio.find((t) => t.id === bitacora.tipo_servicio_id)?.tipo_servicio || "";
   const faseImplementacionNombre = fase_implementacion.find((f) => f.id === bitacora.fase_implementacion_id)?.fase || "";
 
-  const campos = [
-    { label: "Ticket", value: bitacora.no_ticket },
+  const truncarTexto = (text: string, maxLength: number = 150) => {
+    if (!text) return "";
+    return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  };
+
+  const camposPrincipales = [
+    { label: "Ticket", value: bitacora.no_ticket.toString()},
     {
       label: "Fecha del Servicio",
       value: new Date(bitacora.fecha_servicio).toLocaleDateString("es-HN", {
@@ -191,6 +196,27 @@ export default function ModalDetalleBitacora({
       : [{ label: "Calificación", value: "ENCUESTA NO REALIZADA" }]),
   ];
 
+  const camposEspeciales = [
+    ...(bitacora.fecha_visita_siguiente ? [{ 
+      label: "Siguiente Visita", 
+      value: new Date(bitacora.fecha_visita_siguiente).toLocaleDateString("es-HN", {
+        timeZone: "UTC",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }), }] : []),
+    ...(bitacora.millaje ? [{ label: "Millaje", value: bitacora.millaje }] : []),
+    ...(bitacora.cantidad_impresiones ? [{ label: "Cant Impresiones", value: bitacora.cantidad_impresiones }] : []),
+    ...(bitacora.marca ? [{ label: "Marca", value: truncarTexto(bitacora.marca) }] : []),
+    ...(bitacora.modelo ? [{ label: "Modelo", value: truncarTexto(bitacora.modelo) }] : []),
+    ...(bitacora.no_serie ? [{ label: "No. Serie", value: truncarTexto(bitacora.no_serie) }] : []),
+    ...(bitacora.estado_fisico ? [{ label: "Estado", value: truncarTexto(bitacora.estado_fisico) }] : []),
+    ...(bitacora.falla_detectada ? [{ label: "Fallas", value: truncarTexto(bitacora.falla_detectada) }] : []),
+    ...(bitacora.accesorios ? [{ label: "Accesorios", value: truncarTexto(bitacora.accesorios) }] : []),
+  ];
+
+  const mostrarSeccionEspecial = camposEspeciales.length > 0;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white w-full max-w-3xl rounded-lg shadow-lg relative max-h-[90vh] overflow-y-auto p-6 sm:p-8">
@@ -206,23 +232,50 @@ export default function ModalDetalleBitacora({
           Detalle de Bitácora
         </h2>
 
+        {/* Sección de campos principales */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-gray-700 text-sm sm:text-base">
-          {campos.map(({ label, value }) => (
+          {camposPrincipales.map(({ label, value }) => (
             <div key={label} className="flex flex-col">
               <span className="font-semibold text-gray-800">{label}:</span>
-              <span className="mt-1 whitespace-pre-wrap">{value}</span>
+              <span className="mt-1 whitespace-pre-wrap break-words">
+                {value}
+              </span>
             </div>
           ))}
+        </div>
 
-          <div className="sm:col-span-2 mt-4">
+        {/* Sección de campos especiales (si existen) */}
+        {mostrarSeccionEspecial && (
+          <div className="mt-6 border-t pt-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Detalles Mantenimiento</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-gray-700 text-sm sm:text-base">
+              {camposEspeciales.map(({ label, value }) => (
+                <div key={label} className="flex flex-col">
+                  <span className="font-semibold text-gray-800">{label}:</span>
+                  <span className="mt-1 whitespace-pre-wrap break-words">
+                    {value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Descripción y comentarios (ancho completo) */}
+        <div className="mt-6">
+          <div className="mt-4">
             <span className="font-semibold text-gray-800">Descripción:</span>
-            <p className="mt-1 whitespace-pre-wrap text-gray-700">{bitacora.descripcion_servicio}</p>
+            <p className="mt-1 whitespace-pre-wrap break-words text-gray-700">
+              {bitacora.descripcion_servicio}
+            </p>
           </div>
 
           {bitacora.comentarios && (
-            <div className="sm:col-span-2 mt-4">
+            <div className="mt-4">
               <span className="font-semibold text-gray-800">Comentarios:</span>
-              <p className="mt-1 whitespace-pre-wrap text-gray-700">{bitacora.comentarios}</p>
+              <p className="mt-1 whitespace-pre-wrap break-words text-gray-700">
+                {bitacora.comentarios}
+              </p>
             </div>
           )}
         </div>

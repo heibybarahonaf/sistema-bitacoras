@@ -64,7 +64,14 @@ export const CrearBitacoraDto = z.object({
     firmaCliente_id: z.number({
         invalid_type_error: "El ID de la firma del cliente debe ser un número.",
     }).optional(),
-
+    fecha_visita_siguiente: z.coerce.date().optional(),
+    cantidad_impresiones: z.string().optional(),
+    marca: z.string().optional(),
+    modelo: z.string().optional(),
+    no_serie: z.string().optional(),
+    estado_fisico: z.string().optional(),
+    falla_detectada: z.string().optional(),
+    accesorios: z.string().optional(),
 })
 
     .refine(data => {
