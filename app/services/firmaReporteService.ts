@@ -8,8 +8,8 @@ let tipo_servicio = "";
 type BitacoraConRelaciones = Prisma.BitacoraGetPayload<{
   include: {
     cliente: true;
-    usuario: { select: { nombre: true } };  //nombre
-    tipo_servicio: { select: { tipo_servicio: true } }; //ripo_servicio | descripcion
+    usuario: { select: { nombre: true } };  
+    tipo_servicio: { select: { tipo_servicio: true } }; 
     servicio: {select:{tipo_servicio: true}}; 
     equipo: { select: { equipo: true} };
     sistema: { select: { sistema: true } };
@@ -48,6 +48,8 @@ export class FirmaReporteService {
         currentY += 7;
         currentY = this.renderInfoBitacora(doc, currentY, bitacora);
         currentY += 7;
+        currentY = this.renderInfoMantenimiento(doc, currentY, bitacora);
+        currentY += 7;
 
         const firmaTecnico = await prisma.firma.findFirst({ where: { tecnico_id: bitacora.usuario_id } });        
         const firmaCliente = bitacora.firmaCliente_id ? await prisma.firma.findUnique({ where: { id: bitacora.firmaCliente_id } }): null;
@@ -74,13 +76,13 @@ export class FirmaReporteService {
             // Logo no encontrado, continuando sin logo
         }
 
-        doc.setFontSize(14);
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.text("REPORTE DE SERVICIO", 20, 20);
         
         doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
-        doc.text(`Bitácora #${bitacora.id}`, 20, 28);
+        doc.text(`Bitácora #${bitacora.id}`, 20, 26);
         
         doc.setFontSize(10);
         const ahora = new Date();
@@ -93,23 +95,23 @@ export class FirmaReporteService {
             minute: '2-digit',
             hour12: false
         });
-        doc.text(`Generado: ${fechaHora}`, 20, 33);
+        doc.text(`Generado: ${fechaHora}`, 20, 31);
         
         doc.setLineWidth(0.5);
-        doc.line(20, 38, 190, 38);
+        doc.line(20, 36, 190, 36);
 
     }
 
 
     private static renderInfoCliente(doc: jsPDF, startY: number, bitacora: BitacoraConRelaciones): number {
 
-        let currentY = startY;
+        let currentY = startY-4;
         
-        doc.setFontSize(14);
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.text("INFORMACIÓN CLIENTE", 20, currentY);
 
-        currentY += 8;
+        currentY += 7;
         
         doc.setFontSize(10);
         
@@ -197,17 +199,17 @@ export class FirmaReporteService {
 
     private static renderInfoBitacora(doc: jsPDF, startY: number, bitacora: BitacoraConRelaciones): number {
 
-        let currentY = startY;
+        let currentY = startY-2;
         const leftX = 20;
         const rightX = 110;
         const labelAlignment = 47; 
         const rightLabelAlignment = 130;
         
-        doc.setFontSize(14);
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.text("INFORMACIÓN DEL SERVICIO", 20, currentY);
 
-        currentY += 8;
+        currentY += 7;
         
         doc.setFontSize(10);
         
@@ -282,13 +284,15 @@ export class FirmaReporteService {
         const equipoBlockHeight = Math.max(6, equipoHeight + 6); 
         currentY += equipoBlockHeight;
         
-        doc.setFont("helvetica", "bold");
-        doc.text("Capacitados:", leftX, currentY);
-        doc.setFont("helvetica", "normal");
-        doc.text(bitacora.nombres_capacitados || "N/A", labelAlignment, currentY);
-        
-        currentY += 6;
-        
+        if (bitacora.nombres_capacitados) {
+            doc.setFont("helvetica", "bold");
+            doc.text("Capacitados:", leftX, currentY);
+            doc.setFont("helvetica", "normal");
+            doc.text(bitacora.nombres_capacitados || "N/A", labelAlignment, currentY);
+            
+            currentY += 6;
+        }
+
         if (bitacora.descripcion_servicio) {
             doc.setFont("helvetica", "bold");
             doc.text("Descripción:", leftX, currentY);
@@ -326,9 +330,8 @@ export class FirmaReporteService {
                 }
             }
 
+            currentY += 6;
         }
-        
-        currentY += 6;
 
         if (bitacora.comentarios) {
             doc.setFont("helvetica", "bold");
@@ -354,15 +357,130 @@ export class FirmaReporteService {
     }
 
 
+    private static renderInfoMantenimiento(doc: jsPDF, startY: number, bitacora: BitacoraConRelaciones): number {
+
+        let currentY = startY-2;
+        const leftX = 20;
+        const rightX = 110;
+        const labelAlignment = 47; 
+        const rightLabelAlignment = 130;
+
+        if(bitacora.modelo || bitacora.marca || bitacora.millaje || bitacora.accesorios || bitacora.cantidad_impresiones || bitacora.fecha_visita_siguiente){
+
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("INFORMACIÓN DEL MANTENIMIENTO", 20, currentY);
+
+            currentY += 7;
+            
+            doc.setFontSize(10);
+            
+            doc.setFont("helvetica", "bold");
+            doc.text("Próxima visita:", leftX, currentY);
+            doc.setFont("helvetica", "normal");
+            doc.text(
+                bitacora.fecha_visita_siguiente
+                    ? formatearFecha(bitacora.fecha_visita_siguiente.toISOString())
+                    : "N/A",
+                labelAlignment,
+                currentY
+            );
+
+            doc.setFont("helvetica", "bold");
+            doc.text("Cant. Impresiones:", rightX, currentY);
+            doc.setFont("helvetica", "normal");
+            doc.text(bitacora.cantidad_impresiones ? bitacora.cantidad_impresiones : "N/A", rightLabelAlignment+14, currentY);
+
+            currentY += 6;
+            
+            doc.setFont("helvetica", "bold");
+            doc.text("Modelo:", leftX, currentY);
+            doc.setFont("helvetica", "normal");
+            const modeloText = bitacora.modelo || "N/A";
+            const modeloLines = doc.splitTextToSize(modeloText, rightX - labelAlignment - 10);
+            doc.text(modeloLines, labelAlignment, currentY);
+            const modeloHeight = (modeloLines.length - 1) * 4;
+
+            doc.setFont("helvetica", "bold");
+            doc.text("No. Serie:", rightX, currentY);
+            doc.setFont("helvetica", "normal");
+            doc.text(bitacora.no_serie || "N/A", rightLabelAlignment, currentY);
+
+            currentY += Math.max(6, modeloHeight + 6);
+            
+            doc.setFont("helvetica", "bold");
+            doc.text("Accesorios:", leftX, currentY);
+            doc.setFont("helvetica", "normal");
+            const accesoriosText = bitacora.accesorios || "N/A";
+            const accesoriosLines = doc.splitTextToSize(accesoriosText, rightX - labelAlignment - 10);
+            doc.text(accesoriosLines, labelAlignment, currentY);
+
+            doc.setFont("helvetica", "bold");
+            doc.text("Marca:", rightX, currentY);
+            doc.setFont("helvetica", "normal");
+            doc.text(bitacora.marca ? bitacora.marca : "N/A", rightLabelAlignment - 2, currentY);
+
+            const accesoriosHeight = (accesoriosLines.length - 1) * 4;
+            const accesoriosBlockHeight = Math.max(6, accesoriosHeight + 6); 
+            currentY += accesoriosBlockHeight;
+            
+            if (bitacora.estado_fisico) {
+                doc.setFont("helvetica", "bold");
+                doc.text("Estado Equipo:", leftX, currentY);
+                doc.setFont("helvetica", "normal");
+                
+                const estadoCompleto = bitacora.estado_fisico;
+                const maxWidth = 170 - (labelAlignment - leftX);
+                const lines = doc.splitTextToSize(estadoCompleto, maxWidth);
+                doc.text(lines[0], labelAlignment, currentY);
+
+                if (lines.length > 1) {
+                    for (let i = 1; i < lines.length; i++) {
+                        currentY += 4;
+                        doc.text(lines[i], leftX, currentY);
+                    }
+                }
+
+                currentY += 6;
+            }
+
+            if (bitacora.falla_detectada) {
+                doc.setFont("helvetica", "bold");
+                doc.text("Fallas Encontradas:", leftX, currentY);
+                doc.setFont("helvetica", "normal");
+                
+                const fallaCompleta = bitacora.falla_detectada;
+                const maxWidth = 170 - (labelAlignment - leftX);
+                const lines = doc.splitTextToSize(fallaCompleta, maxWidth);
+                doc.text(lines[0], labelAlignment+8, currentY);
+                
+                if (lines.length > 1) {
+                    for (let i = 1; i < lines.length; i++) {
+                        currentY += 4;
+                        doc.text(lines[i], leftX, currentY);
+                    }
+                }
+
+                currentY += 6;
+            }
+
+
+        }
+
+        return currentY;
+        
+    }
+
+
     private static async renderFirmas(doc: jsPDF, startY: number, firmaTecnico: Firma | null, firmaCliente: Firma | null, bitacora: BitacoraConRelaciones): Promise<number> {
         
-        let currentY = startY;
+        let currentY = startY-2;
         
-        doc.setFontSize(14);
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
         doc.text("FIRMAS DE AUTORIZACIÓN", 20, currentY);
 
-        currentY += 10;
+        currentY += 7;
         
         const firmaWidth = 60;
         const firmaHeight = 30;
@@ -378,13 +496,13 @@ export class FirmaReporteService {
                     firmaBase64 = `data:image/png;base64,${firmaBase64}`;
                 }
                 
-                doc.addImage(firmaBase64, 'PNG', leftX, currentY, firmaWidth, firmaHeight);
+                doc.addImage(firmaBase64, 'PNG', leftX, currentY-3, firmaWidth, firmaHeight);
 
             } catch {
 
                 doc.setFontSize(20);
                 doc.setFont("helvetica", "normal");
-                doc.text("-", leftX + firmaWidth/2, currentY + firmaHeight/2);
+                doc.text("-", leftX + firmaWidth/2, currentY-3 + firmaHeight/2);
 
             }
 
@@ -392,7 +510,7 @@ export class FirmaReporteService {
 
             doc.setFontSize(20);
             doc.setFont("helvetica", "normal");
-            doc.text("-", leftX + firmaWidth/2, currentY + firmaHeight/2);
+            doc.text("-", leftX + firmaWidth/2, currentY-3 + firmaHeight/2);
 
         }
         
@@ -405,13 +523,13 @@ export class FirmaReporteService {
                     firmaBase64 = `data:image/png;base64,${firmaBase64}`;
                 }
                 
-                doc.addImage(firmaBase64, 'PNG', rightX, currentY, firmaWidth, firmaHeight);
+                doc.addImage(firmaBase64, 'PNG', rightX, currentY-3, firmaWidth, firmaHeight);
 
             } catch {
 
                 doc.setFontSize(20);
                 doc.setFont("helvetica", "normal");
-                doc.text("-", rightX + firmaWidth/2, currentY + firmaHeight/2);
+                doc.text("-", rightX + firmaWidth/2, currentY-3 + firmaHeight/2);
 
             }
 
@@ -419,11 +537,11 @@ export class FirmaReporteService {
 
             doc.setFontSize(20);
             doc.setFont("helvetica", "normal");
-            doc.text("-", rightX + firmaWidth/2, currentY + firmaHeight/2);
+            doc.text("-", rightX + firmaWidth/2, currentY-3 + firmaHeight/2);
 
         }
         
-        currentY += firmaHeight + 5;
+        currentY += firmaHeight + 3;
         
         doc.setLineWidth(0.5);
         doc.line(leftX, currentY, leftX + firmaWidth, currentY);
@@ -441,7 +559,7 @@ export class FirmaReporteService {
         doc.text(firmaTextoTecnico, leftX + (firmaWidth - firmaTextoTecnicoWidth) / 2, currentY);
         doc.text(firmaTextoResponsable, rightX + (firmaWidth - firmaTextoResponsableWidth) / 2, currentY);
         
-        currentY += 10;
+        currentY += 7;
         
         doc.setFontSize(9);
         doc.setFont("helvetica", "normal");
@@ -471,7 +589,7 @@ export class FirmaReporteService {
         doc.text(nombreTextoTecnico, leftX + (firmaWidth - nombreTextoTecnicoWidth) / 2, currentY);
         doc.text(nombreTextoResponsable, rightX + (firmaWidth - nombreTextoResponsableWidth) / 2, currentY);
         
-        return currentY + 10;
+        return currentY + 5;
 
     }
 

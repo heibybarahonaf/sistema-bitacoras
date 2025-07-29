@@ -47,6 +47,15 @@ model Bitacora {
   horas_consumidas       Int
   monto                  Int?
   tipo_horas             String              @db.VarChar(25)
+  fecha_visita_siguiente DateTime?
+  millaje                String?
+  cantidad_impresiones   String?      
+  marca                  String?
+  modelo                 String?
+  no_serie               String?
+  estado_fisico          String?      
+  falla_detectada        String?        
+  accesorios             String?   
   createdAt              DateTime            @default(now())
   updatedAt              DateTime            @default(now())
   cliente                Cliente             @relation(fields: [cliente_id], references: [id])
