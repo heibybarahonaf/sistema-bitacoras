@@ -42,60 +42,79 @@ export default function ModalDetalleBitacora({
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
   const [firmaClienteImg, setFirmaClienteImg] = useState<string | null>(null);
   const [firmaClienteUrl, setFirmaClienteUrl] = useState<string | null>(null);
+  const [nombreTecnico, setNombreTecnico] = useState<string>("Cargando...");
   const [noSoportaClipboard, setNoSoportaClipboard] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let isMounted = true;
-
-    const cargarFirmas = async () => {
-      if (!bitacora) return;
-
-      try {
-        const usuarioId = bitacora.usuario_id;
-        const res = await fetch(`/api/firmas/tecnico/${usuarioId}`);
-        const data = await res.json();
-        const base64 = data.results?.[0]?.firma_base64;
-
-        if (isMounted && base64) setFirmaTecnicoImg(base64);
-
-        // Firma cliente (base64 o URL)
-        if (isMounted) {
-          const firmaCliente = bitacora.firmaCliente;
-          if (firmaCliente?.firma_base64) {
-            setFirmaClienteImg(firmaCliente.firma_base64);
-            setFirmaClienteUrl(null);
-          } else if (firmaCliente?.url) {
-            setFirmaClienteImg(null);
-            setFirmaClienteUrl(firmaCliente.url);
-          }
-        }
-
-      } catch {
-
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "error",
-          title: "Error cargando firmas",
-        });
-        
-      }
-    };
-
+    
     if (isOpen && bitacora) {
       setFirmaTecnicoImg(null);
+      setNombreTecnico("Cargando...");
       setFirmaClienteImg(null);
       setFirmaClienteUrl(null);
-      setNoSoportaClipboard(false);
-      cargarFirmas();
+      
+      cargarDatos(isMounted);
     }
 
     return () => {
       isMounted = false;
     };
   }, [bitacora, isOpen]);
+
+  const cargarDatos = async (isMounted: boolean) => {
+    if (!bitacora) return;
+
+    try {
+      const usuarioId = bitacora.usuario_id;
+      const [firmaResponse, tecnicoResponse] = await Promise.all([
+        fetch(`/api/firmas/tecnico/${usuarioId}`),
+        fetch(`/api/usuarios/nombre/${usuarioId}`) 
+      ]);
+
+      /*if (!firmaResponse.ok || !tecnicoResponse.ok) {
+        throw new Error('Error en las respuestas');
+      }*/
+
+      const [firmaData, tecnicoData] = await Promise.all([
+        firmaResponse.json(),
+        tecnicoResponse.json()
+      ]);
+
+      if (isMounted) {
+        setFirmaTecnicoImg(firmaData.results?.[0]?.firma_base64 || null);
+        
+        const nombre = tecnicoData.results[0];
+        setNombreTecnico(nombre || "Técnico no encontrado");
+
+        const firmaCliente = bitacora.firmaCliente;
+        if (firmaCliente?.firma_base64) {
+          setFirmaClienteImg(firmaCliente.firma_base64);
+          setFirmaClienteUrl(null);
+        } else if (firmaCliente?.url) {
+          setFirmaClienteImg(null);
+          setFirmaClienteUrl(firmaCliente.url);
+        }
+      }
+
+    } catch {
+     
+      if (isMounted) {
+        setNombreTecnico("Error al cargar");
+        setFirmaTecnicoImg(null);
+
+        Swal.fire({
+          toast: true,
+          position: "top-end",
+          icon: "error",
+          title: "Error cargando datos",
+        });
+      }
+
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -262,28 +281,30 @@ export default function ModalDetalleBitacora({
         )}
 
         {/* Descripción y comentarios (ancho completo) */}
-        <div className="mt-6">
-          <div className="mt-4">
-            <span className="font-semibold text-gray-800">Descripción:</span>
-            <p className="mt-1 whitespace-pre-wrap break-words text-gray-700">
-              {bitacora.descripcion_servicio}
-            </p>
-          </div>
-
-          {bitacora.comentarios && (
+        <div className="text-gray-700 text-sm sm:text-base">
+          <div className="mt-6">
             <div className="mt-4">
-              <span className="font-semibold text-gray-800">Comentarios:</span>
-              <p className="mt-1 whitespace-pre-wrap break-words text-gray-700">
-                {bitacora.comentarios}
+              <span className="font-semibold text-gray-800">Descripción:</span>
+              <p className="mt-1 whitespace-pre-wrap break-words">
+                {bitacora.descripcion_servicio}
               </p>
             </div>
-          )}
+
+            {bitacora.comentarios && (
+              <div className="mt-4">
+                <span className="font-semibold text-gray-800">Comentarios:</span>
+                <p className="mt-1 whitespace-pre-wrap break-words">
+                  {bitacora.comentarios}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
           {/* Firma Técnico */}
           <div className="flex flex-col items-center">
-            <span className="font-semibold text-gray-800 mb-2">Firma del Técnico</span>
+            
             {firmaTecnicoImg ? (
               <img
                 src={firmaTecnicoImg}
@@ -291,13 +312,15 @@ export default function ModalDetalleBitacora({
                 className="border-b border-gray-400 max-w-xs w-full object-contain"
               />
             ) : (
-              <span className="text-red-600">Firma pendiente</span>
+              <span className="text-red-600 text-sm">Firma pendiente</span>
             )}
+            <span className="font-semibold text-sm text-gray-800 mb-2">Firma del Técnico</span>
+            <span className="font-normal text-gray-800 text-sm mb-2">{nombreTecnico}</span>
           </div>
 
           {/* Firma Cliente */}
           <div className="flex flex-col items-center">
-            <span className="font-semibold text-gray-800 mb-2">Firma del Cliente</span>
+            
             {firmaClienteImg ? (
               <img
                 src={firmaClienteImg}
@@ -306,7 +329,7 @@ export default function ModalDetalleBitacora({
               />
             ) : firmaClienteUrl ? (
               <div className="text-center">
-                <span className="text-red-600 font-semibold block mb-2">⚠️ PENDIENTE</span>
+                <span className="text-red-600 text-sm font-semibold block mb-2">⚠️ PENDIENTE</span>
                 <p className="text-sm text-gray-700 mb-2">El cliente aún no ha firmado.</p>
 
                 {noSoportaClipboard ? (
@@ -335,6 +358,7 @@ export default function ModalDetalleBitacora({
             ) : (
               <span className="text-red-600">⚠️ pendiente</span>
             )}
+            <span className="font-semibold text-gray-800 text-sm mb-2">Firma del Cliente</span>
           </div>
         </div>
 

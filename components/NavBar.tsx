@@ -11,11 +11,11 @@ import {
 import Swal from "sweetalert2";
 
 export default function Navbar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [userName, setUserName] = useState("@");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [userName, setUserName] = useState("@");
-  const pathname = usePathname();
-  const router = useRouter();
 
   const isActive = (path: string) => pathname === path;
 
