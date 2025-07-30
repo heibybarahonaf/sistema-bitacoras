@@ -75,7 +75,7 @@ export default function CardReporte({
  
         setUsuarios([]);
       }
-    } catch (error) {
+    } catch {
 
       Swal.fire({
         toast: true,

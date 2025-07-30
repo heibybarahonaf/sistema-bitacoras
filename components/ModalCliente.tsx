@@ -7,7 +7,7 @@ interface ModalProps {
 }
 
 export default function ModalCliente({ isOpen, onClose, children }: ModalProps) {
-  // Cerrar con ESC
+
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();

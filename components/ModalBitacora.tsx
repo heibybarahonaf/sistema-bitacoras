@@ -163,7 +163,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   equipos,
   tipoServicio,
 }) => {
-  // Estado para controlar si es bitácora normal o especial
   const [tipoBitacora, setTipoBitacora] = useState<"normal" | "especial" | "">("");
   
   // Campos comunes
@@ -230,9 +229,9 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         const res = await fetch("/api/auth/obtener-sesion", {
           credentials: "include",
         });
-        
+
         if (!res.ok) throw new Error("No se pudo obtener la sesión del usuario");
-        
+
         const data = await res.json();
         const tecnicoId = Number(data.results[0].id);
         setUsuarioId(tecnicoId);
@@ -242,27 +241,31 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           const firmaRes = await fetch(`/api/firmas/tecnico/${tecnicoId}`);
           const firmaData = await firmaRes.json();
 
-          if (firmaData.code !== 200) {
-            return;
-          }
+          if (firmaData.code !== 200) return;
 
-          const firma = firmaData.results?.[0];
-          const firmaBase64 = firma?.firma_base64;
+          const firmaBase64 = firmaData.results?.[0]?.firma_base64;
+          if (!firmaBase64) return;
 
-          if (!firmaBase64) {
-            return;
-          }
+          const intervalId = setInterval(() => {
+            const canvas = sigCanvas.current?.getCanvas();
+            if (canvas && canvas.width > 0 && canvas.height > 0) {
+              const ctx = canvas.getContext("2d");
+              const image = new Image();
 
-          if (sigCanvas.current) {
-            const canvas = sigCanvas.current.getCanvas();
-            const ctx = canvas.getContext("2d");
-            const image = new Image();
-            image.onload = () => {
-              ctx?.clearRect(0, 0, canvas.width, canvas.height);
-              ctx?.drawImage(image, 0, 0, canvas.width, canvas.height);
-            };
-            image.src = firmaBase64;
-          }
+              image.onload = () => {
+                ctx?.clearRect(0, 0, canvas.width, canvas.height);
+                ctx?.drawImage(image, 0, 0, canvas.width, canvas.height);
+              };
+
+              image.onerror = () => {
+                //console.error("Error al cargar la imagen de la firma");
+              };
+
+              image.src = firmaBase64;
+
+              clearInterval(intervalId); 
+            }
+          }, 100);
         }
       } catch {
         Swal.fire(
@@ -331,7 +334,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           title: "Error verificando firma remota",
         });
       }
-    }, 10000); // cada 10s
+    }, 10000);
 
     return () => clearInterval(intervalo);
   }, [firmaClienteRemotaId]);
@@ -352,7 +355,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
       if (!faseImplementacionId) throw new Error("Fase de implementación es obligatoria");
       if (!descripcionServicio) throw new Error("Descripción del servicio es obligatoria");
 
-      // Firma cliente solo si modalidad presencial
       if ((modalidad === "Presencial" || modalidad === "En Oficina") && sigCanvasCliente.current?.isEmpty()) {
         throw new Error("Por favor, capture la firma del cliente.");
       }
@@ -418,9 +420,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         }),
       };
 
-      console.log("Nueva bitácora:", newBitacora);
-
-      // Guardar bitácora
       const res = await fetch("/api/bitacoras", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -545,7 +544,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
     }
   };
 
-  // Si no se ha seleccionado el tipo de bitácora, mostramos la selección
   if (!tipoBitacora) {
     return (
       <div className="fixed inset-0 text-xs bg-black bg-opacity-40 flex items-center justify-center z-50 p-4 overflow-auto">
