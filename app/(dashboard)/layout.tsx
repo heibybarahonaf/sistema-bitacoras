@@ -1,6 +1,5 @@
-// app/dashboard/layout.tsx (o donde esté ubicado tu layout)
-import type { Metadata } from "next";
 import "../globals.css";
+import type { Metadata } from "next";
 import Navbar from "@/components/NavBar";
 import AlertaExpiracionSesion from "@/components/AlertaExpiracionSesion";
 

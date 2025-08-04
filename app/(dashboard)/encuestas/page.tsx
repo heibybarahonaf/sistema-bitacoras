@@ -4,6 +4,7 @@ import axios from "axios";
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import { useEffect, useState } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 interface Pregunta {
   id: number;
@@ -26,6 +27,7 @@ export default function CrearEncuestaPage() {
 
   const [titulo, setTitulo] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const [cargando, setCargando] = useState(false);
   const [descripcion, setDescripcion] = useState("");
 
@@ -35,6 +37,8 @@ export default function CrearEncuestaPage() {
   useEffect(() => {
 
     const fetchDatosIniciales = async () => {
+      setCargando(true);
+
       try {
         const [resPreguntas, resEncuesta] = await Promise.all([
           axios.get("/api/preguntas"),
@@ -76,6 +80,8 @@ export default function CrearEncuestaPage() {
         }
       } catch {
         setMensaje("Error al cargar datos iniciales");
+      } finally {
+        setCargando(false);
       }
     };
 
@@ -93,7 +99,7 @@ export default function CrearEncuestaPage() {
       return;
     }
 
-    setCargando(true);
+    setIsSaving(true);
 
     try {
 
@@ -122,7 +128,7 @@ export default function CrearEncuestaPage() {
     } catch (error: any) {
       mostrarToast("error", error?.response?.data?.message || "Error al guardar encuesta");
     } finally {
-      setCargando(false);
+      setIsSaving(false);
     }
   };
 
@@ -135,6 +141,8 @@ export default function CrearEncuestaPage() {
     setPreguntasDisponibles((prev) => [...prev, pregunta]);
     setPreguntasAsociadas((prev) => prev.filter((p) => p.id !== pregunta.id));
   };
+
+  if(cargando) return <LoadingSpinner mensaje="Cargando encuesta..."/>;
 
   return (
     <div className="max-w-3xl mx-auto p-6 mb-24 relative">
@@ -150,19 +158,19 @@ export default function CrearEncuestaPage() {
           placeholder="Título de la encuesta"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
-          className="w-full px-3 py-2 border rounded text-xs"
+          className="w-full px-3 py-2 border rounded text-sm"
         />
         <h2 className="font-semibold mb-2">Descripción</h2>
         <textarea
           placeholder="Descripción de la encuesta"
           value={descripcion}
           onChange={(e) => setDescripcion(e.target.value)}
-          className="w-full px-3 py-2 border rounded text-xs"
+          className="w-full px-3 py-2 border rounded text-sm"
         />
         <div className="flex items-center justify-between">
           <Link
             href="/preguntas"
-            className="text-xs text-blue-600 hover:underline border px-3 py-1 rounded"
+            className="text-sm text-blue-600 hover:underline border px-3 py-1 rounded"
           >
             + Crear Pregunta
           </Link>
@@ -177,7 +185,7 @@ export default function CrearEncuestaPage() {
           {preguntasAsociadas.length === 0 && <p>No hay preguntas asociadas</p>}
           <ul>
             {preguntasAsociadas.map((p) => (
-              <li key={p.id} className="flex justify-between items-center border p-2 rounded mb-1 text-xs">
+              <li key={p.id} className="flex justify-between items-center border p-2 rounded mb-1 text-sm">
                 <span>{p.pregunta}</span>
                 <button
                   onClick={() => quitarPregunta(p)}
@@ -196,7 +204,7 @@ export default function CrearEncuestaPage() {
           {preguntasDisponibles.length === 0 && <p>No hay preguntas disponibles</p>}
           <ul>
             {preguntasDisponibles.map((p) => (
-              <li key={p.id} className="flex justify-between items-center border p-2 rounded mb-1 text-xs">
+              <li key={p.id} className="flex justify-between items-center border p-2 rounded mb-1 text-sm">
                 <span>{p.pregunta}</span>
                 <button
                   onClick={() => agregarPregunta(p)}
@@ -214,11 +222,15 @@ export default function CrearEncuestaPage() {
       <div className="mt-6">
         <button
           onClick={guardarCambios}
-          disabled={cargando}
-          className="bg-[#295d0c] text-white text-xs px-5 py-2 rounded hover:bg-[#23480a]"
-        >
-          Guardar
-        </button>
+          disabled={isSaving}
+              className={`px-6 py-2 text-sm rounded-md font-semibold transition ${
+                isSaving
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-[#295d0c] text-white hover:bg-[#23480a]"
+              }`}
+            >
+              {isSaving ? "Guardando..." : "Guardar"}
+            </button>
       </div>
 
       {/* Toast personalizado */}

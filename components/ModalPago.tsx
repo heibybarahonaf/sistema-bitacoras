@@ -40,6 +40,7 @@ export default function ModalPago({
   const [cantHoras, setCantHoras] = useState(0);
 
   const [cliente, setCliente] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const [noFactura, setNoFactura] = useState("");
   const [detallePago, setDetallePago] = useState("");
   const [tipoHoras, setTipoHoras] = useState("Paquete");
@@ -161,76 +162,83 @@ export default function ModalPago({
   }, [cantHoras, tipoHoras, config]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const confirmacion = await Swal.fire({
-    title: "¿Registrar pago?",
-    html: `¿Estás seguro de registrar este pago de <b>${cantHoras} horas</b> como tipo <b>${tipoHoras}</b>?`,
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "Sí, guardar",
-    cancelButtonText: "Cancelar",
-    confirmButtonColor: "#295d0c",
-    cancelButtonColor: "#d33",
-  });
+    const confirmacion = await Swal.fire({
+      title: "¿Registrar pago?",
+      html: `¿Estás seguro de registrar este pago de <b>${cantHoras} horas</b> como tipo <b>${tipoHoras}</b>?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí, guardar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#295d0c",
+      cancelButtonColor: "#d33",
+    });
 
-  if (!confirmacion.isConfirmed) return;
+    if (!confirmacion.isConfirmed) return;
 
-  const datosPago = {
-    cliente_id: clienteId,
-    usuario_id: usuario.id,
-    no_factura: noFactura,
-    forma_pago: formaPago,
-    detalle_pago: detallePago,
-    monto,
-    tipo_horas: tipoHoras,
-    cant_horas: parseInt(String(cantHoras), 10),
+    setIsSaving(true); 
+
+    const datosPago = {
+      cliente_id: clienteId,
+      usuario_id: usuario.id,
+      no_factura: noFactura,
+      forma_pago: formaPago,
+      detalle_pago: detallePago,
+      monto,
+      tipo_horas: tipoHoras,
+      cant_horas: parseInt(String(cantHoras), 10),
+    };
+
+    const url = pago ? `/api/pagos/${pago.id}` : "/api/pagos";
+    const method = pago ? "PATCH" : "POST";
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datosPago),
+      });
+
+      if (res.ok) {
+        Swal.fire({
+          icon: "success",
+          title: "Éxito",
+          text: "Pago registrado correctamente",
+          confirmButtonColor: "#16a34a",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+
+        onGuardar();
+        onClose();
+      } else if (res.status === 403) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "No tienes permiso para realizar esta acción!",
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "No se permiten facturas duplicadas!",
+        });
+      }
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error al guardar el pago",
+      });
+      
+    } finally {
+      setIsSaving(false); 
+    }
   };
 
-  const url = pago ? `/api/pagos/${pago.id}` : "/api/pagos";
-  const method = pago ? "PATCH" : "POST";
-
-  const res = await fetch(url, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datosPago),
-  });
-
-  if (res.ok) {
-
-    Swal.fire({
-      icon: "success",
-      title: "Éxito",
-      text: "Pago registrado correctamente",
-      confirmButtonColor: "#16a34a",
-      timer: 3000,
-      showConfirmButton: false,
-    });
-
-    onGuardar();
-    onClose();
-
-  } else if (res.status === 403) {
-
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "No tienes permiso para realizar esta acción!",
-    });
-
-  } else {
-
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "No se permiten facturas duplicadas!",
-    });
-  }
-
-};
-
   return (
-    <div className="fixed text-xs inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="fixed text-sm inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <h2 className="text-lg font-bold mb-6 text-gray-900">
           {pago ? "Editar Pago" : "Registrar Pago de Horas"}
@@ -366,9 +374,14 @@ export default function ModalPago({
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a] transition"
+              disabled={isSaving}
+              className={`px-6 py-2 rounded-md font-semibold transition ${
+                isSaving
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-[#295d0c] text-white hover:bg-[#23480a]"
+              }`}
             >
-              {pago ? "Guardar Cambios" : "Guardar"}
+              {isSaving ? "Guardando..." : pago ? "Guardar" : "Guardar"}
             </button>
           </div>
         </form>

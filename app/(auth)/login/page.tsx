@@ -267,7 +267,6 @@ export default function LoginInterface() {
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                         <>
-                        <Send className="w-5 h-5" />
                         Solicitar Código
                         </>
                     )}
@@ -357,7 +356,6 @@ export default function LoginInterface() {
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                     <>
-                        <LogIn className="w-5 h-5" />
                         Ingresar
                     </>
                     )}

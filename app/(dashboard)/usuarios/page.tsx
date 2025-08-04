@@ -4,9 +4,12 @@ import Swal from "sweetalert2";
 import { useRef } from "react";
 import { Usuario } from "@prisma/client";
 import ModalUsuario from "@/components/ModalUsuario";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import SignatureCanvas from "react-signature-canvas";
 import { useEffect, useState, useCallback } from "react";
-import { Trash2, Users, Edit3, Plus } from "lucide-react";
+import PaginationButtons from "@/components/PaginationButtons";
+import { Trash2, Users, Edit3, Plus, RefreshCw } from "lucide-react";
+import { TableHeader, TableCell } from "@/components/TableComponents";
 
 interface ErrorDeValidacion {
   code: number;
@@ -24,19 +27,10 @@ interface PaginationMeta {
   totalPages: number;
 }
 
-// Componente Spinner carga
-const LoadingSpinner = () => (
-  <div className="flex flex-col items-center justify-center py-12">
-    <div className="relative">
-      <div className="w-12 h-12 border-4 border-gray-200 border-t-[#295d0c] rounded-full animate-spin"></div>
-    </div>
-    <p className="mt-4 text-gray-600 font-medium">Cargando usuarios...</p>
-  </div>
-);
-
 export default function UsuariosPage() {
 
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [showEmptyMessage, setShowEmptyMessage] = useState(false);
@@ -51,7 +45,6 @@ export default function UsuariosPage() {
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
   const [meta, setMeta] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0});
 
-  // Detectar cliente para evitar render server
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -232,6 +225,8 @@ export default function UsuariosPage() {
         return;
     }
 
+    setIsSaving(true);
+
     const formData = new FormData(event.currentTarget);
     const valorComision = formData.get("comision") as string;
     const comision = valorComision && valorComision.trim() !== "" ? Number(valorComision) : 15;
@@ -298,6 +293,8 @@ export default function UsuariosPage() {
         confirmButtonColor: "#295d0c",
       });
 
+    } finally{
+      setIsSaving(false);
     }
   }
 
@@ -374,6 +371,7 @@ export default function UsuariosPage() {
   async function handleEditarCliente(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!usuarioEditar) return;
+    setIsSaving(true);
 
     const formData = new FormData(event.currentTarget);
     const usuarioActualizado: any = {
@@ -431,7 +429,7 @@ export default function UsuariosPage() {
       setModalOpen(false);
       setUsuarioEditar(null);
 
-    } catch (error) {
+    } catch {
 
       Swal.fire({
         icon: "error",
@@ -440,151 +438,139 @@ export default function UsuariosPage() {
         confirmButtonColor: "#295d0c",
       });
 
+    } finally{
+      setIsSaving(false);
     }
   }
 
-  if (!isClient) return <LoadingSpinner />;
+  if (!isClient) return <LoadingSpinner mensaje="Cargando usuarios..." />;
   
   return (
-    <div className="p-6 bg-white min-h-screen">
-      <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
-        <Users className="w-8 h-8 text-[#295d0c]" />
-        Gestión de Usuarios
-      </h1>
+    <div className="w-full p-6 pb-20 min-h-screen bg-gray-50">
+      {/* Encabezado */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-3 mb-2">
+          <Users className="w-6 h-6 text-emerald-700" />
+          Gestión de Usuarios
+        </h1>
+        <div className="border-b border-gray-200"></div>
+      </div>
 
-      <div className="flex flex-col text-xs sm:flex-row justify-between items-center mb-6 gap-4">
-        <input
-          type="text"
-          placeholder="Buscar por nombre de usuario..."
-          value={filtroNombre}
-          onChange={(e) => setFiltroNombre(e.target.value)}
-          className="w-full sm:w-1/2 border border-gray-300 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-        />
+      {/* Búsqueda y botón agregar */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <div className="relative flex-grow">
+          <input
+            type="text"
+            placeholder="Buscar por nombre de usuario..."
+            value={filtroNombre}
+            onChange={(e) => setFiltroNombre(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition shadow-sm"
+          />
+        </div>
         <button
           onClick={() => {
             setUsuarioEditar(null);
             setModalOpen(true);
           }}
-          className="text-sm flex items-center gap-1.5 sm:gap-2 bg-[#295d0c] text-white px-3 py-2 sm:px-5 sm:py-3 rounded-md text-xs sm:text-sm hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+          className="px-4 py-2.5 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors flex items-center gap-2"
         >
-          <Plus className="w-5 h-5 text-sm" />
+          <Plus className="w-4 h-4" />
           Agregar Usuario
         </button>
       </div>
 
       {loading ? (
-        <LoadingSpinner />
+        <LoadingSpinner mensaje="Cargando usuarios..." />
       ) : usuarios.length === 0 && showEmptyMessage ? (
-        <div className="text-center text-sm py-12">
-          <div className="text-gray text-sm-400 text-6xl mb-4">👥</div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <div className="text-gray-400 text-6xl mb-4">👥</div>
           <p className="text-gray-600 text-lg">No hay usuarios registrados.</p>
           <p className="text-gray-500 text-sm mt-2">
             Haz clic en "Agregar Usuario" para comenzar.
           </p>
         </div>
       ) : usuarios.length > 0 ? (
-        <>
-          <div className=" text-sm">
-            <table className="w-full table-auto border-collapse">
-              <thead className="bg-gray-100">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-2 sm:px-4 py-3 text-left">Nombre</th>
-                  <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">
-                    Correo
-                  </th>
-                  <th className="px-2 sm:px-4 py-3 text-left">Rol</th>
-                  <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">
-                    Zona
-                  </th>
-                  <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">
-                    Teléfono
-                  </th>
-                  <th className="px-2 sm:px-4 py-3 text-left">Comisión</th>
-                  <th className="px-2 sm:px-4 py-3 text-left">Activo</th>
-                  <th className="px-2 sm:px-4 py-3 text-center">Acciones</th>
+                  <TableHeader>Nombre</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Correo</TableHeader>
+                  <TableHeader>Rol</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Zona</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Teléfono</TableHeader>
+                  <TableHeader>Comisión</TableHeader>
+                  <TableHeader>Activo</TableHeader>
+                  <TableHeader>Acciones</TableHeader>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="bg-white divide-y divide-gray-200">
                 {usuarios.map((usuario) => (
-                  <tr key={usuario.id} className="hover:bg-gray-50">
-                    <td className="px-2 sm:px-4 py-3">{usuario.nombre}</td>
-                    <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
-                      {usuario.correo}
-                    </td>
-                    <td className="px-2 sm:px-4 py-3">{usuario.rol}</td>
-                    <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
-                      {usuario.zona_asignada}
-                    </td>
-                    <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
+                  <tr key={usuario.id} className="hover:bg-gray-50 transition-colors">
+                    <TableCell>{usuario.nombre}</TableCell>
+                    <TableCell className="hidden md:table-cell">{usuario.correo}</TableCell>
+                    <TableCell>{usuario.rol}</TableCell>
+                    <TableCell className="hidden md:table-cell">{usuario.zona_asignada}</TableCell>
+                    <TableCell className="hidden md:table-cell">
                       {formatearTelefono(usuario.telefono)}
-                    </td>
-                    <td className="px-2 sm:px-4 py-3">{usuario.comision}%</td>
-                    <td className="px-2 sm:px-4 py-3 text-center">
-                      {usuario.activo ? "✅" : "❌"}
-                    </td>
-                    <td className="px-2 sm:px-4 py-3 text-center">
-                      <div className="flex justify-center items-center gap-3">
+                    </TableCell>
+                    <TableCell>{usuario.comision}%</TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        usuario.activo 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {usuario.activo ? "Activo" : "Inactivo"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center gap-2">
                         <button
                           onClick={() => abrirEditarUsuario(usuario)}
-                          className="mr-2 text-[#295d0c] hover:text-[#173a01]"
+                          className="text-gray-600 hover:text-emerald-600 transition-colors p-1 rounded-full hover:bg-emerald-50"
+                          title="Editar usuario"
                         >
-                          <Edit3 />
+                          <Edit3 className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => handleEliminarUsuario(usuario.id)}
-                          className="text-[#2e3763] hover:text-[#171f40]"
+                          className="text-gray-600 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-red-50"
+                          title="Eliminar usuario"
                         >
-                          <Trash2 />
+                          <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
-                    </td>
+                    </TableCell>
                   </tr>
                 ))}
               </tbody>
+              
+              {/* Pie de tabla con paginación */}
+              {meta.totalPages > 0 && (
+                <tfoot className="bg-gray-50">
+                  <tr>
+                    <td colSpan={8} className="px-6 py-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div className="text-xs text-gray-600">
+                          Página {meta.page} de {meta.totalPages} ({meta.total} total)
+                        </div>
+                        <div className="flex space-x-1">
+                          <PaginationButtons
+                            currentPage={meta.page}
+                            totalPages={meta.totalPages}
+                            onPageChange={setPaginaActual}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
-
-          {/* Controles de paginación */}
-          <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-xs text-gray-600">
-              Página {meta.page} de {meta.totalPages} ({meta.total} total)
-            </div>
-            <div className="flex justify-center items-center gap-2">
-              <button
-                onClick={() => setPaginaActual(1)}
-                disabled={meta.page === 1}
-                className="px-3 py-1 text-xs rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Primera
-              </button>
-              <button
-                onClick={() => setPaginaActual(meta.page - 1)}
-                disabled={meta.page === 1}
-                className="px-3 py-1 rounded text-xs border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Anterior
-              </button>
-              <span className="px-3 py-1 bg-[#295d0c] text-xs text-white rounded font-medium">
-                {meta.page}
-              </span>
-              <button
-                onClick={() => setPaginaActual(meta.page + 1)}
-                disabled={meta.page === meta.totalPages}
-                className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Siguiente
-              </button>
-              <button
-                onClick={() => setPaginaActual(meta.totalPages)}
-                disabled={meta.page === meta.totalPages}
-                className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Última
-              </button>
-            </div>
-          </div>
-
-        </>
+        </div>
       ) : null}
 
       {/* Modal para agregar/editar usuario */}
@@ -735,30 +721,40 @@ export default function UsuariosPage() {
                 }}
               />
             </div>
-            <div className="flex justify-center">
+            <div className="mt-2 flex justify-center gap-2">
               <button
                 type="button"
-                onClick={() => firmaRef.current?.clear()}
-                className="px-3 py-1 bg-red-600 text-xs text-white rounded hover:bg-red-700 transition"
+                onClick={() => {
+                  if (firmaRef.current) {
+                    firmaRef.current.clear();
+                  }
+                }}
+                className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition flex items-center gap-1"
               >
+                <RefreshCw className="w-4 h-4" />
                 Limpiar
               </button>
             </div>
           </>
 
-          <div className="mt-6 flex justify-end space-x-4">
+          <div className="mt-6 flex text-sm justify-end space-x-4">
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="px-5 py-2 text-xs rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
+              className="px-5 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
+              disabled={isSaving}
+              className={`px-6 py-2 rounded-md font-semibold transition ${
+                isSaving
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "bg-[#295d0c] text-white hover:bg-[#23480a]"
+              }`}
             >
-              {usuarioEditar ? "Actualizar" : "Guardar"}
+              {isSaving ? "Guardando..." : usuarioEditar ? "Guardar" : "Guardar"}
             </button>
           </div>
         </form>

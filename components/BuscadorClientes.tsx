@@ -2,10 +2,13 @@
 
 import Swal from "sweetalert2";
 import ModalPago from "@/components/ModalPago";
-import { Eye, Notebook, Download } from "lucide-react";
+import { Eye, Notebook, Download, ChevronLeft } from "lucide-react";
 import FormNuevaBitacora from "@/components/ModalBitacora";
+import LoadingSpinner from "./LoadingSpinner";
 import React, { useEffect, useState, useCallback } from "react";
 import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
+import { TableHeader, TableCell } from "@/components/TableComponents";
+import PaginationButtons from "@/components/PaginationButtons";
 import { Bitacora, Cliente, Sistema, Equipo, Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
 
 interface PaginationMeta {
@@ -15,14 +18,33 @@ interface PaginationMeta {
   totalPages: number;
 }
 
+interface BitacoraConRelaciones extends Bitacora {
+  firmaCliente?: {
+    firma_base64?: string;
+    url?: string;
+  };
+  sistema?: {
+    sistema: string;
+  } | null;
+  equipo?: {
+    equipo: string;
+  } | null;
+  tipo_servicio?: {
+    tipo_servicio: string;
+  } | null;
+  fase_implementacion?: {
+    fase: string;
+  } | null;
+}
+
 const BuscarCliente: React.FC = () => {
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [bitacoras, setBitacoras] = useState<Bitacora[]>([]);
+  const [bitacoras, setBitacoras] = useState<BitacoraConRelaciones[]>([]);
   const [tipo_servicio, setTipoServicio] = useState<Tipo_Servicio[]>([]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState<Cliente | null>(null);
-  const [bitacoraSeleccionada, setBitacoraSeleccionada] = useState<Bitacora | null>(null);
+  const [bitacoraSeleccionada, setBitacoraSeleccionada] = useState<BitacoraConRelaciones | null>(null);
   const [fase_implementacion, setFaseImplementacion] = useState<Fase_Implementacion[]>([]);
 
   const [showPago, setShowPago] = useState(false);
@@ -170,6 +192,7 @@ const BuscarCliente: React.FC = () => {
         }
 
         const data = await res.json();
+        console.log(data)
 
         if (data.code === 200) {
           setBitacoras(data.results || []);
@@ -222,12 +245,6 @@ const BuscarCliente: React.FC = () => {
         title: "Error al recargar cliente",
       });
 
-    }
-  };
-
-  const cambiarPaginaBitacoras = (nuevaPagina: number) => {
-    if (nuevaPagina >= 1 && nuevaPagina <= metaBitacoras.totalPages) {
-      setPaginaActualBitacoras(nuevaPagina);
     }
   };
 
@@ -398,427 +415,350 @@ const BuscarCliente: React.FC = () => {
   const bitacorasMostrar = bitacoras;
 
   return (
-    <div className="w-full p-6 pb-20 bg-white min-h-screen">
-      <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
-        <Notebook className="w-8 h-8 text-[#295d0c]" />
-        Gestión de Bitácoras
-      </h1>
+    <>
+      <div className="w-full p-6 pb-20 min-h-screen bg-gray-50" style={{ fontFamily: "'Poppins', sans-serif" }}>
+        {/* Encabezado */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-3 mb-2">
+            <Notebook className="w-6 h-6 text-emerald-700" />
+            Gestión de Bitácoras
+          </h1>
+          <div className="border-b border-gray-200"></div>
+        </div>
 
-      <h2 className="text-l font-bold mb-4">Buscar Cliente</h2>
-      <div className="flex flex-col text-xs sm:flex-row justify-between items-center mb-6 gap-4">
-        <input
-          type="text"
-          placeholder="Buscar por Empresa o RTN"
-          value={filtro}
-          onChange={(e) => setFiltro(e.target.value)}
-          className="w-full sm:w-1/2 border border-gray-300 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-        />
-      </div>
-
-      {clientesFiltrados.length > 0 && !clienteSeleccionado && (
-        <>
-          <table className="min-w-full table-auto border-collapse text-sm">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-2 sm:px-4 py-2 text-left ">Empresa</th>
-                <th className="px-2 sm:px-4 py-2 text-left">RTN</th>
-                <th className="px-2 sm:px-4 py-2 text-left"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientes.map((c) => (
-                <tr key={c.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 ">{c.empresa}</td>
-                  <td className="px-4 py-2 ">{c.rtn}</td>
-                  <td className="px-4 py-2 text-center ">
-                    <button
-                      onClick={() => setClienteSeleccionado(c)}
-                      className="mr-2 text-[#295d0c] hover:text-[#173a01]"
-                    >
-                      <Eye size={25} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-xs text-gray-600">
-              Mostrando {clientes.length} de {metaClientes.total} clientes
-              {filtroActual && ` para "${filtroActual}"`}
-            </div>
-            <div className="flex justify-center items-center gap-2">
-              <button
-                onClick={() => setPaginaActualClientes(1)}
-                disabled={metaClientes.page === 1}
-                className="px-3 py-1 rounded text-xs border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Primera
-              </button>
-              <button
-                onClick={() => setPaginaActualClientes(metaClientes.page - 1)}
-                disabled={metaClientes.page === 1}
-                className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Anterior
-              </button>
-              <span className="px-3 py-1 bg-[#295d0c] text-white text-xs rounded font-medium">
-                {metaClientes.page}
-              </span>
-              <button
-                onClick={() => setPaginaActualClientes(metaClientes.page + 1)}
-                disabled={metaClientes.page === metaClientes.totalPages}
-                className="px-3 py-1 rounded border border-gray-400 text-xs bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Siguiente
-              </button>
-              <button
-                onClick={() => setPaginaActualClientes(metaClientes.totalPages)}
-                disabled={metaClientes.page === metaClientes.totalPages}
-                className="px-3 py-1 rounded border border-gray-400 bg-white text-xs hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Última
-              </button>
+        {/* Búsqueda de clientes */}
+        <section className="mb-8">
+          <h2 className="text-lg font-medium text-gray-700 mb-4">Buscar Cliente</h2>
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-grow">
+              <input
+                type="text"
+                placeholder="Buscar por Empresa o RTN"
+                value={filtro}
+                onChange={(e) => setFiltro(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition shadow-sm"
+              />
             </div>
           </div>
-        </>
-      )}
 
-      {clienteSeleccionado && (
-        <>
-          <div className="mb-4">
+          {/* Lista de clientes */}
+          {clientes.length > 0 && !clienteSeleccionado && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Empresa
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        RTN
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {clientes.map((c) => (
+                      <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {c.empresa}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {c.rtn}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button
+                            onClick={() => setClienteSeleccionado(c)}
+                            className="text-emerald-600 hover:text-emerald-800 transition-colors p-1 rounded-full hover:bg-emerald-50"
+                            title="Ver detalles"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+
+                  {/* Paginación */}
+                  {metaClientes.totalPages > 0 && (
+                    <tfoot className="bg-gray-50">
+                      <tr>
+                        <td colSpan={3} className="px-6 py-4">
+                          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                            <div className="text-xs text-gray-600">
+                              Página {metaClientes.page} de {metaClientes.totalPages} ({metaClientes.total} total)
+                            </div>
+                            <div className="flex space-x-1">
+                              <PaginationButtons
+                                currentPage={metaClientes.page}
+                                totalPages={metaClientes.totalPages}
+                                onPageChange={setPaginaActualClientes}
+                              />
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
+
+                </table>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Detalle de cliente seleccionado */}
+        {clienteSeleccionado && (
+          <section>
             <button
               onClick={() => {
                 setClienteSeleccionado(null);
                 setFiltro("");
                 setIntervaloActivo(false);
               }}
-              className="px-4 py-2 bg-gray-200 text-sm text-gray-700 rounded hover:bg-gray-300 transition"
+              className="flex items-center text-sm text-gray-600 hover:text-gray-800 mb-6 transition-colors"
             >
-              ← Volver a búsqueda
+              <ChevronLeft className="w-4 h-4 mr-1" /> Volver a búsqueda
             </button>
-          </div>
 
-          <div className="w-full mx-auto p-4 text-sm bg-gray-100 rounded mb-6 flex flex-col sm:flex-row justify-between gap-4">
-            {/* Datos del cliente */}
-            <div className="flex-1 space-y-2 text-left">
-              <p className="font-bold text-sm text-gray-700">
-                DATOS DEL CLIENTE
-              </p>
-              <p>
-                <strong>Empresa:</strong> {clienteSeleccionado.empresa}
-              </p>
-              <p>
-                <strong>Responsable:</strong> {clienteSeleccionado.responsable}
-              </p>
-              <p>
-                <strong>RTN:</strong> {clienteSeleccionado.rtn}
-              </p>
-              <p>
-                <strong>Zona:</strong> {clienteSeleccionado.direccion}
-              </p>
-              <p>
-                <strong>Teléfono:</strong> {clienteSeleccionado.telefono}
-              </p>
-              <p>
-                <strong>Correo:</strong> {clienteSeleccionado.correo || "N/A"}
-              </p>
+            {/* Información del cliente */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                    Datos del Cliente
+                  </h3>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li><span className="font-medium">Empresa:</span> {clienteSeleccionado.empresa}</li>
+                    <li><span className="font-medium">Responsable:</span> {clienteSeleccionado.responsable}</li>
+                    <li><span className="font-medium">RTN:</span> {clienteSeleccionado.rtn}</li>
+                    <li><span className="font-medium">Zona:</span> {clienteSeleccionado.direccion}</li>
+                    <li><span className="font-medium">Teléfono:</span> {clienteSeleccionado.telefono}</li>
+                    <li><span className="font-medium">Correo:</span> {clienteSeleccionado.correo || "N/A"}</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                    Horas | Saldos
+                  </h3>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>
+                      <span className="font-medium">Paquetes:</span> {clienteSeleccionado.horas_paquetes} | {formatoLempiras(clienteSeleccionado.monto_paquetes)}
+                    </li>
+                    <li>
+                      <span className="font-medium">Individuales:</span> {clienteSeleccionado.horas_individuales} | {formatoLempiras(clienteSeleccionado.monto_individuales)}
+                    </li>
+                    <li className="pt-4 mt-4 border-t border-gray-200 font-medium">
+                      <span className="font-medium">Total:</span> {clienteSeleccionado.horas_paquetes + clienteSeleccionado.horas_individuales} | {formatoLempiras(clienteSeleccionado.monto_paquetes + clienteSeleccionado.monto_individuales)}
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
-            {/* Horas y saldos */}
-            <div className="flex-1 space-y-2 text-left sm:text-right">
-              <p className="font-bold text-sm text-gray-700">HORAS | SALDOS</p>
-              <p>
-                <strong>Paquetes:</strong> {clienteSeleccionado.horas_paquetes}{" "}
-                | {formatoLempiras(clienteSeleccionado.monto_paquetes)}
-              </p>
-              <p>
-                <strong>Individuales:</strong>{" "}
-                {clienteSeleccionado.horas_individuales} |{" "}
-                {formatoLempiras(clienteSeleccionado.monto_individuales)}
-              </p>
-              <p className="mt-4 border-t pt-2 font-semibold">
-                <strong>Total:</strong>{" "}
-                {clienteSeleccionado.horas_paquetes +
-                  clienteSeleccionado.horas_individuales}{" "}
-                |{" "}
-                {formatoLempiras(
-                  clienteSeleccionado.monto_paquetes +
-                    clienteSeleccionado.monto_individuales
-                )}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex flex-col sm:flex-row text-sm sm:items-center sm:justify-between gap-3 mb-4">
-                <div className="flex items-center gap-4">
-                  <h3 className="text-lg font-semibold">BITÁCORAS</h3>
-
+            {/* Bitácoras del cliente */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <h3 className="text-lg font-medium text-gray-800 whitespace-nowrap">Bitácoras</h3>
                   <select
                     value={filtroEstado}
                     onChange={(e) => {
                       setFiltroEstado(e.target.value);
                       setPaginaActualBitacoras(1);
                     }}
-                    className="px-2 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+                    className="text-sm border border-gray-300 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition min-w-[120px]"
                   >
                     <option value="todas">Todas</option>
                     <option value="pendientes">Pendientes</option>
                     <option value="firmadas">Firmadas</option>
                   </select>
                 </div>
-                <div className="space-x-2">
+                <div className="flex flex-wrap gap-2 justify-end">
                   <button
                     onClick={() => {
                       cargarClientePorId(clienteSeleccionado.id);
                       cargarBitacoras(clienteSeleccionado.id, paginaActualBitacoras);
-
-                      Swal.fire({
-                        toast: true,
-                        position: "top-end",
-                        icon: "success",
-                        title: "Datos actualizados",
-                        showConfirmButton: false,
-                        timer: 2000,
-                        timerProgressBar: true,
-                      });
-
                     }}
-                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                    className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-md text-sm hover:bg-gray-200 transition-colors flex items-center gap-1 whitespace-nowrap"
                   >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
                     Actualizar
                   </button>
                   <button
                     onClick={handleNuevaBitacora}
-                    className="px-3 py-1 bg-[#2e3763] text-white rounded-md hover:bg-[#252a50]"
+                    className="px-3 py-1.5 bg-[#2e3763] text-white rounded-md text-sm hover:bg-[#252a50] transition-colors flex items-center gap-1 whitespace-nowrap"
                   >
-                    Nueva +
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nueva Bitácora
                   </button>
                   <button
                     onClick={() => setShowPago(true)}
-                    className="px-3 py-1 bg-[#4d152c] text-white rounded-md hover:bg-[#3e1024]"
+                    className="px-3 py-1.5 bg-rose-800 text-white rounded-md text-sm hover:bg-rose-900 transition-colors flex items-center gap-1 whitespace-nowrap"
                   >
-                    Pago $
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Registrar Pago
                   </button>
                 </div>
               </div>
-            </div>
 
-            <ModalDetalleBitacora
-              isOpen={modalDetalleOpen}
-              onClose={() => setModalDetalleOpen(false)}
-              bitacora={bitacoraSeleccionada}
-              sistemas={sistemas}
-              equipos={equipos}
-              tipo_servicio={tipo_servicio}
-              fase_implementacion={fase_implementacion}
-              isLoading={
-                !sistemas.length || !equipos.length ||
-                !tipo_servicio.length || !fase_implementacion.length
-              }
-            />
+              {loadingBitacoras ? (
+                <LoadingSpinner mensaje="Cargando bitácoras..."/>
+              ) : bitacoras.length === 0 ? (
+                <div className="p-8 text-center text-gray-500">
+                  Este cliente no tiene bitácoras registradas.
+                </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <TableHeader>Ticket</TableHeader>
+                          <TableHeader>Fecha</TableHeader>
+                          <TableHeader className="hidden md:table-cell">Horas</TableHeader>
+                          <TableHeader className="hidden xl:table-cell">Descripción</TableHeader>
+                          <TableHeader>Estado</TableHeader>
+                          <TableHeader>Acciones</TableHeader>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        
+                        {bitacoras.map((b) => (
+                          <tr key={b.id} className="hover:bg-gray-50 transition-colors">
+                            <TableCell>{b.no_ticket}</TableCell>
+                            <TableCell>
+                              {new Date(b.fecha_servicio).toLocaleDateString("es-HN", {
+                                timeZone: "UTC",
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                              })}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {b.horas_consumidas} ({b.tipo_horas})
+                            </TableCell>
+                            <TableCell className="hidden xl:table-cell truncate max-w-xs" title={b.descripcion_servicio}>
+                              {b.descripcion_servicio}
+                            </TableCell>
+                            <TableCell>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                b.firmaCliente?.firma_base64 && b.firmaCliente.firma_base64.trim() !== ''
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}>
+                                {b.firmaCliente?.firma_base64 ? "Firmada" : "Pendiente"}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex justify-center gap-2">
+                                <button
+                                  onClick={() => mostrarDetalleBitacora(b)}
+                                  className="text-gray-600 hover:text-emerald-600 transition-colors p-1 rounded-full hover:bg-emerald-50"
+                                  title="Ver detalles"
+                                >
+                                  <Eye className="w-5 h-5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDownload(b.id)}
+                                  disabled={isDownloading === b.id}
+                                  className={`text-gray-600 hover:text-indigo-600 transition-colors p-1 rounded-full hover:bg-indigo-50 ${
+                                    isDownloading === b.id ? "opacity-50 cursor-not-allowed" : ""
+                                  }`}
+                                  title="Descargar PDF"
+                                >
+                                  <Download className="w-5 h-5" />
+                                </button>
+                              </div>
+                            </TableCell>
+                          </tr>
+                        ))}
+                      </tbody>
 
-            {showNewBitacora && (
-              <FormNuevaBitacora
-                clienteId={clienteSeleccionado.id}
-                nombreCliente={clienteSeleccionado.empresa}
-                onClose={() => setShowNewBitacora(false)}
-                onGuardar={() => {
-                  cargarBitacoras(clienteSeleccionado.id);
-                  cargarClientePorId(clienteSeleccionado.id);
-                  setShowNewBitacora(false);
-                  setIntervaloActivo(true);
-                }}
-                horasPaquete={clienteSeleccionado.horas_paquetes}
-                horasIndividuales={clienteSeleccionado.horas_individuales}
-                sistemas={sistemas}
-                equipos={equipos}
-                tipoServicio={tipo_servicio}
-                fases={fase_implementacion}
-              />
-            )}
+                      {/* Paginación de bitácoras */}
+                      {metaBitacoras.totalPages > 0 && (
+                        <tfoot className="bg-gray-50">
+                          <tr>
+                            <td colSpan={6} className="px-6 py-4">
+                              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                                <div className="text-xs text-gray-600">
+                                  Página {metaBitacoras.page} de {metaBitacoras.totalPages} ({metaBitacoras.total} total)
+                                </div>
+                                <div className="flex space-x-1">
+                                  <PaginationButtons
+                                    currentPage={metaBitacoras.page}
+                                    totalPages={metaBitacoras.totalPages}
+                                    onPageChange={setPaginaActualBitacoras}
+                                  />
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        </tfoot>
+                      )}
 
-            {showPago && (
-              <ModalPago
-                clienteId={clienteSeleccionado.id}
-                onClose={() => setShowPago(false)}
-                onGuardar={() => {
-                  cargarBitacoras(clienteSeleccionado.id);
-                  cargarClientePorId(clienteSeleccionado.id);
-                  setShowPago(false);
-                }}
-              />
-            )}
 
-            {loadingBitacoras ? (
-              <p className="text-gray-600">Cargando bitácoras...</p>
-            ) : bitacoras.length === 0 ? (
-              <p className="text-gray-500">
-                Este cliente no tiene bitácoras registradas.
-              </p>
-            ) : (
-              <>
-                <table className="w-full table-auto border-collapse text-sm">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="px-2 sm:px-4 py-3 text-left">Ticket</th>
-                      <th className="px-2 sm:px-4 py-3 text-left">Fecha</th>
-                      <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">
-                        Horas
-                      </th>
-                      <th className="px-2 sm:px-4 py-3 text-left hidden lg:table-cell">
-                        Fase
-                      </th>
-                      <th className="px-2 sm:px-4 py-3 text-left hidden xl:table-cell">
-                        Descripción
-                      </th>
-                      <th className="px-2 sm:px-4 py-3 text-left">Firma</th>
-                      <th className="px-2 sm:px-4 py-3 text-center">
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {bitacorasMostrar.map((b: any) => (
-                      <tr key={b.id} className="hover:bg-gray-50 text-sm">
-                        {/* Ticket (siempre visible) */}
-                        <td className="px-2 sm:px-4 py-3">{b.no_ticket}</td>
-
-                        {/* Fecha (siempre visible) */}
-                        <td
-                          className="px-2 sm:px-4 py-3"
-                          title={new Date(b.fecha_servicio).toLocaleString()}
-                        >
-                          {new Date(b.fecha_servicio).toLocaleDateString(
-                            "es-HN",
-                            {
-                              timeZone: "UTC",
-                              year: "numeric",
-                              month: "2-digit",
-                              day: "2-digit",
-                            }
-                          )}
-                        </td>
-
-                        {/* Horas (oculta en <768px) */}
-                        <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
-                          {b.horas_consumidas} ({b.tipo_horas})
-                        </td>
-
-                        {/* Fase (oculta en <1024px) */}
-                        <td className="px-2 sm:px-4 py-3 hidden lg:table-cell">
-                          {b.fase_implementacion?.fase || "—"}
-                        </td>
-
-                        {/* Descripción (oculta en <1280px) y truncada */}
-                        <td
-                          className="px-2 sm:px-4 py-3 hidden xl:table-cell truncate max-w-[150px]"
-                          title={b.descripcion_servicio}
-                        >
-                          {b.descripcion_servicio}
-                        </td>
-
-                        {/* Firma (oculta en <768px) */}
-                        <td className="px-2 sm:px-4 py-3">
-                          {b.firmaCliente?.firma_base64 ? (
-                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
-                              Firmada
-                            </span>
-                          ) : (
-                            <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-semibold">
-                              Pendiente
-                            </span>
-                          )}
-                        </td>
-
-                        {/* Acciones (siempre visible) */}
-                        <td className="px-2 sm:px-4 py-3 text-center">
-                          <button
-                            onClick={() => mostrarDetalleBitacora(b)}
-                            title="Ver detalles"
-                            className="mr-2 text-[#295d0c] hover:text-[#173a01]"
-                          >
-                            <Eye size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDownload(b.id)}
-                            title="Descargar PDF"
-                            disabled={isDownloading === b.id}
-                            className={`text-[#2e3763] hover:text-[#171f40] ${
-                              isDownloading === b.id
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
-                            }`}
-                          >
-                            <Download size={18} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {metaBitacoras.totalPages > 0 && (
-                  <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="text-xs text-gray-600">
-                      Mostrando {bitacoras.length} de {metaBitacoras.total}{" "}
-                      bitácoras
-                    </div>
-                    <div className="flex justify-center items-center gap-2">
-                      <button
-                        onClick={() => cambiarPaginaBitacoras(1)}
-                        disabled={metaBitacoras.page === 1}
-                        className="px-3 py-1 rounded text-xs border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Primera
-                      </button>
-                      <button
-                        onClick={() =>
-                          cambiarPaginaBitacoras(metaBitacoras.page - 1)
-                        }
-                        disabled={metaBitacoras.page === 1}
-                        className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Anterior
-                      </button>
-                      <span className="px-3 py-1 bg-[#295d0c] text-white text-xs rounded font-medium">
-                        {metaBitacoras.page}
-                      </span>
-                      <button
-                        onClick={() =>
-                          cambiarPaginaBitacoras(metaBitacoras.page + 1)
-                        }
-                        disabled={
-                          metaBitacoras.page === metaBitacoras.totalPages
-                        }
-                        className="px-3 py-1 rounded border border-gray-400 text-xs bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Siguiente
-                      </button>
-                      <button
-                        onClick={() =>
-                          cambiarPaginaBitacoras(metaBitacoras.totalPages)
-                        }
-                        disabled={
-                          metaBitacoras.page === metaBitacoras.totalPages
-                        }
-                        className="px-3 py-1 rounded text-xs border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Última
-                      </button>
-                    </div>
+                    </table>
                   </div>
-                )}
-              </>
-            )}
-          </div>
-        </>
-      )}
-    </div>
+                </>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Componentes modales */}
+        <ModalDetalleBitacora
+          isOpen={modalDetalleOpen}
+          onClose={() => setModalDetalleOpen(false)}
+          bitacora={bitacoraSeleccionada}
+          sistemas={sistemas}
+          equipos={equipos}
+          tipo_servicio={tipo_servicio}
+          fase_implementacion={fase_implementacion}
+          isLoading={!sistemas.length || !equipos.length || !tipo_servicio.length || !fase_implementacion.length}
+        />
+
+        {showNewBitacora && clienteSeleccionado && (
+          <FormNuevaBitacora
+            clienteId={clienteSeleccionado.id}
+            nombreCliente={clienteSeleccionado.empresa}
+            onClose={() => setShowNewBitacora(false)}
+            onGuardar={() => {
+              cargarBitacoras(clienteSeleccionado.id);
+              cargarClientePorId(clienteSeleccionado.id);
+              setShowNewBitacora(false);
+              setIntervaloActivo(true);
+            }}
+            horasPaquete={clienteSeleccionado.horas_paquetes}
+            horasIndividuales={clienteSeleccionado.horas_individuales}
+            sistemas={sistemas}
+            equipos={equipos}
+            tipoServicio={tipo_servicio}
+            fases={fase_implementacion}
+          />
+        )}
+
+        {showPago && clienteSeleccionado && (
+          <ModalPago
+            clienteId={clienteSeleccionado.id}
+            onClose={() => setShowPago(false)}
+            onGuardar={() => {
+              cargarBitacoras(clienteSeleccionado.id);
+              cargarClientePorId(clienteSeleccionado.id);
+              setShowPago(false);
+            }}
+          />
+        )}
+      </div>
+    </>
   );
 };
 

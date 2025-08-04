@@ -5,6 +5,9 @@ import ModalPago from "@/components/ModalPago";
 import { Pagos_Cliente } from "@prisma/client";
 import { DollarSign, Eye, Edit } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import PaginationButtons from "@/components/PaginationButtons";
+import { TableHeader, TableCell } from "@/components/TableComponents";
 
 interface PagoConCliente extends Pagos_Cliente {
   cliente: {
@@ -25,7 +28,6 @@ interface PagoConCliente extends Pagos_Cliente {
     updatedAt: Date;
   };
 }
-
 
 async function mostrarDetallePago(pago: PagoConCliente) {
   let usuario = "";
@@ -67,13 +69,6 @@ async function mostrarDetallePago(pago: PagoConCliente) {
     confirmButtonColor: "#295d0c",
   });
 }
-
-const LoadingSpinner = () => (
-  <div className="flex flex-col items-center justify-center py-12">
-    <div className="w-12 h-12 border-4 border-gray-200 border-t-[#295d0c] rounded-full animate-spin" />
-    <p className="mt-4 text-gray-600 font-medium">Cargando pagos...</p>
-  </div>
-);
 
 export default function PagosPage() {
   const [pagosPorPagina] = useState(10);
@@ -169,50 +164,60 @@ export default function PagosPage() {
 };
 
   return (
-    <div className="p-6 bg-white min-h-screen mb-8">
-      <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
-        <DollarSign className="w-8 h-8 text-[#295d0c]" />
-        Pagos Registrados
-      </h1>
+    <div className="w-full p-6 pb-20 min-h-screen bg-gray-50">
+      {/* Encabezado */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-3 mb-2">
+          <DollarSign className="w-6 h-6 text-emerald-700" />
+          Pagos Registrados
+        </h1>
+        <div className="border-b border-gray-200"></div>
+      </div>
 
       {/* Filtros */}
-      <div className="mb-6 flex flex-col md:flex-row text-sm md:items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700 whitespace-nowrap">Desde:</span>
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-700 mb-1">Desde:</label>
           <input
             type="date"
             value={fechaInicio}
             onChange={(e) => setFechaInicio(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2"
+            className="border border-gray-300 text-xs rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-600 text.xs"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700 whitespace-nowrap">Hasta:</span>
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-700 mb-1">Hasta:</label>
           <input
             type="date"
             value={fechaFin}
             onChange={(e) => setFechaFin(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2"
+            className="border border-gray-300 text-xs rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-600"
           />
         </div>
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-700 mb-1">Buscar factura:</label>
+          <input
+            type="text"
+            placeholder="Número de factura"
+            value={filtroFactura}
+            onChange={(e) => setFiltroFactura(e.target.value)}
+            className="border border-gray-300 text-xs rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-sm text-gray-700 mb-1">Buscar cliente:</label>
+          <input
+            type="text"
+            placeholder="Nombre de cliente"
+            value={filtroCliente}
+            onChange={(e) => setFiltroCliente(e.target.value)}
+            className="border border-gray-300 text-xs rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+          />
+        </div>
+      </div>
 
-        <input
-          type="text"
-          placeholder="Buscar factura..."
-          value={filtroFactura}
-          onChange={(e) => setFiltroFactura(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 w-full md:w-64"
-        />
-
-        <input
-          type="text"
-          placeholder="Buscar cliente..."
-          value={filtroCliente}
-          onChange={(e) => setFiltroCliente(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 w-full md:w-64"
-        />
-
-        {(fechaInicio || fechaFin || filtroFactura || filtroCliente) && (
+      {(fechaInicio || fechaFin || filtroFactura || filtroCliente) && (
+        <div className="mb-6">
           <button
             onClick={() => {
               setFechaInicio("");
@@ -220,114 +225,98 @@ export default function PagosPage() {
               setFiltroFactura("");
               setFiltroCliente("");
             }}
-            className="px-3 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
           >
-            Limpiar
+            Limpiar filtros
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Tabla de pagos */}
       {loading ? (
-        <LoadingSpinner />
+        <LoadingSpinner mensaje="Cargando pagos..."/>
       ) : pagos.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
           <div className="text-gray-400 text-6xl mb-4">💵</div>
           <p className="text-gray-600 text-lg">No hay pagos registrados.</p>
         </div>
       ) : (
-        <div className="">
-          <table className="w-full table-auto border-collapse text-sm">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-2 sm:px-4 py-3 text-left">Factura</th>
-                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Cliente</th>
-                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Forma de pago</th>
-                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Detalle</th>
-                <th className="px-2 sm:px-4 py-3 text-left ">Monto</th>
-                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Horas</th>
-                <th className="px-2 sm:px-4 py-3 text-left hidden md:table-cell">Tipo</th>
-                <th className="px-2 sm:px-4 py-3 text-left">Fecha</th>
-                <th className="px-2 sm:px-4 py-3 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pagos.map((pago) => (
-                <tr key={pago.id} className="hover:bg-gray-50">
-                  <td className="px-2 sm:px-4 py-3">{pago.no_factura}</td>
-                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">
-                    {pago.cliente?.empresa || pago.cliente?.responsable}
-                  </td>
-                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.forma_pago}</td>
-                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.detalle_pago}</td>
-                  <td className="px-2 sm:px-4 py-3">L.{pago.monto}</td>
-                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.cant_horas}</td>
-                  <td className="px-2 sm:px-4 py-3 hidden md:table-cell">{pago.tipo_horas}</td>
-                  <td className="px-2 sm:px-4 py-3">
-                    {new Date(pago.createdAt).toLocaleDateString("es-HN")}
-                  </td>
-                  <td className="px-2 sm:px-4 py-3 text-center">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => mostrarDetallePago(pago)}
-                        className="mr-2 text-[#295d0c] hover:text-[#173a01]"
-                        title="Ver detalles"
-                      >
-                        <Eye size={22} />
-                      </button>
-                      <button
-                        onClick={() => setModalPago({ open: true, pago })}
-                        className="text-[#2e3763] hover:text-[#171f40]"
-                        title="Editar"
-                      >
-                        <Edit className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </td>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <TableHeader>Factura</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Cliente</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Forma de pago</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Detalle</TableHeader>
+                  <TableHeader>Monto</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Horas</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Tipo</TableHeader>
+                  <TableHeader>Fecha</TableHeader>
+                  <TableHeader>Acciones</TableHeader>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {pagos.map((pago) => (
+                  <tr key={pago.id} className="hover:bg-gray-50 transition-colors">
+                    <TableCell>{pago.no_factura}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {pago.cliente?.empresa || pago.cliente?.responsable}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{pago.forma_pago}</TableCell>
+                    <TableCell className="hidden md:table-cell">{pago.detalle_pago}</TableCell>
+                    <TableCell>L.{pago.monto}</TableCell>
+                    <TableCell className="hidden md:table-cell">{pago.cant_horas}</TableCell>
+                    <TableCell className="hidden md:table-cell">{pago.tipo_horas}</TableCell>
+                    <TableCell>
+                      {new Date(pago.createdAt).toLocaleDateString("es-HN")}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => mostrarDetallePago(pago)}
+                          className="text-gray-600 hover:text-emerald-600 transition-colors p-1 rounded-full hover:bg-emerald-50"
+                          title="Ver detalles"
+                        >
+                          <Eye className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => setModalPago({ open: true, pago })}
+                          className="text-gray-600 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-blue-50"
+                          title="Editar"
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </tr>
+                ))}
+              </tbody>
 
-          {/* Paginación */}
-          {pagos.length > 0 && (
-            <div className="mt-4 flex flex-col sm:flex-row text-xs justify-between items-center gap-4">
-              <div className="text-gray-600">
-                Mostrando {pagos.length} de {metaPagos.total} pagos
-              </div>
-              <div className="flex justify-center items-center gap-2">
-                <button
-                  onClick={() => cambiarPagina(1)}
-                  disabled={metaPagos.page === 1}
-                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Primera
-                </button>
-                <button
-                  onClick={() => cambiarPagina(metaPagos.page - 1)}
-                  disabled={metaPagos.page === 1}
-                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Anterior
-                </button>
-                <span className="px-3 py-1 bg-[#295d0c] text-white rounded font-medium">{metaPagos.page}</span>
-                <button
-                  onClick={() => cambiarPagina(metaPagos.page + 1)}
-                  disabled={metaPagos.page === metaPagos.totalPages}
-                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Siguiente
-                </button>
-                <button
-                  onClick={() => cambiarPagina(metaPagos.totalPages)}
-                  disabled={metaPagos.page === metaPagos.totalPages}
-                  className="px-3 py-1 rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Última
-                </button>
-              </div>
-            </div>
-          )}
+              {/* Pie de tabla con paginación */}
+              {metaPagos.totalPages > 0 && (
+                <tfoot className="bg-gray-50">
+                  <tr>
+                    <td colSpan={9} className="px-6 py-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div className="text-xs text-gray-600">
+                          Página {metaPagos.page} de {metaPagos.totalPages} ({metaPagos.total} total)
+                        </div>
+                        <div className="flex space-x-1">
+                          <PaginationButtons
+                            currentPage={metaPagos.page}
+                            totalPages={metaPagos.totalPages}
+                            onPageChange={setPaginaActual}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tfoot>
+              )}
+            </table>
+          </div>
         </div>
       )}
 

@@ -4,7 +4,10 @@ import Swal from "sweetalert2";
 import { Cliente } from "@prisma/client";
 import ModalPago from "@/components/ModalPago";
 import ModalCliente from "@/components/ModalCliente";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEffect, useState, useCallback  } from "react";
+import PaginationButtons from "@/components/PaginationButtons";
+import { TableHeader, TableCell } from "@/components/TableComponents";
 import { Contact, Plus, Edit3, Trash2, DollarSign } from "lucide-react";
 
 interface clienteActualizado {
@@ -34,18 +37,9 @@ interface PaginationMeta {
   totalPages: number;
 }
 
-// carga
-const LoadingSpinner = () => (
-  <div className="flex flex-col items-center justify-center py-12">
-    <div className="relative">
-      <div className="w-12 h-12 border-4 border-gray-200 border-t-[#295d0c] rounded-full animate-spin"></div>
-    </div>
-    <p className="mt-4 text-gray-600 font-medium">Cargando clientes...</p>
-  </div>
-);
-
 export default function ClientesPage() {
   const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [isCliente, setIsCliente] = useState(false);
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -68,7 +62,7 @@ export default function ClientesPage() {
         setFiltroActual(filtroNombre);
         setPaginaActual(1); 
       }
-    }, 500); // 500ms de debounce
+    }, 1500); // 500ms de debounce
 
     return () => clearTimeout(timer);
   }, [filtroNombre, filtroActual]);
@@ -197,6 +191,7 @@ export default function ClientesPage() {
   // Crear cliente
   async function handleSubmitCliente(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setCreating(true);
 
     const formData = new FormData(event.currentTarget);
     const correo = (formData.get("correo") as string)?.trim();
@@ -251,7 +246,10 @@ export default function ClientesPage() {
         confirmButtonColor: "#295d0c",
       });
 
+    } finally {
+      setCreating(false);
     }
+  
   }
 
   // Eliminar cliente
@@ -321,6 +319,7 @@ export default function ClientesPage() {
   async function handleEditarCliente(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!clienteEditar) return;
+    setCreating(true);
 
     const formData = new FormData(event.currentTarget);
     const nuevoCorreoRaw = (formData.get("correo") as string)?.trim();
@@ -371,45 +370,53 @@ export default function ClientesPage() {
         confirmButtonColor: "#295d0c",
       });
 
+    } finally{
+      setCreating(false);
     }
   }
 
   if (!isCliente) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner mensaje="Cargando clientes..."/>;
   }
 
   return (
-    <div className="p-6 mb-6 bg-white min-h-screen">
-      <h1 className="text-2xl font-semibold mb-6 flex border-b border-gray-300 pb-2 items-center gap-2 text-gray-800">
-        <Contact className="w-7 h-7 text-[#295d0c]" />
-        Gestión de Clientes
-      </h1>
+    <div className="w-full p-6 pb-20 min-h-screen bg-gray-50">
+      {/* Encabezado */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-3 mb-2">
+          <Contact className="w-6 h-6 text-emerald-700" />
+          Gestión de Clientes
+        </h1>
+        <div className="border-b border-gray-200"></div>
+      </div>
 
-      {/* Input filtro */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4 text-xs">
-        <input
-          type="text"
-          placeholder="Buscar por Empresa o RTN/ID"
-          value={filtroNombre}
-          onChange={(e) => setFiltroNombre(e.target.value)}
-          className="w-full sm:w-1/2 border border-gray-300 rounded-md px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
-        />
+      {/* Búsqueda y botón agregar */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <div className="relative flex-grow">
+          <input
+            type="text"
+            placeholder="Buscar por Empresa o RTN/ID"
+            value={filtroNombre}
+            onChange={(e) => setFiltroNombre(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition shadow-sm"
+          />
+        </div>
         <button
           onClick={() => {
             setClienteEditar(null);
             setModalOpen(true);
           }}
-          className="flex items-center gap-1.5 sm:gap-2 bg-[#295d0c] text-white px-3 py-2 xs:px-5 sm:py-3 rounded-md text-sm xs:text-base hover:bg-[#23480a] transition-colors duration-300 font-semibold shadow"
+          className="px-4 py-2.5 bg-emerald-600 text-white rounded-lg text-sm hover:bg-emerald-700 transition-colors flex items-center gap-2"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4" />
           Agregar Cliente
         </button>
       </div>
 
       {loading ? (
-        <LoadingSpinner />
+        <LoadingSpinner mensaje="Cargando clientes..."/>
       ) : clientes.length === 0 && showEmptyMessage ? (
-        <div className="text-center py-12">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
           <div className="text-gray-400 text-6xl mb-4">👥</div>
           <p className="text-gray-600 text-lg">
             {filtroActual ? "No se encontraron clientes con ese criterio de búsqueda." : "No hay clientes registrados."}
@@ -418,103 +425,91 @@ export default function ClientesPage() {
             {filtroActual ? "Intenta con otro término de búsqueda." : "Haz clic en 'Agregar Cliente' para comenzar."}
           </p>
         </div>
-      ) : clientes.length > 0 ? (
-        <>
-          {/* Información de resultados */}
-          <div className="mb-4 text-xs text-gray-600">
-            Mostrando {clientes.length} de {meta.total} clientes
-            {filtroActual && ` para "${filtroActual}"`}
-          </div>
-          <div className="-ml-4">
-          <table className="min-w-full table-auto border-collapse text-sm">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-2 sm:px-4 py-2 text-left">Empresa</th>
-                <th className="px-2 sm:px-4 py-2 text-center">RTN/ID</th>
-                <th className="px-2 sm:px-4 py-2 text-left hidden md:table-cell">Correo</th>
-                <th className="px-2 sm:px-4 py-2 text-left hidden md:table-cell">Teléfono</th>
-                <th className="px-2 sm:px-4 py-2 text-center">Activo</th>
-                <th className="px-2 sm:px-4 py-2 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clientes.map((cliente) => (
-                <tr key={cliente.id} className="hover:bg-gray-50">
-                  <td className="px-2 sm:px-4 py-2">{cliente.empresa}</td>
-                  <td className="px-2 sm:px-4 py-2">{cliente.rtn}</td>
-                  <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{cliente.correo || "N/A"}</td>
-                  <td className="px-2 sm:px-4 py-2 hidden md:table-cell">{formatearTelefono(cliente.telefono)}</td>
-                  <td className="px-2 sm:px-4 py-2 text-center">{cliente.activo ? "✅" : "❌"}</td>
-                  <td className="px-2 sm:px-4 py-3 text-center">
-                    <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => abrirEditarCliente(cliente)}
-                        className="mr-2 text-[#295d0c] hover:text-[#173a01]"
-                      >
-                        <Edit3 size={20}/>
-                      </button>
-                      <button
-                        onClick={() => handleEliminarCliente(cliente.id)}
-                        className="text-[#2e3763] hover:text-[#171f40]"
-                      >
-                        <Trash2 size={20}/>
-                      </button>
-                      <button
-                        onClick={() => setModalPagoCliente({ open: true, clienteId: cliente.id })}
-                        className="text-[#107c10] hover:text-[#0b5a0b]"
-                        title="Agregar Pago"
-                      >
-                        <DollarSign size={20} />
-                      </button>
-                    </div>
-                  </td>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <TableHeader>Empresa</TableHeader>
+                  <TableHeader>RTN/ID</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Correo</TableHeader>
+                  <TableHeader className="hidden md:table-cell">Teléfono</TableHeader>
+                  <TableHeader>Estado</TableHeader>
+                  <TableHeader>Acciones</TableHeader>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {clientes.map((cliente) => (
+                  <tr key={cliente.id} className="hover:bg-gray-50 transition-colors">
+                    <TableCell>{cliente.empresa}</TableCell>
+                    <TableCell>{cliente.rtn}</TableCell>
+                    <TableCell className="hidden md:table-cell">{cliente.correo || "N/A"}</TableCell>
+                    <TableCell className="hidden md:table-cell">{formatearTelefono(cliente.telefono)}</TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        cliente.activo 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {cliente.activo ? "Activo" : "Inactivo"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => abrirEditarCliente(cliente)}
+                          className="text-gray-600 hover:text-emerald-600 transition-colors p-1 rounded-full hover:bg-emerald-50"
+                          title="Editar"
+                        >
+                          <Edit3 className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleEliminarCliente(cliente.id)}
+                          className="text-gray-600 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-red-50"
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => setModalPagoCliente({ open: true, clienteId: cliente.id })}
+                          className="text-gray-600 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-blue-50"
+                          title="Agregar Pago"
+                        >
+                          <DollarSign className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </tr>
+                ))}
+              </tbody>
 
-          {/* Controles de paginación */}
-          <div className="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="text-xs text-gray-600">
-              Página {meta.page} de {meta.totalPages} ({meta.total} total)
-            </div>
-            <div className="flex justify-center items-center gap-2">
-              <button
-                onClick={() => setPaginaActual(1)}
-                disabled={meta.page === 1}
-                className="px-3 py-1 text-xs rounded border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Primera
-              </button>
-              <button
-                onClick={() => setPaginaActual(meta.page - 1)}
-                disabled={meta.page === 1}
-                className="px-3 py-1 rounded text-xs border border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Anterior
-              </button>
-              <span className="px-3 py-1 bg-[#295d0c] text-xs text-white rounded font-medium">
-                {meta.page}
-              </span>
-              <button
-                onClick={() => setPaginaActual(meta.page + 1)}
-                disabled={meta.page === meta.totalPages}
-                className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Siguiente
-              </button>
-              <button
-                onClick={() => setPaginaActual(meta.totalPages)}
-                disabled={meta.page === meta.totalPages}
-                className="px-3 py-1 rounded border text-xs border-gray-400 bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Última
-              </button>
-            </div>
+              {/* Pie de tabla con paginación */}
+              {meta.totalPages > 0 && (
+                <tfoot className="bg-gray-50">
+                  <tr>
+                    <td colSpan={8} className="px-6 py-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div className="text-xs text-gray-600">
+                          Página {meta.page} de {meta.totalPages} ({meta.total} total)
+                        </div>
+                        <div className="flex space-x-1">
+                          <PaginationButtons
+                            currentPage={meta.page}
+                            totalPages={meta.totalPages}
+                            onPageChange={setPaginaActual}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tfoot>
+              )}
+
+            </table>
           </div>
-        </>
-      ) : null}
+        </div>
+      )}
 
       <ModalCliente
         isOpen={modalOpen}
@@ -523,18 +518,17 @@ export default function ClientesPage() {
           setClienteEditar(null);
         }}
       >
-        <h2 className="text-lg font-semibold mb-6 text-gray-900">{clienteEditar ? "Editar Cliente" : "Nuevo Cliente"}</h2>
+        <h2 className="text-xl font-semibold mb-6 text-gray-900">{clienteEditar ? "Editar Cliente" : "Nuevo Cliente"}</h2>
         <form onSubmit={clienteEditar ? handleEditarCliente : handleSubmitCliente} className="space-y-4">
           {[
             { label: "Empresa", name: "empresa", type: "text", placeholder: "Nombre de la empresa" },
             { label: "Responsable", name: "responsable", type: "text", placeholder: "Responsable" },
             { label: "RTN/ID", name: "rtn", type: "text", placeholder: "RTN/ID" },
             { label: "Zona", name: "direccion", type: "text", placeholder: "Zona" },
-            //{ label: "Correo", name: "correo", type: "email", placeholder: "Correo" },
           ].map(({ label, name, type, placeholder }) => (
-            <label key={name} className="block mb-4 text-gray-800 font-medium text-xs">
+            <label key={name} className="block mb-4 text-gray-800 font-medium text-sm">
               <span className="text-gray-700">
-                {label}: <span className="text-red-500 font-bold">*</span>
+                {label}: <span className="text-red-500">*</span>
               </span>
               <input
                 name={name}
@@ -542,23 +536,26 @@ export default function ClientesPage() {
                 placeholder={placeholder}
                 defaultValue={clienteEditar ? (clienteEditar as any)[name] : ""}
                 required
-                className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+                className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-600"
               />
             </label>
           ))}
-          <label className="block mb-4 text-gray-800 font-medium text-xs">
+          
+          <label className="block mb-4 text-gray-800 font-medium text-sm">
             <span className="text-gray-700">Correo:</span>
             <input
               name="correo"
               type="email"
               placeholder="Correo"
               defaultValue={clienteEditar ? (clienteEditar.correo ?? "") : ""}
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-600"
             />
           </label>
 
-          <label className="block mb-4 text-gray-800 font-medium text-xs">
-            Teléfono: <span className="text-red-500 font-bold">*</span>
+          <label className="block mb-4 text-gray-800 font-medium text-sm">
+            <span className="text-gray-700">
+              Teléfono: <span className="text-red-500">*</span>
+            </span>
             <input
               name="telefono"
               type="tel"
@@ -567,17 +564,17 @@ export default function ClientesPage() {
               onChange={manejarCambioTelefono}
               maxLength={9}
               required
-              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+              className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-600"
             />
           </label>
 
           {clienteEditar && (
-            <label className="block mb-4 text-gray-800 font-medium text-xs">
+            <label className="block mb-4 text-gray-800 font-medium text-sm">
               <span className="text-gray-700">Estado:</span>
               <select
                 name="activo"
                 defaultValue={clienteEditar.activo ? "true" : "false"}
-                className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#295d0c]"
+                className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-600"
               >
                 <option value="true">Activo</option>
                 <option value="false">Inactivo</option>
@@ -585,23 +582,33 @@ export default function ClientesPage() {
             </label>
           )}
           
-          <div className="mt-6 flex justify-end space-x-4">
+          <div className="mt-6 text-sm flex justify-end space-x-4">
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="px-5 py-2 text-xs rounded-md bg-red-700 text-white font-semibold hover:bg-red-800"
+              className="px-5 py-2 rounded-md bg-red-700 text-white font-semibold hover:bg-red-800 transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a]"
+              disabled={creating}
+              className={`px-6 py-2 rounded-md font-semibold transition bg-[#295d0c] text-white hover:bg-[#23480a]
+                ${creating ? "opacity-50 cursor-not-allowed" : ""}
+              `}
             >
-              {clienteEditar ? "Actualizar" : "Crear"}
+              {creating
+                ? clienteEditar
+                  ? "Guardando..."
+                  : "Guardando..."
+                : clienteEditar
+                ? "Guardar"
+                : "Guardar"}
             </button>
           </div>
         </form>
       </ModalCliente>
+
       {modalPagoCliente.open && modalPagoCliente.clienteId && (
       <ModalPago
         clienteId={modalPagoCliente.clienteId}

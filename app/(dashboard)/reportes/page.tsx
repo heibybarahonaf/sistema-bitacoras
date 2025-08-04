@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import { useState } from "react";
 import { Cliente } from "@prisma/client";
 import { BarChart, X } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import CardReporte from "../../../components/CardReporte";
 
 interface BitacoraData {
@@ -598,13 +599,7 @@ export default function ReportesPage() {
             </div>
             <div className="p-6">
               {modalPreview.loading ? (
-
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-3 text-gray-600">
-                    Cargando vista previa...
-                  </span>
-                </div>
+                <LoadingSpinner mensaje="Cargando vista previa" />
               ) : modalPreview.data.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500">
