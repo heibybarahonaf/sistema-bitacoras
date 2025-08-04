@@ -74,6 +74,10 @@ export default function ModalDetalleBitacora({
         fetch(`/api/usuarios/nombre/${usuarioId}`) 
       ]);
 
+      /*if (!firmaResponse.ok || !tecnicoResponse.ok) {
+        throw new Error('Error en las respuestas');
+      }*/
+
       const [firmaData, tecnicoData] = await Promise.all([
         firmaResponse.json(),
         tecnicoResponse.json()
@@ -94,7 +98,9 @@ export default function ModalDetalleBitacora({
           setFirmaClienteUrl(firmaCliente.url);
         }
       }
+
     } catch {
+     
       if (isMounted) {
         setNombreTecnico("Error al cargar");
         setFirmaTecnicoImg(null);
