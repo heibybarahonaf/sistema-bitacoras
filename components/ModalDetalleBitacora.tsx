@@ -112,7 +112,6 @@ export default function ModalDetalleBitacora({
           title: "Error cargando datos",
         });
       }
-
     }
   };
 
@@ -121,10 +120,13 @@ export default function ModalDetalleBitacora({
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white w-full max-w-3xl rounded-lg shadow-lg relative p-6 sm:p-8">
+        <style jsx>{`
+          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+        `}</style>
+        <div className="bg-white w-full max-w-3xl rounded-lg shadow-lg relative p-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
           <div className="flex flex-col items-center justify-center h-40 gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#295d0c]"></div>
-            <p className="text-gray-700">Cargando detalles de la bitácora...</p>
+            <p className="text-gray-600">Cargando detalles de la bitácora...</p>
           </div>
         </div>
       </div>
@@ -134,7 +136,6 @@ export default function ModalDetalleBitacora({
   if (!bitacora) return null;
 
   const copiarAlPortapapeles = async () => {
-    
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(firmaClienteUrl || "");
@@ -151,14 +152,12 @@ export default function ModalDetalleBitacora({
         setNoSoportaClipboard(true);
       }
     } catch {
-
       Swal.fire({
         toast: true,
         position: "top-end",
         icon: "error",
         title: "Error al copiar",
       });
-     
       setNoSoportaClipboard(true);
     }
   };
@@ -237,140 +236,139 @@ export default function ModalDetalleBitacora({
   const mostrarSeccionEspecial = camposEspeciales.length > 0;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-3xl rounded-lg shadow-lg relative max-h-[90vh] overflow-y-auto p-6 sm:p-8">
-        <button
-          onClick={onClose}
-          aria-label="Cerrar modal"
-          className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 transition"
-        >
-          <X className="w-6 h-6" />
-        </button>
+    <>   
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
+        <div className="bg-white w-full max-w-3xl rounded-lg shadow-lg relative max-h-[90vh] overflow-y-auto p-6">
+          <button
+            onClick={onClose}
+            aria-label="Cerrar modal"
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
 
-        <h2 className="text-2xl font-semibold mb-6 text-gray-900 text-center sm:text-left">
-          Detalle de Bitácora
-        </h2>
+          <h2 className="text-xl font-medium mb-6 text-gray-800">
+            Detalle de Bitácora
+          </h2>
 
-        {/* Sección de campos principales */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-gray-700 text-sm sm:text-base">
-          {camposPrincipales.map(({ label, value }) => (
-            <div key={label} className="flex flex-col">
-              <span className="font-semibold text-gray-800">{label}:</span>
-              <span className="mt-1 whitespace-pre-wrap break-words">
-                {value}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* Sección de campos especiales (si existen) */}
-        {mostrarSeccionEspecial && (
-          <div className="mt-6 border-t pt-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">Detalles Mantenimiento</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 text-gray-700 text-sm sm:text-base">
-              {camposEspeciales.map(({ label, value }) => (
-                <div key={label} className="flex flex-col">
-                  <span className="font-semibold text-gray-800">{label}:</span>
-                  <span className="mt-1 whitespace-pre-wrap break-words">
-                    {value}
-                  </span>
-                </div>
-              ))}
-            </div>
+          {/* Sección de campos principales */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-gray-700 text-sm">
+            {camposPrincipales.map(({ label, value }) => (
+              <div key={label} className="mb-2">
+                <span className="font-medium text-gray-600 text-sm">{label}:</span>
+                <p className="mt-1 text-gray-800 whitespace-pre-wrap break-words">
+                  {value || "-"}
+                </p>
+              </div>
+            ))}
           </div>
-        )}
 
-        {/* Descripción y comentarios (ancho completo) */}
-        <div className="text-gray-700 text-sm sm:text-base">
-          <div className="mt-6">
-            <div className="mt-4">
-              <span className="font-semibold text-gray-800">Descripción:</span>
-              <p className="mt-1 whitespace-pre-wrap break-words">
-                {bitacora.descripcion_servicio}
+          {/* Sección de campos especiales (si existen) */}
+          {mostrarSeccionEspecial && (
+            <div className="mt-6 border-t pt-6">
+              <h3 className="text-base font-medium mb-3 text-gray-800">Detalles Mantenimiento</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 text-sm">
+                {camposEspeciales.map(({ label, value }) => (
+                  <div key={label} className="mb-2">
+                    <span className="font-medium text-gray-600 text-sm">{label}:</span>
+                    <p className="mt-1 text-gray-800 whitespace-pre-wrap break-words">
+                      {value || "-"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Descripción y comentarios */}
+          <div className="mt-6 border-t pt-6 text-sm">
+            <div className="mb-4">
+              <span className="font-medium text-gray-600 text-sm">Descripción:</span>
+              <p className="mt-1 text-gray-800 whitespace-pre-wrap break-words">
+                {bitacora.descripcion_servicio || "-"}
               </p>
             </div>
 
             {bitacora.comentarios && (
-              <div className="mt-4">
-                <span className="font-semibold text-gray-800">Comentarios:</span>
-                <p className="mt-1 whitespace-pre-wrap break-words">
+              <div className="mb-4">
+                <span className="font-medium text-gray-600 text-sm">Comentarios:</span>
+                <p className="mt-1 text-gray-800 whitespace-pre-wrap break-words">
                   {bitacora.comentarios}
                 </p>
               </div>
             )}
           </div>
-        </div>
 
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-          {/* Firma Técnico */}
-          <div className="flex flex-col items-center">
-            
-            {firmaTecnicoImg ? (
-              <img
-                src={firmaTecnicoImg}
-                alt="Firma técnico"
-                className="border-b border-gray-400 max-w-xs w-full object-contain"
-              />
-            ) : (
-              <span className="text-red-600 text-sm">Firma pendiente</span>
-            )}
-            <span className="font-semibold text-sm text-gray-800 mb-2">Firma del Técnico</span>
-            <span className="font-normal text-gray-800 text-sm mb-2">{nombreTecnico}</span>
+          {/* Firmas */}
+          <div className="mt-6 border-t pt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Firma Técnico */}
+            <div className="flex flex-col items-center">
+              {firmaTecnicoImg ? (
+                <img
+                  src={firmaTecnicoImg}
+                  alt="Firma técnico"
+                  className="border-b border-gray-300 max-w-xs w-full object-contain"
+                />
+              ) : (
+                <span className="text-red-500 text-xs">PENDIENTE</span>
+              )}
+              <span className="font-medium text-gray-600 text-sm mt-2">Firma del Técnico</span>
+              <span className="text-gray-800 text-sm">{nombreTecnico}</span>
+            </div>
+
+            {/* Firma Cliente */}
+            <div className="flex flex-col items-center">
+              {firmaClienteImg ? (
+                <img
+                  src={firmaClienteImg}
+                  alt="Firma cliente"
+                  className="border-b border-gray-300 max-w-xs w-full object-contain"
+                />
+              ) : firmaClienteUrl ? (
+                <div className="text-center">
+                  <span className="text-yellow-600 text-xs font-medium block mb-1">PENDIENTE</span>
+                  <p className="text-xs text-gray-600 mb-2">El cliente aún no ha firmado.</p>
+
+                  {noSoportaClipboard ? (
+                    <div className="space-y-1">
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={firmaClienteUrl}
+                        readOnly
+                        onFocus={() => inputRef.current?.select()}
+                        className="border px-2 py-1 rounded w-full text-xs"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Copia el enlace manteniendo presionado
+                      </p>
+                    </div>
+                  ) : (
+                    <button
+                      className="text-blue-500 hover:text-blue-700 text-xs underline"
+                      onClick={copiarAlPortapapeles}
+                    >
+                      Copiar enlace de firma
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <span className="text-yellow-600 text-xs">PENDIENTE</span>
+              )}
+              <span className="font-medium text-gray-600 text-sm mt-2">Firma del Cliente</span>
+            </div>
           </div>
 
-          {/* Firma Cliente */}
-          <div className="flex flex-col items-center">
-            
-            {firmaClienteImg ? (
-              <img
-                src={firmaClienteImg}
-                alt="Firma cliente"
-                className="border-b border-gray-400 max-w-xs w-full object-contain"
-              />
-            ) : firmaClienteUrl ? (
-              <div className="text-center">
-                <span className="text-red-600 text-sm font-semibold block mb-2">⚠️ PENDIENTE</span>
-                <p className="text-sm text-gray-700 mb-2">El cliente aún no ha firmado.</p>
-
-                {noSoportaClipboard ? (
-                  <div className="space-y-2">
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      value={firmaClienteUrl}
-                      readOnly
-                      onFocus={() => inputRef.current?.select()}
-                      className="border px-2 py-1 rounded w-full text-sm"
-                    />
-                    <p className="text-xs text-gray-600">
-                      <strong>Copia el enlace manteniendo presionado</strong>
-                    </p>
-                  </div>
-                ) : (
-                  <button
-                    className="text-blue-600 underline hover:text-blue-800 text-sm"
-                    onClick={copiarAlPortapapeles}
-                  >
-                    Copiar enlace de firma
-                  </button>
-                )}
-              </div>
-            ) : (
-              <span className="text-red-600">⚠️ pendiente</span>
-            )}
-            <span className="font-semibold text-gray-800 text-sm mb-2">Firma del Cliente</span>
+          <div className="mt-8 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300 transition"
+            >
+              Cerrar
+            </button>
           </div>
-        </div>
-
-        <div className="mt-8 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 bg-red-700 text-white text-xs rounded-md hover:bg-red-800 font-semibold transition"
-          >
-            Cerrar
-          </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import Home from "@/components/HomeContent"; 
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function Page() {
     return (
-        <Suspense fallback={<div>Cargando...</div>}>
+        <Suspense fallback={<LoadingSpinner mensaje="Cargando..." />}>
             <Home />
         </Suspense>
     );

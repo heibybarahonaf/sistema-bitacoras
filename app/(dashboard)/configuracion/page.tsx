@@ -3,6 +3,7 @@
 import Swal from "sweetalert2";
 import { Cog } from "lucide-react";
 import { useEffect, useState } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
 
 interface Configuracion {
@@ -293,11 +294,8 @@ export default function ConfiguracionPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="text-center py-10 text-gray-500">Cargando configuración...</div>
-    );
-  }
+  if (loading) return <LoadingSpinner mensaje="Cargando configuración..." />;
+  
 
   return (
     <div className="max-w-xl mx-auto text-sm mt-10 mb-24 p-6 bg-white rounded shadow">
@@ -374,7 +372,7 @@ export default function ConfiguracionPage() {
           <button
             type="submit"
             disabled={saving}
-            className={`text-white text-xs font-semibold px-4 py-2 rounded ${
+            className={`text-white text-sm font-semibold px-4 py-2 rounded ${
               saving
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-green-700 hover:bg-green-800"

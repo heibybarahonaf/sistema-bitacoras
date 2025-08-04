@@ -4,43 +4,51 @@ import Swal from "sweetalert2";
 import { useRef, useEffect, useState } from "react";
 import { Usuario } from "@prisma/client";
 import SignatureCanvas from "react-signature-canvas";
-import { User } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { User, Lock, RefreshCw } from "lucide-react";
 
 export default function PerfilUsuarioPage() {
-
   const firmaRef = useRef<SignatureCanvas | null>(null);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [firmaImg, setFirmaImg] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-
     async function fetchUsuarioLogueado() {
-
+      setIsLoading(true);
       try {
-
         const res = await fetch("/api/auth/obtener-sesion", { credentials: "include" });
         const data = await res.json();
 
         if (data.code === 200 && data.results?.length > 0) {
           setUsuario(data.results[0]);
-          cargarFirma(data.results[0].id);
+          await cargarFirma(data.results[0].id);
         } else {
-          Swal.fire("Error", "No se pudo obtener el usuario logueado.", "error");
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "No se pudo obtener el usuario logueado",
+            confirmButtonColor: "#295d0c",
+          });
         }
-
       } catch {
-        Swal.fire("Error", "Error al conectar con el servidor.", "error");
+        Swal.fire({
+          icon: "error",
+          title: "Error de conexión",
+          text: "No se pudo conectar con el servidor",
+          confirmButtonColor: "#295d0c",
+        });
+      } finally {
+        setIsLoading(false);
       }
-
     }
 
     fetchUsuarioLogueado();
   }, []);
 
   async function cargarFirma(usuarioId: number) {
-
     try {
-
       const res = await fetch(`/api/firmas/tecnico/${usuarioId}`);
       const data = await res.json();
 
@@ -49,11 +57,9 @@ export default function PerfilUsuarioPage() {
       } else {
         setFirmaImg(null);
       }
-
-    } catch {
+    } catch (error) {
       setFirmaImg(null);
     }
-
   }
 
   // Escalar y pintar la firma en el canvas
@@ -67,58 +73,58 @@ export default function PerfilUsuarioPage() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const width = canvas.width;
-    const height = canvas.height;
-
     const img = new Image();
     img.onload = () => {
-      ctx.clearRect(0, 0, width, height);
-      const scale = Math.min(width / img.width, height / img.height);
-      const x = (width - img.width * scale) / 2;
-      const y = (height - img.height * scale) / 2;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const scale = Math.min(
+        canvas.width / img.width,
+        canvas.height / img.height
+      );
+      const x = (canvas.width - img.width * scale) / 2;
+      const y = (canvas.height - img.height * scale) / 2;
       ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
     };
-
     img.src = firmaImg;
   }, [firmaImg]);
 
   async function handleGuardar(e: React.FormEvent<HTMLFormElement>) {
-
     e.preventDefault();
-    if (!usuario) return;
+    if (!usuario || isSubmitting) return;
 
     const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
 
-    // Objeto para actualizar solo campos que cambian
-    const usuarioActualizado: any = {};
-
-    if (password && password.trim() !== "") {
-      usuarioActualizado.password = password;
+    if (password && password.trim() !== "" && password.length < 6) {
+      Swal.fire({
+        icon: "error",
+        title: "Contraseña inválida",
+        text: "La contraseña debe tener al menos 6 caracteres",
+        confirmButtonColor: "#295d0c",
+      });
+      
+      return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      // Actualizar password si existe
-      if (Object.keys(usuarioActualizado).length > 0) {
-        
+      // Actualizar password si se proporcionó
+      if (password && password.trim() !== "") {
         const res = await fetch(`/api/usuarios/${usuario.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(usuarioActualizado),
+          body: JSON.stringify({ password }),
         });
 
         const data = await res.json();
-
         if (!res.ok || (data.code !== 200 && data.code !== 201)) {
-          Swal.fire("Error", data.message || "Error al actualizar usuario", "error");
-          return;
+          throw new Error(data.message || "Error al actualizar contraseña");
         }
       }
 
       // Actualizar firma si hay dibujo
       if (firmaRef.current && !firmaRef.current.isEmpty()) {
         const firmaBase64 = firmaRef.current.toDataURL();
-
         const resFirma = await fetch(`/api/firmas/tecnico/${usuario.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -131,88 +137,136 @@ export default function PerfilUsuarioPage() {
         }
       }
 
-      Swal.fire("¡Listo!", "Perfil actualizado correctamente", "success").then(() => {
-        window.location.href = "/";
+      Swal.fire({
+        icon: "success",
+        title: "¡Perfil actualizado!",
+        text: "Los cambios se guardaron correctamente",
+        confirmButtonColor: "#295d0c",
+      }).then(() => {
+        window.location.reload();
       });
+      
     } catch (error: any) {
-      Swal.fire("Error", error.message || "Error al conectar con el servidor", "error");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "Error al guardar los cambios",
+        confirmButtonColor: "#295d0c",
+      });
+
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
-  if (!usuario) return null;
+  if (isLoading) {
+    return <LoadingSpinner mensaje="Cargando perfil..."/>;
+  }
+
+  if (!usuario) {
+    return (
+      <div className="text-center py-8 text-gray-600">
+        No se pudo cargar la información del usuario
+      </div>
+    );
+  }
 
   return (
-    <form onSubmit={handleGuardar} className="space-y-4 mb-4 max-w-md mx-auto p-4 bg-white rounded shadow">
-      <div>
-        <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
-          <User className="w-8 h-8 text-[#295d0c]" />
-          Perfil
-        </h1>
-
-        <label className="block font-medium mb-1" htmlFor="nombre">
-          Nombre
-        </label>
-        <input
-          id="nombre"
-          name="nombre"
-          type="text"
-          value={usuario.nombre}
-          disabled
-          className="input w-full bg-gray-100 cursor-not-allowed"
-        />
-      </div>
-
-      <div>
-        <label className="block font-medium mb-1" htmlFor="password">
-          Contraseña
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="Dejar en blanco para no cambiar"
-          className="input w-full"
-        />
-      </div>
-
-      <div>
-        <label className="block font-medium mb-1">Firma</label>
-        <div className="flex justify-center mb-2">
-          <SignatureCanvas
-            ref={firmaRef}
-            penColor="black"
-            canvasProps={{
-              width: 350,
-              height: 100,
-              className: "border border-gray-300 rounded-md shadow-sm bg-white",
-              style: { width: "350px", height: "100px" },
-            }}
-          />
+    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
+      <form onSubmit={handleGuardar} className="space-y-6">
+        <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+          <div className="p-2 bg-[#295d0c]/10 rounded-full">
+            <User className="w-6 h-6 text-[#295d0c]" />
+          </div>
+          <h1 className="text-2xl font-semibold text-gray-800">Perfil de Usuario</h1>
         </div>
-        <div className="flex justify-center">
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="nombre">
+              Nombre
+            </label>
+            <input
+              id="nombre"
+              name="nombre"
+              type="text"
+              value={usuario.nombre}
+              disabled
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-600 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="password">
+              Cambiar contraseña
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                min={6}
+                placeholder="Mantener actual: dejar vacío"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#295d0c] focus:border-[#295d0c]"
+              />
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <Lock className="h-5 w-5 text-gray-400" />
+              </div>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Mínimo 6 caracteres, puede incluir mayúsculas, minúsculas y números
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Firma digital
+            </label>
+            <div className="border border-gray-300 rounded-md p-2 bg-white">
+              <SignatureCanvas
+                ref={firmaRef}
+                penColor="black"
+                canvasProps={{
+                  width: 350,
+                  height: 150,
+                  className: "w-full h-[150px] bg-white border border-gray-200 rounded",
+                }}
+              />
+            </div>
+            <div className="mt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (firmaRef.current) {
+                    firmaRef.current.clear();
+                    setFirmaImg(null);
+                  }
+                }}
+                className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition flex items-center gap-1"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Limpiar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-4 flex justify-end">
           <button
-            type="button"
-            onClick={() => {
-              if (firmaRef.current) {
-                firmaRef.current.clear();
-                setFirmaImg(null);
-              }
-            }}
-            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition"
+            type="submit"
+            disabled={isSubmitting}
+            className="px-4 py-2 bg-[#295d0c] text-white rounded-md shadow-sm hover:bg-[#23480a] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#295d0c] disabled:opacity-70 disabled:cursor-not-allowed transition flex items-center gap-2"
           >
-            Limpiar firma
+            {isSubmitting ? (
+              <>
+                Guardando...
+              </>
+            ) : (
+              "Guardar cambios"
+            )}
           </button>
         </div>
-      </div>
-
-      <div className="flex justify-end gap-2">
-        <button
-          type="submit"
-          className="px-5 py-2 rounded-md bg-[#295d0c] text-xs text-white font-semibold hover:bg-[#23480a]"
-        >
-          Guardar cambios
-        </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }

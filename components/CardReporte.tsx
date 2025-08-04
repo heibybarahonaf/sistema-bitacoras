@@ -126,9 +126,9 @@ export default function CardReporte({
   const getIdPlaceholder = () => {
     switch (tipo) {
       case "usuario":
-        return "Selecciona un técnico";
+        return "Seleccione un técnico";
       case "ventas":
-        return "Selecciona un técnico";
+        return "Seleccione un técnico";
       default:
         return "";
     }

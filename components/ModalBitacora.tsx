@@ -1,6 +1,7 @@
 "use client";
 
 import Swal from "sweetalert2";
+import { RefreshCw } from "lucide-react";
 import SignatureCanvas from "react-signature-canvas";
 import React, { useEffect, useState, useRef } from "react";
 import { Sistema, Equipo, Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
@@ -546,30 +547,34 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
 
   if (!tipoBitacora) {
     return (
-      <div className="fixed inset-0 text-xs bg-black bg-opacity-40 flex items-center justify-center z-50 p-4 overflow-auto">
-        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-          <h2 className="text-lg font-bold mb-6 text-gray-900">Seleccione el tipo de bitácora</h2>
-          
+      <div className="fixed inset-0 text-sm bg-black bg-opacity-40 flex items-center justify-center z-50 p-4 overflow-auto">
+        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto relative">
+          {/* Botón de cerrar */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 text-gray-500 hover:text-red-600 text-xl font-bold"
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+
+          <h2 className="text-lg font-bold mb-6 text-gray-900 text-center">
+            Seleccione el tipo de bitácora
+          </h2>
+
           <div className="grid grid-cols-1 gap-4">
             <button
               onClick={() => setTipoBitacora("normal")}
-              className="px-6 py-3 rounded-md bg-[#295d0c] text-white font-semibold hover:bg-[#23480a] transition"
+              className="border border-green-700 text-green-700 bg-white hover:bg-green-700 hover:text-white font-medium px-4 py-2 rounded-md transition"
             >
               Bitácora General
             </button>
-            
+
             <button
               onClick={() => setTipoBitacora("especial")}
-              className="px-6 py-3 rounded-md bg-[#2e3763] text-white font-semibold hover:bg-[#252a50] transition"
+              className="border border-green-700 text-green-700 bg-white hover:bg-green-700 hover:text-white font-medium px-4 py-2 rounded-md transition"
             >
               Bitácora Mantenimiento
-            </button>
-            
-            <button
-              onClick={onClose}
-              className="px-6 py-3 rounded-md bg-red-700 text-white font-semibold hover:bg-red-800 transition mt-4"
-            >
-              Cancelar
             </button>
           </div>
         </div>
@@ -789,12 +794,13 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
                   }}
                 />
                 <button
-                  type="button"
-                  onClick={() => sigCanvasCliente.current?.clear()}
-                  className="mt-2 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                >
-                  Limpiar
-                </button>
+                type="button"
+                onClick={() => sigCanvasCliente.current?.clear()}
+                className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition flex items-center gap-1"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Limpiar
+              </button>
               </div>
             ) : (
               <div className="flex-1 shadow-md rounded-md p-4 bg-white max-w-xs">
@@ -853,7 +859,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             )}
           </div>
 
-          <div className="md:col-span-2 flex justify-end space-x-4 mt-4">
+          <div className="md:col-span-2 text-sm flex justify-end space-x-4 mt-4">
             <button
               type="button"
               onClick={onClose}
