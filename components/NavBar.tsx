@@ -119,7 +119,7 @@ export default function Navbar() {
               className="cursor-pointer"
             />
           </Link>
-          <span className="text-lg font-semibold hidden sm:block">SISTEMA DE BITÁCORAS</span>
+          <span className="text-lg hidden font-semibold sm:block">Sistema de Bitácoras</span>
         </div>
 
         {/* Usuario y botón salir */}
