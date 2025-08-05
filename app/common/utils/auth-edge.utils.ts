@@ -22,6 +22,7 @@ export class AuthEdgeUtils {
         } catch {
 
             throw new ResponseDto(401, "Sesión inválida o expirada");
+            
         }
 
     }

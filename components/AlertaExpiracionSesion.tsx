@@ -21,19 +21,48 @@ export default function AlertaExpiracionSesion() {
       icon: "warning",
       title: "Sesión por expirar",
       html: `Tu sesión expirará en <strong>${minutos} minutos</strong> y <strong>${segundos} segundos</strong>.`,
-      showConfirmButton: true,
-      confirmButtonText: "Entendido",
+      showCancelButton: true,
+      confirmButtonText: "Renovar sesión",
+      cancelButtonText: "Entendido",
       allowOutsideClick: false,
       allowEscapeKey: false,
       backdrop: true,
-    }).then((result) => {
+    }).then(async (result) => {
+      
+      if (result.isConfirmed) {
+        try {
+          const res = await fetch("/api/auth/renovar-sesion", { method: "POST" });
+
+          if (res.ok) {
+            Swal.fire({
+              icon: "success",
+              title: "Sesión renovada",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "No se pudo renovar",
+              text: "Inicia sesión nuevamente.",
+            });
+          }
+
+        } catch {
+
+          Swal.fire({
+            icon: "error",
+            title: "Error de red",
+            text: "No se pudo contactar al servidor.",
+          });
+
+        }
+      }
 
       setTimeout(() => {
         alertaMostrada = false;
       }, 300000); 
-
-    }).catch((error) => {
-      alertaMostrada = false; 
     });
     
   };
@@ -61,6 +90,7 @@ export default function AlertaExpiracionSesion() {
             mostrarAlerta(tiempoRestante);
           }
         }
+
       } catch {
         // error verificación inicial
       }

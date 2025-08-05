@@ -54,15 +54,15 @@ async function mostrarDetallePago(pago: PagoConCliente) {
   Swal.fire({
     title: "Detalle de Pago",
     html: `
-      <strong>Factura:</strong> ${pago.no_factura} <br/><br/>
-      <strong>Cliente:</strong> ${pago.cliente?.empresa || pago.cliente?.responsable} <br/><br/>
-      <strong>Técnico:</strong> ${usuario} <br/><br/>
-      <strong>Forma de pago:</strong> ${pago.forma_pago} <br/><br/>
-      <strong>Detalle:</strong> ${pago.detalle_pago} <br/><br/>
-      <strong>Monto:</strong> L.${pago.monto} <br/><br/>
-      <strong>Cantidad de horas:</strong> ${pago.cant_horas} <br/><br/>
-      <strong>Tipo de horas:</strong> ${pago.tipo_horas} <br/><br/>
-      <strong>Fecha de pago:</strong> ${new Date(pago.createdAt).toLocaleString("es-HN")}
+      <p style="margin-bottom: 4px;"><strong>Factura:</strong> ${pago.no_factura}</p>
+      <p style="margin-bottom: 4px;"><strong>Cliente:</strong> ${pago.cliente?.empresa || pago.cliente?.responsable}</p>
+      <p style="margin-bottom: 4px;"><strong>Técnico:</strong> ${usuario}</p>
+      <p style="margin-bottom: 4px;"><strong>Forma de pago:</strong> ${pago.forma_pago}</p>
+      <p style="margin-bottom: 4px;"><strong>Detalle:</strong> ${pago.detalle_pago}</p>
+      <p style="margin-bottom: 4px;"><strong>Monto:</strong> L.${pago.monto}</p>
+      <p style="margin-bottom: 4px;"><strong>Cantidad de horas:</strong> ${pago.cant_horas}</p>
+      <p style="margin-bottom: 4px;"><strong>Tipo de horas:</strong> ${pago.tipo_horas}</p>
+      <p style="margin-bottom: 4px;"><strong>Fecha de pago:</strong> ${new Date(pago.createdAt).toLocaleString("es-HN")}</p>
     `,
     icon: "info",
     confirmButtonText: "Cerrar",
