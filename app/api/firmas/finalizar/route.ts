@@ -25,6 +25,7 @@ export async function POST(req: Request) {
             data: {
                 firma_base64: parsed.data.firma_base64,
                 usada: true,
+                updatedAt: new Date().toISOString()
             },
         });
 

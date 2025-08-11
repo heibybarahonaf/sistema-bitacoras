@@ -175,7 +175,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   const [comentarios, setComentarios] = useState("");
   const [responsable, setResponsable] = useState("");
   const [horaLlegada, setHoraLlegada] = useState("");
-  const [tipoHoras, setTipoHoras] = useState("Paquete");
+  const [tipoHoras, setTipoHoras] = useState("");
   const [fechaServicio, setFechaServicio] = useState("");
   const [horasConsumidas, setHorasConsumidas] = useState(0);
   const [nombresCapacitados, setNombresCapacitados] = useState("");
@@ -328,17 +328,51 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           clearInterval(intervalo);
         }
       } catch {
+        /*
         Swal.fire({
           toast: true,
           position: "top-end",
           icon: "error",
           title: "Error verificando firma remota",
-        });
+        });*/
       }
     }, 10000);
 
     return () => clearInterval(intervalo);
   }, [firmaClienteRemotaId]);
+
+  const handleTipoHorasChange = async (value: string) => {
+    if (value) { 
+      const confirmacion = await Swal.fire({
+        title: 'Confirmar tipo de horas',
+        html: `
+          <div class="text-left">
+            <p>Vas a asignar las horas como: <strong>${value}</strong></p>
+            <p>Horas disponibles: <strong>${
+              value === "Paquete" 
+                ? `${horasDisponibles.paquete}h en paquete` 
+                : `${horasDisponibles.individual}h individuales`
+            }</strong></p>
+            <p class="mt-2">¿Deseas continuar?</p>
+          </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, confirmar',
+        cancelButtonText: 'No, volver',
+        confirmButtonColor: '#295d0c',
+        cancelButtonColor: '#d33',
+      });
+
+      if (confirmacion.isConfirmed) {
+        setTipoHoras(value);
+      } else {
+        return;
+      }
+    } else {
+      setTipoHoras(value);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -691,7 +725,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
           <SelectSimple
             label="Tipo de Horas"
             value={tipoHoras}
-            onChange={setTipoHoras}
+            onChange={handleTipoHorasChange}
             options={[
               { 
                 value: "Paquete", 

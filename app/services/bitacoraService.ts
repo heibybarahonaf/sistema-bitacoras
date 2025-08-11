@@ -217,7 +217,7 @@ export class BitacoraService {
     }
 
 
-    public static async obtenerBitacorasTecnicoFechas(nombre: string, fechaInicio: string, fechaFinal: string) {
+    public static async obtenerBitacorasTecnicoFechas(nombre: string, fechaInicio: string, fechaFinal: string, estadoBitacora: string) {
 
         const fechaIni = new Date(fechaInicio);
         const fechaFin = new Date(fechaFinal);
@@ -226,14 +226,30 @@ export class BitacoraService {
         fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
 
         const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
+        const filtro: any = {
+            usuario_id: tecnico.id,
+            fecha_servicio: {
+                gte: fechaIni,
+                lt: fechaFinInclusive, 
+            }
+        };
+
+        if (estadoBitacora === "firmadas") {
+            filtro.firmaCliente = {
+                firma_base64: {
+                    not: ""
+                }
+            };
+
+        } else if (estadoBitacora === "pendientes") {
+            filtro.OR = [
+                { firmaCliente: null },
+                { firmaCliente: { firma_base64: "" } }
+            ];
+        }
+
         const bitacoras = await prisma.bitacora.findMany({
-            where: {
-                usuario_id: tecnico.id,
-                fecha_servicio: {
-                    gte: fechaIni,
-                    lt: fechaFinInclusive, 
-                },
-            },
+            where: filtro,
             select: {
                 id: true,
                 fecha_servicio: true,
@@ -254,6 +270,12 @@ export class BitacoraService {
                         zona_asignada: true
                     }
                 },
+                firmaCliente:{
+                    select: {
+                        firma_base64: true,
+                        updatedAt: true
+                    }
+                }
             },
             orderBy: { fecha_servicio: "desc" }
         });
@@ -276,18 +298,29 @@ export class BitacoraService {
         fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
 
         const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
-         const bitacoras = await prisma.bitacora.findMany({
+        const bitacoras = await prisma.bitacora.findMany({
             where: {
                 usuario_id: tecnico.id,
                 fecha_servicio: {
                     gte: fechaIni,
                     lt: fechaFinInclusive, 
                 },
-                ventas: {
-                    not: {
-                        equals: "",
+                AND: [
+                    {
+                        ventas: {
+                            not: {
+                                equals: "",
+                            },
+                        },
                     },
-                },
+                    {
+                        ventas: {
+                            not: {
+                                equals: " ",
+                            },
+                        },
+                    },
+                ],
             },
             select: {
                 id: true,
@@ -418,6 +451,74 @@ export class BitacoraService {
         } catch {
 
             throw new ResponseDto(500, "Error interno del servidor al crear la bitácora");
+
+        }
+
+    }
+
+
+    public static async eliminarBitacora(id: number): Promise<Bitacora> {
+
+        const bitacora = await prisma.bitacora.findFirst({where: { id: id}});
+        if (!bitacora) {
+            throw new ResponseDto(400, "Bitácora no encontrada");
+        }
+
+        const cliente = await ClienteService.obtenerClientePorId(bitacora.cliente_id);
+        const horas_consumidas = bitacora.horas_consumidas;
+        const tipo_horas = bitacora.tipo_horas;
+        const configuracion = await ConfiguracionService.obtenerConfiguracionPorId(1);
+        let monto = 0;
+
+        let datosActualizacion: { 
+            horas_paquetes?: number; 
+            horas_individuales?: number; 
+            monto_paquetes?: number; 
+            monto_individuales?: number; 
+        };
+
+        if (tipo_horas === "Individual") {
+            const horasActuales = cliente.horas_individuales ?? 0;
+            const montoActual = cliente.monto_individuales ?? 0;
+            const montoIsv = configuracion.valor_hora_individual * (configuracion.comision / 100);
+            const montoDebitado = horas_consumidas * (configuracion.valor_hora_individual + montoIsv);
+            monto = montoDebitado;
+
+            datosActualizacion = {
+                horas_individuales: horasActuales + horas_consumidas,
+                monto_individuales: montoActual + montoDebitado
+            };
+
+        } else if (tipo_horas === "Paquete") {
+            const horasActuales = cliente.horas_paquetes ?? 0;
+            const montoActual = cliente.monto_paquetes ?? 0;
+            const montoIsv = configuracion.valor_hora_paquete * (configuracion.comision / 100);
+            const montoDebitado = horas_consumidas * (configuracion.valor_hora_paquete + montoIsv);
+            monto = montoDebitado;
+
+            datosActualizacion = {
+                horas_paquetes: horasActuales + horas_consumidas,
+                monto_paquetes: montoActual + montoDebitado
+            };
+
+        } else {
+
+            throw new ResponseDto(400, "Tipo de horas inválido. Debe ser 'Paquete' o 'Individual'");
+            
+        }
+        
+        try{
+            const bitacora = await prisma.bitacora.delete({
+                where: {id}
+            });
+
+            await ClienteService.editarCliente(cliente.id, datosActualizacion);
+
+            return bitacora;
+
+        } catch {
+
+            throw new ResponseDto(500, "Error interno del servidor al anular la bitácora");
 
         }
 

@@ -32,6 +32,7 @@ export type BitacoraReporteComisiones = {
     horas_consumidas: number | null;
     tipo_horas: string | null;
     cliente?: { empresa: string } | null;
+    firmaCliente?: { firma_base64: string | null, updatedAt: Date | null} | null;
     usuario?: { 
         nombre: string;
         comision: number | null;
@@ -167,11 +168,11 @@ function generarReporte(
 }
 
 
-export function generarPDFBitacoras(bitacoras: BitacoraReporteGeneral[], fechaInicio: string, fechaFinal: string): Buffer {
+export function generarPDFBitacoras(bitacoras: BitacoraReporteGeneral[], fechaInicio: string, fechaFinal: string): ArrayBuffer {
     
     const columnas = [
-        "Fecha","Ticket", "Cliente", "Técnico",  "Llegada", "Salida", "Servicio",
-        "Modalidad", "Horas", "Tipo Horas", "Descripción"
+        "FECHA", "TICKET", "CLIENTE", "TÉCNICO",  "LLEGADA", "SALIDA", "SERVICIO",
+        "MODALIDAD", "HORAS", "TIPO HORAS", "DESCRIPCIÓN"
     ];
 
     const datos = bitacoras.map(b => [
@@ -189,12 +190,12 @@ export function generarPDFBitacoras(bitacoras: BitacoraReporteGeneral[], fechaIn
     ]);
 
     const doc = generarReporte("Reporte de Bitácoras", bitacoras, fechaInicio, fechaFinal, columnas, datos);
-    return Buffer.from(doc.output('arraybuffer'));
+    return doc.output('arraybuffer');
 
 }
 
 
-export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
+export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[], fechaInicio: string, fechaFinal: string): Promise<ArrayBuffer> {
     
     const config = await ConfiguracionService.obtenerConfiguracionPorId(1);
     const precioIndividual = config.valor_hora_individual;
@@ -202,7 +203,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[
     let porcentajeComision = 0;
 
     const columnas = [
-        "Fecha", "Bitacora No.", "Ticket", "Cliente", "Horas", "Tipo Horas", "% Comisión", "Monto", "Comisión", 
+        "FECHA", "BITÁCORA NO.", "TICKET", "CLIENTE", "HORAS", "TIPO HORAS", "% COMISIÓN", "MONTO", "COMISIÓN", "FINALIZACIÓN", 
     ];
 
     let total = 0;
@@ -223,7 +224,13 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[
             b.tipo_horas ?? campo_vacio,
             b.usuario?.comision,
             monto.toFixed(2),
-            comision.toFixed(2)
+            comision.toFixed(2),
+            formatearFechaFirma(
+                b.firmaCliente?.firma_base64 ?? null,
+                b.firmaCliente?.updatedAt instanceof Date
+                    ? b.firmaCliente.updatedAt.toISOString()
+                    : b.firmaCliente?.updatedAt ?? null
+            )
         ].map(v => v === undefined ? null : v);
     }) as (string | number | null)[][];
 
@@ -248,16 +255,16 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[
         }
     );
 
-    return Buffer.from(doc.output('arraybuffer'));
+    return doc.output('arraybuffer');
 
 }
 
 
-export async function generarPDFPorVentasTecnico(bitacoras: BitacoraReporteVentas[], fechaInicio: string, fechaFinal: string): Promise<Buffer> {
+export async function generarPDFPorVentasTecnico(bitacoras: BitacoraReporteVentas[], fechaInicio: string, fechaFinal: string): Promise<ArrayBuffer> {
    
     const usuario = bitacoras[0]?.usuario ?? null;
     const columnas = [
-        "Fecha", "Bitacora No.", "Cliente", "Ventas"
+        "FECHA", "BITÁCORA NO.", "CLIENTE", "VENTAS"
     ];
 
     const datos = bitacoras.map(b => {
@@ -287,15 +294,15 @@ export async function generarPDFPorVentasTecnico(bitacoras: BitacoraReporteVenta
         }
     );
 
-    return Buffer.from(doc.output('arraybuffer'));
+    return doc.output('arraybuffer');
 
 }
 
 
-export function generarPDFPorCliente(bitacoras: BitacoraReporteCliente[], fechaInicio: string, fechaFinal: string): Buffer {
+export function generarPDFPorCliente(bitacoras: BitacoraReporteCliente[], fechaInicio: string, fechaFinal: string): ArrayBuffer {
     
     const columnas = [
-        "Fecha", "Ticket", "Servicio", "Modalidad", "Horas", "Tipo Horas", "Técnico", "Descripción"
+        "FECHA", "TICKET", "SERVICIO", "MODALIDAD", "HORAS", "TIPO HORAS", "TÉCNICO", "DESCRIPCIÓN"
     ];
 
     const datos = bitacoras.map(b => [
@@ -328,7 +335,7 @@ export function generarPDFPorCliente(bitacoras: BitacoraReporteCliente[], fechaI
         }
     );
 
-    return Buffer.from(doc.output('arraybuffer'));
+    return doc.output('arraybuffer');
 
 }
 
@@ -459,3 +466,22 @@ function safe<T>(valor: T | null | undefined, fallback: string = campo_vacio): s
     return String(valor);
 
 }
+
+const formatearFechaFirma = (firma_base64: string | null, fechaFirma: string | null) => {
+    if (!firma_base64 || firma_base64 === "") {
+      return "N/A";
+    }
+    
+    if (!fechaFirma) {
+      return "Firmada";
+    }
+
+    const fecha = new Date(fechaFirma);
+    if (isNaN(fecha.getTime())) return "Fecha inválida";
+
+    const dia = fecha.getDate().toString().padStart(2, "0");
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, "0");
+    const año = fecha.getFullYear();
+
+    return `${dia}/${mes}/${año}`;
+};

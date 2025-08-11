@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import Swal from "sweetalert2";
+import { useEffect } from "react";
 
 let alertaMostrada = false;
 
