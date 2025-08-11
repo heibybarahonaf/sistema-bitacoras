@@ -24,6 +24,8 @@ interface BitacoraData {
   comision: string;
   descripcion: string;
   venta: string;
+  firmaCliente: string;
+  firma_base64: string;
 }
 
 export default function ReportesPage() {
@@ -93,6 +95,25 @@ export default function ReportesPage() {
     const dia = d.getUTCDate().toString().padStart(2, "0");
     const mes = (d.getUTCMonth() + 1).toString().padStart(2, "0");
     const año = d.getUTCFullYear();
+
+    return `${dia}/${mes}/${año}`;
+  };
+
+  const formatearFechaFirma = (firma_base64: string | null, fechaFirma: string | null) => {
+    if (!firma_base64 || firma_base64 === "") {
+      return "N/A";
+    }
+    
+    if (!fechaFirma) {
+      return "Firmada";
+    }
+
+    const fecha = new Date(fechaFirma);
+    if (isNaN(fecha.getTime())) return "Fecha inválida";
+
+    const dia = fecha.getDate().toString().padStart(2, "0");
+    const mes = (fecha.getMonth() + 1).toString().padStart(2, "0");
+    const año = fecha.getFullYear();
 
     return `${dia}/${mes}/${año}`;
   };
@@ -273,7 +294,8 @@ export default function ReportesPage() {
     fechaFinal: string,
     nombre?: string,
     rtn?: string,
-    usuario?: string
+    usuario?: string,
+    estadoBitacora?: "firmadas" | "pendientes" 
   ) => {
 
     if (!fechaInicio || !fechaFinal) {
@@ -314,6 +336,9 @@ export default function ReportesPage() {
 
       if (tipo == "usuario" && nombre) {
         params.append("nombre", nombre);
+        if (estadoBitacora) {
+          params.append("estado", estadoBitacora);
+        }
       } else if (tipo == "cliente" && rtn) {
         params.append("RTN", rtn);
       } else if (tipo == "ventas" && usuario) {
@@ -383,7 +408,8 @@ export default function ReportesPage() {
     fechaFinal: string,
     id?: string,
     rtn?: string,
-    usuario?: string
+    usuario?: string,
+    estadoBitacora?: "firmadas" | "pendientes"
   ) => {
     if (!fechaInicio || !fechaFinal) {
       mostrarAlertaError("Ingresa las fechas para ver la vista previa");
@@ -442,6 +468,9 @@ export default function ReportesPage() {
 
       if (tipo === "usuario" && id) {
         params.append("nombre", id);
+        if (estadoBitacora) {
+          params.append("estado", estadoBitacora);
+        }
       } else if (tipo === "cliente" && rtn) {
         params.append("RTN", rtn);
       } else if (tipo === "ventas" && usuario) {
@@ -488,7 +517,7 @@ export default function ReportesPage() {
 
         setModalPreview((prev) => ({ ...prev, isOpen: false, loading: false }));
       }
-    } catch (error) {
+    } catch {
       mostrarAlertaError("Error de conexión al cargar la vista previa");
       setModalPreview((prev) => ({ ...prev, isOpen: false, loading: false }));
     }
@@ -708,6 +737,9 @@ export default function ReportesPage() {
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                   Comisión
                                 </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Finalizada
+                                </th>
                               </>
                             )}
                           </>
@@ -827,6 +859,9 @@ export default function ReportesPage() {
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {parseFloat(bitacora.comision).toFixed(2)}
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {formatearFechaFirma(bitacora.firma_base64, bitacora.firmaCliente)}
                                 </td>
                               </>
                             )}

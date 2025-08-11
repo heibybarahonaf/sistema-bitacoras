@@ -203,7 +203,7 @@ export default function EquiposPage() {
   async function handleEliminarEquipo(id: number) {
     const result = await Swal.fire({
       title: "¿Estás seguro?",
-      text: "Esta acción no se puede deshacer",
+      text: "Esta acción no se puede revertir",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -387,7 +387,7 @@ export default function EquiposPage() {
                       </span>
                     </TableCell>
                     <TableCell>
-                      <div className="flex justify-center gap-2">
+                      <div className="justify-center gap-2">
                         <button
                           onClick={() => abrirEditarEquipo(equipo)}
                           className="text-gray-600 hover:text-emerald-600 transition-colors p-1 rounded-full hover:bg-emerald-50"

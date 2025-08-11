@@ -273,7 +273,7 @@ export default function PagosPage() {
                       {new Date(pago.createdAt).toLocaleDateString("es-HN")}
                     </TableCell>
                     <TableCell>
-                      <div className="flex justify-center gap-2">
+                      <div className="justify-center gap-2">
                         <button
                           onClick={() => mostrarDetallePago(pago)}
                           className="text-gray-600 hover:text-emerald-600 transition-colors p-1 rounded-full hover:bg-emerald-50"

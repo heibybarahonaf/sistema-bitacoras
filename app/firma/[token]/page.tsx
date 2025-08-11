@@ -121,7 +121,7 @@ export default function FirmaClientePage() {
       const res = await fetch("/api/firmas/finalizar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: firmaId, firma_base64: base64 }),
+        body: JSON.stringify({ id: firmaId, firma_base64: base64}),
       });
 
       if (res.ok) {

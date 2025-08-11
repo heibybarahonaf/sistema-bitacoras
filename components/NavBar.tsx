@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   User, Users, NotebookText, BarChart, LogOut,
   ClipboardList, Settings, HardDrive, Receipt, MonitorDot
 } from "lucide-react";
-import Swal from "sweetalert2";
 
 export default function Navbar() {
   const router = useRouter();

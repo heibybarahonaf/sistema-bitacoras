@@ -3,13 +3,7 @@
 import Swal from "sweetalert2";
 import { X } from "lucide-react";
 import React, { useEffect, useState, useRef } from "react";
-import { 
-  Sistema, 
-  Equipo, 
-  Tipo_Servicio, 
-  Fase_Implementacion,
-  Bitacora as PrismaBitacora
-} from "@prisma/client";
+import { Sistema, Equipo, Tipo_Servicio, Fase_Implementacion, Bitacora as PrismaBitacora } from "@prisma/client";
 
 interface Bitacora extends PrismaBitacora {
   firmaCliente?: {
@@ -30,22 +24,15 @@ interface ModalDetalleBitacoraProps {
 }
 
 export default function ModalDetalleBitacora({
-  isOpen,
-  onClose,
-  bitacora,
-  sistemas,
-  equipos,
-  tipo_servicio,
-  fase_implementacion,
-  isLoading = false
+  isOpen, onClose, bitacora, sistemas, equipos, 
+  tipo_servicio, fase_implementacion, isLoading = false
 }: ModalDetalleBitacoraProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [noSoportaClipboard, setNoSoportaClipboard] = useState(false);
+  const [nombreTecnico, setNombreTecnico] = useState<string>("Cargando...");
   const [firmaTecnicoImg, setFirmaTecnicoImg] = useState<string | null>(null);
   const [firmaClienteImg, setFirmaClienteImg] = useState<string | null>(null);
   const [firmaClienteUrl, setFirmaClienteUrl] = useState<string | null>(null);
-  const [nombreTecnico, setNombreTecnico] = useState<string>("Cargando...");
-  const [noSoportaClipboard, setNoSoportaClipboard] = useState(false);
-  
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -138,7 +125,7 @@ export default function ModalDetalleBitacora({
   const copiarAlPortapapeles = async () => {
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(firmaClienteUrl || "");
+        await navigator.clipboard.writeText("https://" + firmaClienteUrl || "");
         Swal.fire({
           toast: true,
           position: 'top-end',

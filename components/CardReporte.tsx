@@ -12,7 +12,8 @@ interface CardReporteProps {
     fechaFinal: string,
     id?: string,
     rtn?: string,
-    usuario?: string
+    usuario?: string,
+    estadoBitacora?: "firmadas" | "pendientes"
   ) => void;
   onPreview: (
     tipo: "general" | "cliente" | "usuario" | "ventas",
@@ -20,7 +21,8 @@ interface CardReporteProps {
     fechaFinal: string,
     id?: string,
     rtn?: string,
-    usuario?: string
+    usuario?: string,
+    estadoBitacora?: "firmadas" | "pendientes"
   ) => void;
 }
 
@@ -44,6 +46,7 @@ export default function CardReporte({
   const [fechaInicio, setFechaInicio] = useState("");
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loadingUsuarios, setLoadingUsuarios] = useState(false);
+  const [estadoBitacora, setEstadoBitacora] = useState<"firmadas" | "pendientes">("firmadas");
 
   useEffect(() => {
     if (tipo === "usuario" || tipo === "ventas") {
@@ -97,7 +100,8 @@ export default function CardReporte({
       fechaFinal,
       tipo === "usuario" ? entidadId : undefined,
       tipo === "cliente" ? entidadId : undefined,
-      tipo === "ventas" ? entidadId : undefined
+      tipo === "ventas" ? entidadId : undefined,
+      tipo === "usuario" ? estadoBitacora : undefined
     );
   };
 
@@ -108,7 +112,8 @@ export default function CardReporte({
       fechaFinal,
       tipo === "usuario" ? entidadId : undefined,
       tipo === "cliente" ? entidadId : undefined,
-      tipo === "ventas" ? entidadId : undefined
+      tipo === "ventas" ? entidadId : undefined,
+      tipo === "usuario" ? estadoBitacora : undefined
     );
   };
 
@@ -137,28 +142,47 @@ export default function CardReporte({
   const renderEntidadInput = () => {
     if (tipo === "usuario" || tipo === "ventas") {
       return (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {getIdLabel()}
-          </label>
-          <select
-            value={entidadId}
-            onChange={(e) => setEntidadId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            disabled={isGenerating || loadingUsuarios}
-          >
-            <option value="">{loadingUsuarios ? "Cargando..." : getIdPlaceholder()}</option>
-            {usuarios.map((usuario) => (
-              <option key={usuario.id} value={usuario.nombre}>
-                {usuario.nombre} {usuario.apellido}
-              </option>
-            ))}
-          </select>
-          {loadingUsuarios && (
-            <p className="text-xs text-gray-500 mt-1">Cargando...</p>
-          )}
-          {!loadingUsuarios && usuarios.length === 0 && (
-            <p className="text-xs text-red-500 mt-1">No se encontraron técnicos activos</p>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {getIdLabel()}
+            </label>
+            <select
+              value={entidadId}
+              onChange={(e) => setEntidadId(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              disabled={isGenerating || loadingUsuarios}
+            >
+              <option value="">{loadingUsuarios ? "Cargando..." : getIdPlaceholder()}</option>
+              {usuarios.map((usuario) => (
+                <option key={usuario.id} value={usuario.nombre}>
+                  {usuario.nombre} {usuario.apellido}
+                </option>
+              ))}
+            </select>
+            {loadingUsuarios && (
+              <p className="text-xs text-gray-500 mt-1">Cargando...</p>
+            )}
+            {!loadingUsuarios && usuarios.length === 0 && (
+              <p className="text-xs text-red-500 mt-1">No se encontraron técnicos activos</p>
+            )}
+          </div>
+
+          {tipo === "usuario" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Estado de las bitácoras
+              </label>
+              <select
+                value={estadoBitacora}
+                onChange={(e) => setEstadoBitacora(e.target.value as "firmadas" | "pendientes")}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                disabled={isGenerating}
+              >
+                <option value="firmadas">Firmadas</option>
+                <option value="pendientes">Pendientes</option>
+              </select>
+            </div>
           )}
         </div>
       );

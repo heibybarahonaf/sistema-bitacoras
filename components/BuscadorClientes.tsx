@@ -1,14 +1,14 @@
 "use client";
 
 import Swal from "sweetalert2";
-import ModalPago from "@/components/ModalPago";
-import { Eye, Notebook, Download, ChevronLeft } from "lucide-react";
-import FormNuevaBitacora from "@/components/ModalBitacora";
 import LoadingSpinner from "./LoadingSpinner";
+import ModalPago from "@/components/ModalPago";
+import FormNuevaBitacora from "@/components/ModalBitacora";
+import PaginationButtons from "@/components/PaginationButtons";
 import React, { useEffect, useState, useCallback } from "react";
+import { Eye, Notebook, Download, ChevronLeft, Trash2  } from "lucide-react";
 import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
 import { TableHeader, TableCell } from "@/components/TableComponents";
-import PaginationButtons from "@/components/PaginationButtons";
 import { Bitacora, Cliente, Sistema, Equipo, Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
 
 interface PaginationMeta {
@@ -60,6 +60,7 @@ const BuscarCliente: React.FC = () => {
   const [paginaActualClientes, setPaginaActualClientes] = useState(1);
   const [paginaActualBitacoras, setPaginaActualBitacoras] = useState(1);
   const [isDownloading, setIsDownloading] = useState<number | null>(null);
+  const [isDelete, setIsDelete] = useState<number | null>(null);
   const [metaClientes, setMetaClientes] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0});
   const [metaBitacoras, setMetaBitacoras] = useState<PaginationMeta>({total: 0, page: 1, limit: 10, totalPages: 0 });
   const formatoLempiras = (valor: number) => valor.toLocaleString("es-HN", { style: "currency", currency: "HNL" });
@@ -192,7 +193,6 @@ const BuscarCliente: React.FC = () => {
         }
 
         const data = await res.json();
-        console.log(data)
 
         if (data.code === 200) {
           setBitacoras(data.results || []);
@@ -290,46 +290,46 @@ const BuscarCliente: React.FC = () => {
   }, []);
 
   useEffect(() => {
-  let intervalId: NodeJS.Timeout;
+    let intervalId: NodeJS.Timeout;
 
-  if (clienteSeleccionado?.id && intervaloActivo) {
-    intervalId = setInterval(async () => {
-      try {
-        const params = new URLSearchParams({
-          page: paginaActualBitacoras.toString(),
-          limit: metaBitacoras.limit.toString(),
-          ...(filtroEstado !== "todas" && { estado: filtroEstado }),
-        });
+    if (clienteSeleccionado?.id && intervaloActivo) {
+      intervalId = setInterval(async () => {
+        try {
+          const params = new URLSearchParams({
+            page: paginaActualBitacoras.toString(),
+            limit: metaBitacoras.limit.toString(),
+            ...(filtroEstado !== "todas" && { estado: filtroEstado }),
+          });
 
-        const res = await fetch(`/api/bitacoras/cliente/${clienteSeleccionado.id}?${params}`);
-        const data = await res.json();
+          const res = await fetch(`/api/bitacoras/cliente/${clienteSeleccionado.id}?${params}`);
+          const data = await res.json();
 
-        if (data.code === 200) {
-          const nuevas = data.results || [];
-          const haCambiado = JSON.stringify(nuevas) !== JSON.stringify(bitacoras);
+          if (data.code === 200) {
+            const nuevas = data.results || [];
+            const haCambiado = JSON.stringify(nuevas) !== JSON.stringify(bitacoras);
 
-          if (haCambiado) {
-            setBitacoras(nuevas);
-            setMetaBitacoras(data.meta || metaBitacoras);
+            if (haCambiado) {
+              setBitacoras(nuevas);
+              setMetaBitacoras(data.meta || metaBitacoras);
+            }
           }
+        } catch {
+
+          /*Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "error",
+            title: "Error al cargar firmas",
+          });*/
+
         }
-      } catch (error) {
+      }, 60000); 
+    }
 
-        Swal.fire({
-          toast: true,
-          position: "top-end",
-          icon: "error",
-          title: "Error al cargar firmas",
-        });
-
-      }
-    }, 60000); 
-  }
-
-  return () => {
-    if (intervalId) clearInterval(intervalId);
-  };
-}, [metaBitacoras,clienteSeleccionado?.id, paginaActualBitacoras, filtroEstado, bitacoras, intervaloActivo]);
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [metaBitacoras,clienteSeleccionado?.id, paginaActualBitacoras, filtroEstado, bitacoras, intervaloActivo]);
 
   const mostrarAlertaError = (mensaje: string) => {
     Swal.fire({
@@ -392,6 +392,46 @@ const BuscarCliente: React.FC = () => {
       setIsDownloading(null);
     }
   };
+
+  const handleEliminar = async (bitacoraId: number) => {
+    const result = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción no se puede revertir",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (!result.isConfirmed) return;    
+    setIsDelete(bitacoraId);
+
+    try {
+      const res = await fetch(`/api/bitacoras/${bitacoraId}`, { method: "DELETE" });
+      const data = await res.json();
+
+      if (!res.ok || data.code !== 200) {
+        mostrarAlertaError(data.message || "Error al eliminar la bitácora");
+
+        return;
+      }
+
+      mostrarAlertaExito("Bítacora eliminada con exito!");
+      if (clienteSeleccionado?.id) {
+      await Promise.all([
+        cargarBitacoras(clienteSeleccionado.id, paginaActualBitacoras),
+        cargarClientePorId(clienteSeleccionado.id)
+      ]);
+    }
+    } catch {
+      mostrarAlertaError("Error de conexión al eliminar la bitácora");
+    } finally {
+      setIsDelete(null);
+    }
+  };
+
 
   const handleNuevaBitacora = async () => {
 
@@ -659,7 +699,7 @@ const BuscarCliente: React.FC = () => {
                               </span>
                             </TableCell>
                             <TableCell>
-                              <div className="flex justify-center gap-2">
+                              <div className="justify-center gap-2">
                                 <button
                                   onClick={() => mostrarDetalleBitacora(b)}
                                   className="text-gray-600 hover:text-emerald-600 transition-colors p-1 rounded-full hover:bg-emerald-50"
@@ -677,6 +717,18 @@ const BuscarCliente: React.FC = () => {
                                 >
                                   <Download className="w-5 h-5" />
                                 </button>
+
+                                <button
+                                  onClick={() => handleEliminar(b.id)}
+                                  disabled={isDelete === b.id}
+                                  className={`text-gray-600 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-red-50 ${
+                                    isDelete === b.id ? "opacity-50 cursor-not-allowed" : ""
+                                  }`}
+                                  title="Anular"
+                                >
+                                  <Trash2 className="w-5 h-5" />
+                                </button>
+                                
                               </div>
                             </TableCell>
                           </tr>
@@ -704,8 +756,6 @@ const BuscarCliente: React.FC = () => {
                           </tr>
                         </tfoot>
                       )}
-
-
                     </table>
                   </div>
                 </>

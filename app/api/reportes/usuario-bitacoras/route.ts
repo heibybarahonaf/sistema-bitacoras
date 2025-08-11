@@ -12,12 +12,13 @@ export async function GET(request: Request) {
         const fechaInicio = searchParams.get('fechaInicio');
         const fechaFinal = searchParams.get('fechaFinal');
         const nombre = searchParams.get('nombre');
+        const estado = searchParams.get('estado') as "firmadas" | "pendientes" | null;
 
         if (!fechaInicio || !fechaFinal || !nombre) {
             throw new ResponseDto(400, "Se requieren fechas y el nombre del tecnico");
         }
 
-        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(nombre, fechaInicio, fechaFinal);
+        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(nombre, fechaInicio, fechaFinal, estado || "firmadas");
         const buffer = await generarPDFPorTecnico(bitacoras, fechaInicio, fechaFinal);
 
         return new NextResponse(buffer, {

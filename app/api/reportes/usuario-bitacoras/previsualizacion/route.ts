@@ -14,6 +14,7 @@ type Bitacora = {
     horas_consumidas: number | null;
     tipo_horas: string | null;
     cliente?: { empresa: string } | null;
+    firmaCliente?: { firma_base64: string | null, updatedAt: Date | null} | null;
     usuario?: { 
         nombre: string;
         comision: number | null;
@@ -31,6 +32,7 @@ export async function GET(request: Request) {
         const fechaInicio = searchParams.get('fechaInicio');
         const fechaFinal = searchParams.get('fechaFinal');
         const nombre = searchParams.get('nombre');
+        const estado = searchParams.get('estado') as "firmadas" | "pendientes" | null;
 
         if (!fechaInicio || !fechaFinal) {
             throw new ResponseDto(400, "Se requieren ambas fechas");
@@ -40,7 +42,7 @@ export async function GET(request: Request) {
             throw new ResponseDto(400, "Se requiere el nombre del técnico");
         }
 
-        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(nombre, fechaInicio, fechaFinal);
+        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(nombre, fechaInicio, fechaFinal, estado || "firmadas");
         
         if (bitacoras.length === 0) {
             throw new ResponseDto(404, "No se encontraron bitácoras para el técnico en el rango de fechas especificado");
@@ -68,8 +70,11 @@ export async function GET(request: Request) {
                 tipo_horas: bitacora.tipo_horas,
                 monto: Number(monto.toFixed(2)),
                 comision: Number(comision.toFixed(2)),
-                porcentaje_comision: comisionPorcentaje
+                porcentaje_comision: comisionPorcentaje,
+                firmaCliente: bitacora.firmaCliente?.updatedAt || null,
+                firma_base64: bitacora.firmaCliente?.firma_base64 || ""
             };
+            
         });
 
 
