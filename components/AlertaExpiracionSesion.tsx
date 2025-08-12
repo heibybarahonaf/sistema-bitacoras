@@ -54,7 +54,7 @@ export default function AlertaExpiracionSesion() {
           Swal.fire({
             icon: "error",
             title: "Error de red",
-            text: "No se pudo contactar al servidor.",
+            text: "No se pudo conectar con el servidor",
           });
 
         }

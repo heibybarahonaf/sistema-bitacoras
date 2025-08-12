@@ -3,7 +3,8 @@
 import Swal from "sweetalert2";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { Send, Loader2, RotateCcw } from "lucide-react";
+import { Send, RotateCcw } from "lucide-react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 type Pregunta = { id: number; texto: string };
 
@@ -165,14 +166,14 @@ const EncuestaPage = () => {
   };
 
   if (cargando) {
-    return <div className="text-center p-6">Cargando encuesta...</div>;
+    return <LoadingSpinner mensaje="Cargando encuesta..."/>;
   }
 
   if (yaContestado) {
     return (
-      <div className="max-w-3xl mx-auto p-6 text-center text-green-700 font-semibold">
-        <h2 className="text-2xl mb-4">Encuesta ya contestada</h2>
-        <p>Gracias por tu participación. Ya has enviado esta encuesta anteriormente.</p>
+      <div className="max-w-3xl mx-auto p-6 text-center font-semibold">
+        <h2 className="text-2xl mb-4">La encuesta ya ha sido completada!</h2>
+        <p>Gracias por tu participación.</p>
       </div>
     );
   }
@@ -229,12 +230,10 @@ const EncuestaPage = () => {
           >
             {enviando ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
                 Enviando...
               </>
             ) : (
               <>
-                <Send className="w-5 h-5" />
                 Enviar
               </>
             )}
