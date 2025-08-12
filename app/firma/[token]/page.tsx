@@ -5,10 +5,12 @@ import { Bitacora } from "@prisma/client";
 import { useParams } from "next/navigation";
 import SignatureCanvas from "react-signature-canvas";
 import { useEffect, useRef, useState } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function FirmaClientePage() {
   const { token } = useParams();
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState<number | null>(null);
   const sigCanvas = useRef<SignatureCanvas>(null);
   const [firmaId, setFirmaId] = useState<number | null>(null);
   const [bitacora, setBitacora] = useState<Bitacora | null>(null);
@@ -117,6 +119,8 @@ export default function FirmaClientePage() {
       return;
     }
 
+    setIsSaving(1);
+
     try {
       const res = await fetch("/api/firmas/finalizar", {
         method: "POST",
@@ -147,12 +151,13 @@ export default function FirmaClientePage() {
       }
     } catch {
       Swal.fire("Error", "Error al enviar firma", "error");
+    } finally{
+      setIsSaving(null);
     }
     
   };
 
-  if (loading)
-    return <div className="p-8 text-center">Validando enlace...</div>;
+  if (loading) return <LoadingSpinner mensaje="Validando enlace..."/>
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
@@ -168,8 +173,8 @@ export default function FirmaClientePage() {
             <p>
               <strong>Fecha del Servicio:</strong>{" "}
               {typeof bitacora.fecha_servicio === "string"
-                ? (bitacora.fecha_servicio as string).split("T")[0]
-                : (bitacora.fecha_servicio as Date).toISOString().split("T")[0]}
+                ? formatearFecha(bitacora.fecha_servicio as string)
+              : formatearFecha(bitacora.fecha_servicio.toISOString())}
             </p>
             <p>
               <strong>Técnico:</strong>{" "}
@@ -214,12 +219,30 @@ export default function FirmaClientePage() {
           </button>
           <button
             onClick={handleSubmit}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            disabled={isSaving !== null}
+            className={`px-4 py-2 text-white rounded ${
+              isSaving !== null
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
           >
-            Enviar
+            {isSaving !== null ? "Enviando..." : "Enviar"}
           </button>
         </div>
       </div>
     </div>
   );
 }
+
+const formatearFecha = (fecha: string) => {
+  if (!fecha) return "";
+  const d = new Date(fecha);
+
+  if (isNaN(d.getTime())) return "Fecha inválida";
+
+  const dia = d.getUTCDate().toString().padStart(2, "0");
+  const mes = (d.getUTCMonth() + 1).toString().padStart(2, "0");
+  const año = d.getUTCFullYear();
+
+  return `${dia}/${mes}/${año}`;
+};
