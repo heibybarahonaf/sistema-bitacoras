@@ -120,13 +120,15 @@ export class BitacoraService {
         const where: any = { cliente_id: idCliente };
         
         if (filtroEstado === 'pendientes') {
-            where.firmaCliente = {
-                is: { firma_base64: '' }
-            };
+            where.OR = [
+                { firmaCliente: { firma_base64: null } },
+                { firmaCliente: { firma_base64: '' } }
+            ];
         } else if (filtroEstado === 'firmadas') {
-            where.firmaCliente = {
-                is: { firma_base64: { not: '' } }
-            };
+            where.AND = [
+                { firmaCliente: { firma_base64: { not: null } } },
+                { firmaCliente: { firma_base64: { not: '' } } }
+            ];
         }
 
         const [bitacoras, total] = await Promise.all([
@@ -235,16 +237,15 @@ export class BitacoraService {
         };
 
         if (estadoBitacora === "firmadas") {
-            filtro.firmaCliente = {
-                firma_base64: {
-                    not: ""
-                }
-            };
-
+            filtro.AND = [
+                { firmaCliente: { is: { firma_base64: { not: null } } } },
+                { firmaCliente: { is: { firma_base64: { not: "" } } } }
+            ];
         } else if (estadoBitacora === "pendientes") {
             filtro.OR = [
-                { firmaCliente: null },
-                { firmaCliente: { firma_base64: "" } }
+                { firmaCliente: { is: null } },
+                { firmaCliente: { is: { firma_base64: "" } } },
+                { firmaCliente: { is: { firma_base64: null } } }
             ];
         }
 
