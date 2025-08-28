@@ -9,6 +9,7 @@ type Bitacora = {
     id: number;
     fecha_servicio: Date;
     no_ticket: string | null;
+    no_factura: string | null;
     cliente_id: number;
     usuario_id: number;
     horas_consumidas: number | null;
@@ -64,6 +65,7 @@ export async function GET(request: Request) {
                 id: bitacora.id,
                 fecha: bitacora.fecha_servicio,
                 ticket: bitacora.no_ticket,
+                no_factura: bitacora.no_factura == null ? "N/A" : bitacora.no_factura,
                 cliente: bitacora.cliente?.empresa ?? `ID: ${bitacora.cliente_id}`,
                 tecnico: bitacora.usuario?.nombre ?? `ID: ${bitacora.usuario_id}`,
                 horas,

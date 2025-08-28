@@ -30,6 +30,7 @@ model Bitacora {
   firmaCliente_id        Int?
   firmaTecnico           Boolean
   no_ticket              String              @db.VarChar(10)
+  no_factura             String?             @db.VarChar(10)
   fecha_servicio         DateTime
   hora_llegada           DateTime
   hora_salida            DateTime
@@ -41,9 +42,9 @@ model Bitacora {
   nombres_capacitados    String?
   descripcion_servicio   String
   fase_implementacion_id Int
-  comentarios            String
+  comentarios            String?
   calificacion           Int?
-  ventas                 String
+  ventas                 String?
   horas_consumidas       Int
   monto                  Int?
   tipo_horas             String              @db.VarChar(25)

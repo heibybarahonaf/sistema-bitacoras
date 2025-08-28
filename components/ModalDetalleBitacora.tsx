@@ -184,6 +184,9 @@ export default function ModalDetalleBitacora({
         minute: "2-digit",
       }),
     },
+    ...(bitacora.no_factura
+      ? [{ label: "No. Factura", value: bitacora.no_factura }]
+      : [{ label: "No. Factura", value: "N/A" }]),
     { label: "Horas Consumidas", value: bitacora.horas_consumidas },
     { label: "Tipo de Horas", value: bitacora.tipo_horas },
     { label: "Responsable", value: bitacora.responsable },

@@ -11,6 +11,7 @@ interface BitacoraData {
   id: number;
   fecha: string;
   ticket: string;
+  no_factura: string;
   cliente: string;
   tecnico: string;
   hora_llegada: string;
@@ -488,10 +489,13 @@ export default function ReportesPage() {
         }
       );
 
+      //console.log(response)
+
 
       if (response.ok) {
         const result = await response.json();
         const data = result.results?.[0] || [];
+        console.log(data)
 
         setModalPreview((prev) => ({
           ...prev,
@@ -720,6 +724,9 @@ export default function ReportesPage() {
                                   Bitacora #
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                                  Factura #
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                                   Cliente
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -838,6 +845,9 @@ export default function ReportesPage() {
                               <>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                   {bitacora.id}
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {bitacora.no_factura}
                                 </td>
                                 <td
                                   className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate"
