@@ -13,6 +13,9 @@ export const CrearBitacoraDto = z.object({
     no_ticket: z.string()
         .min(1, "El número de ticket es obligatorio.")
         .max(10, "El número de ticket no debe exceder los 10 caracteres."),
+    no_factura: z.string()
+        .min(1, "El número de factura es obligatorio.")
+        .max(15, "El número de factura no debe exceder los 15 caracteres."),
     fecha_servicio: z.coerce.date({
         invalid_type_error: "La fecha del servicio debe ser válida.",
     }),

@@ -255,6 +255,7 @@ export class BitacoraService {
                 id: true,
                 fecha_servicio: true,
                 no_ticket: true,
+                no_factura: true,
                 cliente_id: true,
                 usuario_id: true,
                 horas_consumidas: true,

@@ -27,6 +27,7 @@ export type BitacoraReporteComisiones = {
     id: number;
     fecha_servicio: Date;
     no_ticket: string | null;
+    no_factura: string | null;
     cliente_id: number;
     usuario_id: number;
     horas_consumidas: number | null;
@@ -203,7 +204,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[
     let porcentajeComision = 0;
 
     const columnas = [
-        "FECHA", "BITÁCORA NO.", "TICKET", "CLIENTE", "HORAS", "TIPO HORAS", "% COMISIÓN", "MONTO", "COMISIÓN", "FINALIZACIÓN", 
+        "FECHA", "BITÁCORA NO.", "TICKET", "FACTURA NO.", "CLIENTE", "HORAS", "TIPO HORAS", "% COMISIÓN", "MONTO", "COMISIÓN", "FINALIZACIÓN", 
     ];
 
     let total = 0;
@@ -219,6 +220,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[
             formatearFecha(b.fecha_servicio.toISOString()),
             b.id,
             b.no_ticket ?? campo_vacio,
+            b.no_factura == null ? "N/A" : b.no_factura,
             b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
             horas,
             b.tipo_horas ?? campo_vacio,

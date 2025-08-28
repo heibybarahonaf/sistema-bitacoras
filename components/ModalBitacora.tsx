@@ -191,6 +191,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
   
   const [marca, setMarca] = useState("");
   const [modelo, setModelo] = useState("");
+  const [factura, setFactura] = useState("");
   const [noSerie, setNoSerie] = useState("");
   const [millaje, setMillaje] = useState("");
   const [accesorios, setAccesorios] = useState("");
@@ -381,6 +382,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
     try {
       if (!modalidad) throw new Error("Seleccione la modalidad");
       if (!noTicket) throw new Error("No. Ticket es obligatorio");
+      if (!factura) throw new Error("No. Factura es obligatorio");
       if (!responsable) throw new Error("Responsable es obligatorio");
       if (!tipoHoras) throw new Error("Tipo de horas es obligatorio");
       if (!horaSalida) throw new Error("Hora de salida es obligatoria");
@@ -436,6 +438,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         comentarios,
         calificacion: 0,
         ventas,
+        //agregar campo factura
+        no_factura: factura,
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
         firmaTecnico: true,
@@ -678,6 +682,12 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             value={sistemaId}
             onChange={setSistemaId}
             options={sistemas.map((s) => ({ id: s.id, sistema: s.sistema }))}
+          />
+          <InputField
+            label="No. Factura"
+            value={factura}
+            onChange={setFactura}
+            required
           />
           <SelectSimple
             label="Modalidad"
