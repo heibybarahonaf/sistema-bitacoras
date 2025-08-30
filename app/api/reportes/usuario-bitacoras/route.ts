@@ -14,12 +14,24 @@ export async function GET(request: Request) {
         const nombre = searchParams.get('nombre');
         const estado = searchParams.get('estado') as "firmadas" | "pendientes" | null;
 
-        if (!fechaInicio || !fechaFinal || !nombre) {
-            throw new ResponseDto(400, "Se requieren fechas y el nombre del tecnico");
+        if (!fechaInicio || !fechaFinal) {
+            throw new ResponseDto(400, "Se requieren fechas de inicio y final");
         }
 
-        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(nombre, fechaInicio, fechaFinal, estado || "firmadas");
-        const buffer = await generarPDFPorTecnico(bitacoras, fechaInicio, fechaFinal);
+        if (nombre === "") {
+            throw new ResponseDto(400, "Se requiere el nombre del técnico o 'Todos los técnicos'");
+        }
+        
+        let bitacoras;
+        let buffer;
+                
+        if (nombre === "Todos" || !nombre) {
+            bitacoras = await BitacoraService.obtenerTodasBitacorasFechas(fechaInicio, fechaFinal, estado || "firmadas");
+            buffer = await generarPDFPorTecnico(bitacoras, fechaInicio, fechaFinal, "Todos");
+        } else {
+            bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(nombre, fechaInicio, fechaFinal, estado || "firmadas");
+            buffer = await generarPDFPorTecnico(bitacoras, fechaInicio, fechaFinal, nombre);
+        }
 
         return new NextResponse(buffer, {
             status: 200,

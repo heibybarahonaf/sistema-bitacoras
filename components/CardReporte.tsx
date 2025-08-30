@@ -24,6 +24,7 @@ interface CardReporteProps {
     usuario?: string,
     estadoBitacora?: "firmadas" | "pendientes"
   ) => void;
+  showTodosOption?: boolean; 
 }
 
 interface Usuario {
@@ -40,8 +41,9 @@ export default function CardReporte({
   isGenerating,
   onGenerate,
   onPreview,
+  showTodosOption = false, 
 }: CardReporteProps) {
-  const [entidadId, setEntidadId] = useState("");
+  const [entidadId, setEntidadId] = useState(showTodosOption ? "Todos" : "");
   const [fechaFinal, setFechaFinal] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -68,25 +70,21 @@ export default function CardReporte({
         const data = await response.json();
         setUsuarios(data.results || []);
       } else {
-
         Swal.fire({
           toast: true,
           position: "top-end",
           icon: "error",
           title: "Error al cargar usuarios activos",
         });
- 
         setUsuarios([]);
       }
     } catch {
-
       Swal.fire({
         toast: true,
         position: "top-end",
         icon: "error",
         title: "Error de conexión al cargar usuarios",
       });
-    
       setUsuarios([]);
     } finally {
       setLoadingUsuarios(false);
@@ -94,25 +92,35 @@ export default function CardReporte({
   };
 
   const handleGenerate = () => {
+    const usuarioId = tipo === "usuario" || tipo === "ventas" ? 
+    (entidadId === "Todos" ? "Todos" : entidadId) : undefined;
+  
+    const rtnCliente = tipo === "cliente" ? entidadId : undefined;
+    
     onGenerate(
       tipo,
       fechaInicio,
       fechaFinal,
-      tipo === "usuario" ? entidadId : undefined,
-      tipo === "cliente" ? entidadId : undefined,
-      tipo === "ventas" ? entidadId : undefined,
+      usuarioId,
+      rtnCliente,
+      usuarioId,
       tipo === "usuario" ? estadoBitacora : undefined
     );
   };
 
   const handlePreview = () => {
+    const usuarioId = tipo === "usuario" || tipo === "ventas" ? 
+    (entidadId === "Todos" ? "Todos" : entidadId) : undefined;
+  
+    const rtnCliente = tipo === "cliente" ? entidadId : undefined;
+    
     onPreview(
       tipo,
       fechaInicio,
       fechaFinal,
-      tipo === "usuario" ? entidadId : undefined,
-      tipo === "cliente" ? entidadId : undefined,
-      tipo === "ventas" ? entidadId : undefined,
+      usuarioId,
+      rtnCliente,
+      usuarioId,
       tipo === "usuario" ? estadoBitacora : undefined
     );
   };
@@ -154,6 +162,7 @@ export default function CardReporte({
               disabled={isGenerating || loadingUsuarios}
             >
               <option value="">{loadingUsuarios ? "Cargando..." : getIdPlaceholder()}</option>
+              {showTodosOption && <option value="Todos">Todos los técnicos</option>}
               {usuarios.map((usuario) => (
                 <option key={usuario.id} value={usuario.nombre}>
                   {usuario.nombre} {usuario.apellido}

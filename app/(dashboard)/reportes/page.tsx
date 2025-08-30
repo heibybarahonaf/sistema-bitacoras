@@ -18,6 +18,7 @@ interface BitacoraData {
   hora_salida: string;
   horas: string;
   servicio: string;
+  usuario: string;
   modalidad: string;
   tipo_horas: string;
   monto: string;
@@ -52,7 +53,7 @@ export default function ReportesPage() {
 
   const [activeTab, setActiveTab] = useState<"general" | "cliente" | "usuario" | "ventas">("general");
 
-  // --- Alertas ---
+  // Alertas
   const mostrarAlertaError = (mensaje: string) => {
     Swal.fire({
       icon: "error",
@@ -311,17 +312,17 @@ export default function ReportesPage() {
       return;
     }
 
-    if (tipo == "usuario" && !nombre) {
-      mostrarAlertaError(`Selecciona el Nombre del técnico`);
+    if (tipo === "usuario" && !nombre) {
+      mostrarAlertaError(`Selecciona el Nombre del técnico o "Todos los técnicos"`);
       return;
     }
 
-    if (tipo == "ventas" && !usuario) {
-      mostrarAlertaError(`Selecciona el Nombre del técnico`);
+    if (tipo === "ventas" && !usuario) {
+      mostrarAlertaError(`Selecciona el Nombre del técnico o "Todos los técnicos"`);
       return;
     }
 
-    if (tipo == "cliente" && !rtn) {
+    if (tipo === "cliente" && !rtn) {
       const cliente = await mostrarModalBusquedaClientes();
       if (!cliente) return;
       rtn = cliente.rtn;
@@ -335,15 +336,19 @@ export default function ReportesPage() {
         fechaFinal,
       });
 
-      if (tipo == "usuario" && nombre) {
-        params.append("nombre", nombre);
+      if (tipo === "usuario" && nombre) {
+        if (nombre !== "Todos") {
+          params.append("nombre", nombre);
+        }
         if (estadoBitacora) {
           params.append("estado", estadoBitacora);
         }
-      } else if (tipo == "cliente" && rtn) {
+      } else if (tipo === "cliente" && rtn) {
         params.append("RTN", rtn);
-      } else if (tipo == "ventas" && usuario) {
-        params.append("usuario", usuario);
+      } else if (tipo === "ventas" && usuario) {
+        if (usuario !== "Todos") {
+          params.append("usuario", usuario);
+        }
       }
 
       const response = await fetch(
@@ -433,12 +438,12 @@ export default function ReportesPage() {
     }
 
     if (tipo === "usuario" && !id) {
-      mostrarAlertaError("Nombre requerido para vista previa por técnico");
+      mostrarAlertaError("Selecciona un técnico o 'Todos los técnicos' para la vista previa");
       return;
     }
 
     if (tipo === "ventas" && !usuario) {
-      mostrarAlertaError("Nombre requerido para vista previa por técnico");
+      mostrarAlertaError("Selecciona un técnico o 'Todos los técnicos' para la vista previa");
       return;
     }
 
@@ -453,9 +458,9 @@ export default function ReportesPage() {
         tipo === "cliente"
           ? `Cliente RTN: ${rtn}`
           : tipo === "usuario"
-          ? `Técnico: ${id}`
+          ? id === "Todos" ? "Todos los técnicos" : `Técnico: ${id}`
           : tipo === "ventas"
-          ? `Técnico: ${usuario}`
+          ? usuario === "Todos" ? "Todos los técnicos" : `Técnico: ${usuario}`
           : "Reporte General",
       rtnCliente: tipo === "cliente" ? rtn || "" : "",
       nombreCliente: "",
@@ -468,16 +473,19 @@ export default function ReportesPage() {
       });
 
       if (tipo === "usuario" && id) {
-        params.append("nombre", id);
+        if (id !== "Todos") {
+          params.append("nombre", id);
+        }
         if (estadoBitacora) {
           params.append("estado", estadoBitacora);
         }
       } else if (tipo === "cliente" && rtn) {
         params.append("RTN", rtn);
       } else if (tipo === "ventas" && usuario) {
-        params.append("usuario", usuario);
+        if (usuario !== "Todos") {
+          params.append("usuario", usuario);
+        }
       }
-
 
       const response = await fetch(
         `/api/reportes/${tipo}-bitacoras/previsualizacion?${params.toString()}`,
@@ -489,13 +497,9 @@ export default function ReportesPage() {
         }
       );
 
-      //console.log(response)
-
-
       if (response.ok) {
         const result = await response.json();
         const data = result.results?.[0] || [];
-        console.log(data)
 
         setModalPreview((prev) => ({
           ...prev,
@@ -513,7 +517,6 @@ export default function ReportesPage() {
         } catch {
           errorData = { message: "Error interno del servidor" };
         }
-
 
         mostrarAlertaAdvertencia(
           errorData.message || "Error al cargar la vista previa"
@@ -589,6 +592,7 @@ export default function ReportesPage() {
               isGenerating={isGenerating[tipo]}
               onGenerate={generarReporte}
               onPreview={previsualizarReporte}
+              showTodosOption={tipo === "usuario" || tipo === "ventas"}
             />
           ))}
       </div>
@@ -606,20 +610,12 @@ export default function ReportesPage() {
                   {modalPreview.tipo === "cliente"
                     ? `RTN: ${modalPreview.rtnCliente} - Cliente: ${modalPreview.nombreCliente}`
                     : modalPreview.tipo === "usuario"
-
-                    ? `Técnico: ${
-                        modalPreview.filtroNombre.split("Técnico: ")[1] ||
-                        modalPreview.filtroNombre
-                      }`
+                    ? modalPreview.filtroNombre
                     : modalPreview.tipo === "ventas"
-                    ? `Técnico: ${
-                        modalPreview.filtroNombre.split("Técnico: ")[1] ||
-                        modalPreview.filtroNombre
-                      }`
+                    ? modalPreview.filtroNombre
                     : "Reporte General"}{" "}
-                  • {formatearFecha(modalPreview.fechaInicio)} al{" "}
+                  • {formatearFecha(modalPreview.fechaInicio)} al {" "}
                   {formatearFecha(modalPreview.fechaFinal)}
-
                 </p>
               </div>
               <button
@@ -636,8 +632,7 @@ export default function ReportesPage() {
               ) : modalPreview.data.length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500">
-                    No se encontraron bitácoras para el rango de fechas
-                    especificado
+                    No se encontraron bitácoras para el rango de fechas especificado
                   </p>
                 </div>
               ) : (
@@ -658,6 +653,9 @@ export default function ReportesPage() {
                             </th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Ventas
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Técnico
                             </th>
                           </>
                         ) : (
@@ -745,7 +743,10 @@ export default function ReportesPage() {
                                   Comisión
                                 </th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                  Finalizada
+                                  Técnico
+                                </th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                  Firma Cliente
                                 </th>
                               </>
                             )}
@@ -773,6 +774,9 @@ export default function ReportesPage() {
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {bitacora.venta}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {bitacora.tecnico}
                               </td>
                             </tr>
                           );
@@ -871,6 +875,9 @@ export default function ReportesPage() {
                                     {parseFloat(bitacora.comision).toFixed(2)}
                                 </td>
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  {bitacora.usuario}
+                                </td>
+                                <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {formatearFechaFirma(bitacora.firma_base64, bitacora.firmaCliente)}
                                 </td>
                               </>
@@ -899,6 +906,14 @@ export default function ReportesPage() {
                       0
                     );
 
+                    const totalHorasIndividuales = modalPreview.data
+                      .filter(item => item.tipo_horas === "Individual")
+                      .reduce((sum, item) => sum + parseFloat(item.horas || "0"), 0);
+                      
+                    const totalHorasPaquete = modalPreview.data
+                      .filter(item => item.tipo_horas === "Paquete")
+                      .reduce((sum, item) => sum + parseFloat(item.horas || "0"), 0);
+
                     return (
                       <div className="flex flex-wrap gap-4 text-sm text-gray-700">
                         <span className="font-medium">Total Monto: </span> L.{" "}
@@ -906,6 +921,14 @@ export default function ReportesPage() {
                         <span className="font-medium">
                           Total Comisión:{" "}
                         </span> L. {totalComisiones.toFixed(2)}
+                        <div>
+                        <span className="font-medium">Horas Individuales: </span>{" "}
+                          {totalHorasIndividuales.toFixed(0)}
+                        </div>
+                        <div>
+                          <span className="font-medium">Horas Paquete: </span>{" "}
+                          {totalHorasPaquete.toFixed(0)}
+                        </div>
                       </div>
                     );
                   })()}
