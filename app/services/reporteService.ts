@@ -97,7 +97,12 @@ function generarReporte(
     fechaFinal: string,
     columnas: string[],
     datos: (string | number | null)[][],
-    valores_final?: { total?: string; comision?: string },
+    valores_final?: { 
+        total?: string; 
+        comision?: string;
+        horasIndividuales?: string;
+        horasPaquete?: string;
+    },
     nombresExtras?: DatosExtrasReporte
 ): jsPDF {
     const doc = new jsPDF('l', 'mm', 'a4');
@@ -142,7 +147,7 @@ function generarReporte(
     });
 
     const pageHeight = doc.internal.pageSize.height;
-    const espacioFooter = 18; 
+    const espacioFooter = 30;
     
     let finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 5; 
     if (finalY + espacioFooter > pageHeight) {
@@ -154,18 +159,29 @@ function generarReporte(
     doc.setFont("helvetica", "bold");
     doc.text(`Total registros: ${bitacoras.length}`, 10, finalY);
 
-    if (valores_final?.total) {
-        finalY += 6;
-        doc.text(`Total monto: ${valores_final.total}`, 10, finalY);
-    }
+    if (valores_final) {
+        if (valores_final.total) {
+            finalY += 6;
+            doc.text(`Total monto: ${valores_final.total}`, 10, finalY);
+        }
 
-    if (valores_final?.comision) {
-        finalY += 6;
-        doc.text(`Comisión: ${valores_final.comision}`, 10, finalY);
+        if (valores_final.comision) {
+            finalY += 6;
+            doc.text(`Comisión: ${valores_final.comision}`, 10, finalY);
+        }
+
+        if (valores_final.horasIndividuales) {
+            finalY += 6;
+            doc.text(`Horas Individuales: ${valores_final.horasIndividuales}`, 10, finalY);
+        }
+
+        if (valores_final.horasPaquete) {
+            finalY += 6;
+            doc.text(`Horas Paquete: ${valores_final.horasPaquete}`, 10, finalY);
+        }
     }
 
     return doc;
-
 }
 
 
@@ -196,7 +212,7 @@ export function generarPDFBitacoras(bitacoras: BitacoraReporteGeneral[], fechaIn
 }
 
 
-export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[], fechaInicio: string, fechaFinal: string): Promise<ArrayBuffer> {
+export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[], fechaInicio: string, fechaFinal: string, nombre?: string): Promise<ArrayBuffer> {
     
     const config = await ConfiguracionService.obtenerConfiguracionPorId(1);
     const precioIndividual = config.valor_hora_individual;
@@ -204,17 +220,29 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[
     let porcentajeComision = 0;
 
     const columnas = [
-        "FECHA", "BITÁCORA NO.", "TICKET", "FACTURA NO.", "CLIENTE", "HORAS", "TIPO HORAS", "% COMISIÓN", "MONTO", "COMISIÓN", "FINALIZACIÓN", 
+        "FECHA", "BITÁCORA NO.", "TICKET", "FACTURA NO.", "CLIENTE", "HORAS", "TIPO HORAS", "% COMISIÓN", "MONTO", "COMISIÓN", "TECNICO" ,"FIRMA CLIENTE", 
     ];
 
     let total = 0;
+    let totalComision = 0;
+    let totalHorasIndividuales = 0;
+    let totalHorasPaquete = 0;
+    
     const datos = bitacoras.map(b => {
         const precio = b.tipo_horas === "Individual" ? precioIndividual : precioPaquete;
         const horas = b.horas_consumidas ?? 0;
         const monto = horas * precio;
         porcentajeComision = b.usuario?.comision??0;
         const comision = monto * (porcentajeComision / 100);
+        
         total += monto;
+        totalComision += comision;
+        
+        if (b.tipo_horas === "Individual") {
+            totalHorasIndividuales += horas;
+        } else if (b.tipo_horas === "Paquete") {
+            totalHorasPaquete += horas;
+        }
 
         return [
             formatearFecha(b.fecha_servicio.toISOString()),
@@ -227,6 +255,7 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[
             b.usuario?.comision,
             monto.toFixed(2),
             comision.toFixed(2),
+            b.usuario?.nombre,
             formatearFechaFirma(
                 b.firmaCliente?.firma_base64 ?? null,
                 b.firmaCliente?.updatedAt instanceof Date
@@ -236,8 +265,14 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[
         ].map(v => v === undefined ? null : v);
     }) as (string | number | null)[][];
 
-    const comision = total * (porcentajeComision / 100);
     const usuario = bitacoras[0]?.usuario ?? null;
+    const totales = {
+        total: `L. ${total.toFixed(2)}`,
+        comision: `L. ${totalComision.toFixed(2)}`,
+        horasIndividuales: `${totalHorasIndividuales.toFixed(0)} horas`,
+        horasPaquete: `${totalHorasPaquete.toFixed(0)} horas`
+    };
+
     const doc = generarReporte(
         "Reporte de Comisiones Técnico",  
         bitacoras,                       
@@ -245,28 +280,24 @@ export async function generarPDFPorTecnico(bitacoras: BitacoraReporteComisiones[
         fechaFinal,                      
         columnas,                        
         datos,                           
-        {                              
-            total: `L. ${total.toFixed(2)}`,
-            comision: `L. ${comision.toFixed(2)}`,
-        },
+        totales,
         {                               
-            tecnico: safe(usuario?.nombre),
-            correoUsuario: safe(usuario?.correo),
-            telefono_usuario: safe(usuario?.telefono),
-            zona: safe(usuario?.zona_asignada)
+            tecnico: safe(nombre=="Todos" ? "Todos los tecnicos" : usuario?.nombre),
+            correoUsuario: safe(nombre=="Todos" ? "N/A" : usuario?.correo),
+            telefono_usuario: safe(nombre=="Todos" ? "N/A" : usuario?.telefono),
+            zona: safe(nombre=="Todos" ? "N/A" : usuario?.zona_asignada)
         }
     );
 
     return doc.output('arraybuffer');
-
 }
 
 
-export async function generarPDFPorVentasTecnico(bitacoras: BitacoraReporteVentas[], fechaInicio: string, fechaFinal: string): Promise<ArrayBuffer> {
+export async function generarPDFPorVentasTecnico(bitacoras: BitacoraReporteVentas[], fechaInicio: string, fechaFinal: string, nombre?: string): Promise<ArrayBuffer> {
    
     const usuario = bitacoras[0]?.usuario ?? null;
     const columnas = [
-        "FECHA", "BITÁCORA NO.", "CLIENTE", "VENTAS"
+        "FECHA", "BITÁCORA NO.", "CLIENTE", "VENTAS", "TÉCNICO"
     ];
 
     const datos = bitacoras.map(b => {
@@ -275,7 +306,8 @@ export async function generarPDFPorVentasTecnico(bitacoras: BitacoraReporteVenta
             formatearFecha(b.fecha_servicio.toISOString()),
             b.id,
             b.cliente?.empresa ?? `ID: ${b.cliente_id}`,
-            b.ventas ?? campo_vacio
+            b.ventas ?? campo_vacio,
+            b.usuario?.nombre ?? `ID: ${b.usuario_id}`
         ].map(v => v === undefined ? null : v);
 
     }) as (string | number | null)[][];
@@ -289,10 +321,10 @@ export async function generarPDFPorVentasTecnico(bitacoras: BitacoraReporteVenta
         datos,                           
         undefined,
         {
-            tecnico: safe(usuario?.nombre),
-            correoUsuario: safe(usuario?.correo),
-            telefono_usuario: safe(usuario?.telefono),
-            zona: safe(usuario?.zona_asignada)
+            tecnico: safe(nombre == "Todos" ? "Todos los técnicos" : usuario?.nombre),
+            correoUsuario: safe(nombre == "Todos" ? "N/A" : usuario?.correo),
+            telefono_usuario: safe(nombre == "Todos" ? "N/A" : usuario?.telefono),
+            zona: safe(nombre == "Todos" ? "N/A" : usuario?.zona_asignada)
         }
     );
 

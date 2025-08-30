@@ -261,11 +261,11 @@ export default function PagosPage() {
                 {pagos.map((pago) => (
                   <tr key={pago.id} className="hover:bg-gray-50 transition-colors">
                     <TableCell>{pago.no_factura}</TableCell>
-                    <TableCell className="hidden md:table-cell">
+                    <TableCell className="hidden md:table-cell max-w-[200px] min-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
                       {pago.cliente?.empresa || pago.cliente?.responsable}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{pago.forma_pago}</TableCell>
-                    <TableCell className="hidden md:table-cell">{pago.detalle_pago}</TableCell>
+                    <TableCell className="hidden md:table-cell max-w-[200px] min-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">{pago.detalle_pago}</TableCell>
                     <TableCell>L.{pago.monto}</TableCell>
                     <TableCell className="hidden md:table-cell">{pago.cant_horas}</TableCell>
                     <TableCell className="hidden md:table-cell">{pago.tipo_horas}</TableCell>

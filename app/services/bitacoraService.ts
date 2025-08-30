@@ -219,6 +219,127 @@ export class BitacoraService {
     }
 
 
+    public static async obtenerTodasBitacorasFechas(fechaInicio: string, fechaFinal: string, estadoBitacora: string) {
+
+        const fechaIni = new Date(fechaInicio);
+        const fechaFin = new Date(fechaFinal);
+        
+        const fechaFinInclusive = new Date(fechaFin);
+        fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
+
+        const filtro: any = {};
+
+        if (estadoBitacora === "firmadas") {
+            filtro.AND = [
+                {
+                    firmaCliente: {
+                        is: {
+                            AND: [
+                                { firma_base64: { not: null } },
+                                { firma_base64: { not: "" } },
+                                {
+                                    updatedAt: {
+                                        gte: fechaIni,
+                                        lt: fechaFinInclusive
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ];
+        } else if (estadoBitacora === "pendientes") {
+            filtro.AND = [
+                {
+                    fecha_servicio: {
+                        gte: fechaIni,
+                        lt: fechaFinInclusive
+                    }
+                },
+                {
+                    OR: [
+                        { firmaCliente: { is: null } },
+                        { firmaCliente: { is: { firma_base64: "" } } },
+                        { firmaCliente: { is: { firma_base64: null } } }
+                    ]
+                }
+            ];
+        } else {
+            filtro.OR = [
+                {
+                    fecha_servicio: {
+                        gte: fechaIni,
+                        lt: fechaFinInclusive
+                    }
+                },
+                {
+                    AND: [
+                        {
+                            firmaCliente: {
+                                is: {
+                                    updatedAt: {
+                                        gte: fechaIni,
+                                        lt: fechaFinInclusive
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            firmaCliente: {
+                                is: {
+                                    AND: [
+                                        { firma_base64: { not: null } },
+                                        { firma_base64: { not: "" } }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ];
+        }
+
+        const bitacoras = await prisma.bitacora.findMany({
+            where: filtro,
+            select: {
+                id: true,
+                fecha_servicio: true,
+                no_ticket: true,
+                no_factura: true,
+                cliente_id: true,
+                usuario_id: true,
+                horas_consumidas: true,
+                tipo_horas: true,
+                cliente: {
+                    select: { empresa: true }
+                },
+                usuario: {
+                    select: { 
+                        nombre: true,
+                        comision: true,
+                        correo: true,
+                        telefono: true,
+                        zona_asignada: true
+                    }
+                },
+                firmaCliente:{
+                    select: {
+                        firma_base64: true,
+                        updatedAt: true
+                    }
+                }
+            },
+            orderBy: { fecha_servicio: "desc" }
+        });
+
+        if (bitacoras.length === 0) {
+            throw new ResponseDto(404, "No se encontraron bitácoras registradas en el rango de fechas ingresado");
+        }
+
+        return bitacoras;
+    } 
+       
+    
     public static async obtenerBitacorasTecnicoFechas(nombre: string, fechaInicio: string, fechaFinal: string, estadoBitacora: string) {
 
         const fechaIni = new Date(fechaInicio);
@@ -229,23 +350,76 @@ export class BitacoraService {
 
         const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
         const filtro: any = {
-            usuario_id: tecnico.id,
-            fecha_servicio: {
-                gte: fechaIni,
-                lt: fechaFinInclusive, 
-            }
+            usuario_id: tecnico.id
         };
 
         if (estadoBitacora === "firmadas") {
             filtro.AND = [
-                { firmaCliente: { is: { firma_base64: { not: null } } } },
-                { firmaCliente: { is: { firma_base64: { not: "" } } } }
+                {
+                    firmaCliente: {
+                        is: {
+                            AND: [
+                                { firma_base64: { not: null } },
+                                { firma_base64: { not: "" } },
+                                {
+                                    updatedAt: {
+                                        gte: fechaIni,
+                                        lt: fechaFinInclusive
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
             ];
         } else if (estadoBitacora === "pendientes") {
+            filtro.AND = [
+                {
+                    fecha_servicio: {
+                        gte: fechaIni,
+                        lt: fechaFinInclusive
+                    }
+                },
+                {
+                    OR: [
+                        { firmaCliente: { is: null } },
+                        { firmaCliente: { is: { firma_base64: "" } } },
+                        { firmaCliente: { is: { firma_base64: null } } }
+                    ]
+                }
+            ];
+        } else {
             filtro.OR = [
-                { firmaCliente: { is: null } },
-                { firmaCliente: { is: { firma_base64: "" } } },
-                { firmaCliente: { is: { firma_base64: null } } }
+                {
+                    fecha_servicio: {
+                        gte: fechaIni,
+                        lt: fechaFinInclusive
+                    }
+                },
+                {
+                    AND: [
+                        {
+                            firmaCliente: {
+                                is: {
+                                    updatedAt: {
+                                        gte: fechaIni,
+                                        lt: fechaFinInclusive
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            firmaCliente: {
+                                is: {
+                                    AND: [
+                                        { firma_base64: { not: null } },
+                                        { firma_base64: { not: "" } }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
             ];
         }
 
@@ -287,10 +461,70 @@ export class BitacoraService {
         }
 
         return bitacoras;
-
     }
 
 
+    public static async obtenerTodasBitacorasVentasFechas(fechaInicio: string, fechaFinal: string) {
+
+        const fechaIni = new Date(fechaInicio);
+        const fechaFin = new Date(fechaFinal);
+        
+        const fechaFinInclusive = new Date(fechaFin);
+        fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
+
+        const bitacoras = await prisma.bitacora.findMany({
+            where: {
+                fecha_servicio: {
+                    gte: fechaIni,
+                    lt: fechaFinInclusive, 
+                },
+                AND: [
+                    {
+                        ventas: {
+                            not: {
+                                equals: "",
+                            },
+                        },
+                    },
+                    {
+                        ventas: {
+                            not: {
+                                equals: " ",
+                            },
+                        },
+                    },
+                ],
+            },
+            select: {
+                id: true,
+                fecha_servicio: true,
+                cliente_id: true,
+                usuario_id: true,
+                ventas: true,
+                cliente: {
+                    select: { empresa: true }
+                },
+                usuario: {
+                    select: { 
+                        nombre: true,
+                        correo: true,
+                        telefono: true,
+                        zona_asignada: true
+                    }
+                },
+            },
+            orderBy: { fecha_servicio: "desc" }
+        });
+
+        if (bitacoras.length === 0) {
+            throw new ResponseDto(404, "No se encontraron bitácoras de ventas registradas en el rango de fechas ingresado");
+        }
+
+        return bitacoras;
+
+    }
+    
+    
     public static async obtenerBitacorasTecnicoVentasFechas(nombre: string, fechaInicio: string, fechaFinal: string) {
 
         const fechaIni = new Date(fechaInicio);

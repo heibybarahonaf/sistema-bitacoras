@@ -13,12 +13,24 @@ export async function GET(request: Request) {
         const fechaFinal = searchParams.get('fechaFinal');
         const usuario = searchParams.get('usuario');
 
-        if (!fechaInicio || !fechaFinal || !usuario) {
-            throw new ResponseDto(404, "Se requieren fechas y el nombre del tecnico");
+        if (!fechaInicio || !fechaFinal) {
+            throw new ResponseDto(404, "Se requieren fechas de inicio y final");
         }
 
-        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoVentasFechas(usuario, fechaInicio, fechaFinal);
-        const buffer = await generarPDFPorVentasTecnico(bitacoras, fechaInicio, fechaFinal);
+        if (usuario === "") {
+            throw new ResponseDto(400, "Se requiere el nombre del técnico o 'Todos los técnicos'");
+        }
+
+        let bitacoras;
+        let buffer;
+
+        if(usuario === "Todos" || !usuario){
+            bitacoras = await BitacoraService.obtenerTodasBitacorasVentasFechas(fechaInicio, fechaFinal);
+            buffer = await generarPDFPorVentasTecnico(bitacoras, fechaInicio, fechaFinal, "Todos");
+        } else {
+            bitacoras = await BitacoraService.obtenerBitacorasTecnicoVentasFechas(usuario, fechaInicio, fechaFinal);
+            buffer = await generarPDFPorVentasTecnico(bitacoras, fechaInicio, fechaFinal, usuario);
+        }
 
         return new NextResponse(buffer, {
             status: 200,

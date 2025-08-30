@@ -32,11 +32,18 @@ export async function GET(request: Request) {
             throw new ResponseDto(400, "Se requieren ambas fechas");
         }
 
-        if (!usuario) {
-            throw new ResponseDto(400, "Se requiere el nombre del técnico");
+        if (usuario === "") {
+            throw new ResponseDto(400, "Se requiere el nombre del técnico o 'Todos los técnicos'");
         }
 
-        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoVentasFechas(usuario, fechaInicio, fechaFinal);
+        let bitacoras;
+        
+        if (usuario === "Todos" || !usuario) {
+            bitacoras = await BitacoraService.obtenerTodasBitacorasVentasFechas(fechaInicio, fechaFinal);
+        } else {
+            bitacoras = await BitacoraService.obtenerBitacorasTecnicoVentasFechas(usuario, fechaInicio, fechaFinal);
+        }
+
         if (bitacoras.length === 0) {
             throw new ResponseDto(404, "No se encontraron bitácoras para el técnico en el rango de fechas especificado");
         }

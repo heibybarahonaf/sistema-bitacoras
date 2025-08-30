@@ -860,7 +860,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
                       <div className="space-y-2">
                         <input
                           type="text"
-                          value={urlFirmaRemota}
+                          value={`https://${urlFirmaRemota}`}
                           readOnly
                           onFocus={(e) => e.target.select()}
                           className="border px-2 py-1 rounded w-full text-sm"
@@ -874,7 +874,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
                         type="button"
                         onClick={() =>
                           navigator.clipboard
-                            .writeText(urlFirmaRemota)
+                            .writeText(`https://${urlFirmaRemota}`)
                             .then(() =>
                               Swal.fire({
                                 toast: true,

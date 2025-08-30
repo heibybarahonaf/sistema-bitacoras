@@ -39,12 +39,18 @@ export async function GET(request: Request) {
             throw new ResponseDto(400, "Se requieren ambas fechas");
         }
 
-        if (!nombre) {
-            throw new ResponseDto(400, "Se requiere el nombre del técnico");
+        if (nombre === "") {
+            throw new ResponseDto(400, "Se requiere el nombre del técnico o 'Todos los técnicos'");
         }
 
-        const bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(nombre, fechaInicio, fechaFinal, estado || "firmadas");
+        let bitacoras;
         
+        if (nombre === "Todos" || !nombre) {
+            bitacoras = await BitacoraService.obtenerTodasBitacorasFechas(fechaInicio, fechaFinal, estado || "firmadas");
+        } else {
+            bitacoras = await BitacoraService.obtenerBitacorasTecnicoFechas(nombre, fechaInicio, fechaFinal, estado || "firmadas");
+        }
+
         if (bitacoras.length === 0) {
             throw new ResponseDto(404, "No se encontraron bitácoras para el técnico en el rango de fechas especificado");
         }
@@ -68,6 +74,7 @@ export async function GET(request: Request) {
                 no_factura: bitacora.no_factura == null ? "N/A" : bitacora.no_factura,
                 cliente: bitacora.cliente?.empresa ?? `ID: ${bitacora.cliente_id}`,
                 tecnico: bitacora.usuario?.nombre ?? `ID: ${bitacora.usuario_id}`,
+                usuario: bitacora.usuario?.nombre ?? `ID: ${bitacora.usuario_id}`,
                 horas,
                 tipo_horas: bitacora.tipo_horas,
                 monto: Number(monto.toFixed(2)),
