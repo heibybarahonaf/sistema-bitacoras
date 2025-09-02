@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "../libs/prisma";
 import { Pagos_Cliente } from "@prisma/client";
 import { CrearPagoDto } from "../dtos/pago.dto";
+import { UsuarioService } from "./usuarioService";
 import { ClienteService } from "./clienteService";
 import { ResponseDto } from "../common/dtos/response.dto";
 
@@ -115,6 +116,98 @@ export class PagoService {
 
         if (pagos.length === 0) {
             throw new ResponseDto(404, "No se encontraron pagos para este cliente");
+        }
+
+        return pagos;
+
+    }
+
+
+    public static async obtenerTodosPagosFechas(fechaInicio: string, fechaFinal: string) {
+
+        const fechaIni = new Date(fechaInicio);
+        const fechaFin = new Date(fechaFinal);
+        
+        const fechaFinInclusive = new Date(fechaFin);
+        fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
+
+        const pagos = await prisma.pagos_Cliente.findMany({
+            where: {
+                createdAt: {
+                    gte: fechaIni,
+                    lt: fechaFinInclusive, 
+                },
+            },
+            select: {
+                no_factura: true,
+                forma_pago: true,
+                detalle_pago: true,
+                monto: true,
+                createdAt: true,
+                cliente: {
+                    select: { empresa: true }
+                },
+                usuario: {
+                    select: { 
+                        nombre: true,
+                        correo: true,
+                        telefono: true,
+                        zona_asignada: true
+                    }
+                },
+            },
+            orderBy: { createdAt: "desc" }
+        });
+
+        if (pagos.length === 0) {
+            throw new ResponseDto(404, "No se encontraron pagos registrados en el rango de fechas ingresado");
+        }
+
+        return pagos;
+
+    }
+
+
+    public static async obtenerPagosTecnicoFechas(nombre: string, fechaInicio: string, fechaFinal: string) {
+
+        const fechaIni = new Date(fechaInicio);
+        const fechaFin = new Date(fechaFinal);
+        
+        const fechaFinInclusive = new Date(fechaFin);
+        fechaFinInclusive.setDate(fechaFinInclusive.getDate() + 1);
+
+        const tecnico = await UsuarioService.obtenerUsuarioPorNombre(nombre);
+        const pagos = await prisma.pagos_Cliente.findMany({
+            where: {
+                usuario_id: tecnico.id,
+                createdAt: {
+                    gte: fechaIni,
+                    lt: fechaFinInclusive, 
+                },
+            },
+            select: {
+                no_factura: true,
+                forma_pago: true,
+                detalle_pago: true,
+                monto: true,
+                createdAt: true,
+                cliente: {
+                    select: { empresa: true }
+                },
+                usuario: {
+                    select: { 
+                        nombre: true,
+                        correo: true,
+                        telefono: true,
+                        zona_asignada: true
+                    }
+                },
+            },
+            orderBy: { createdAt: "desc" }
+        });
+
+        if (pagos.length === 0) {
+            throw new ResponseDto(404, "No se encontraron pagos registrados con el tecnico en el rango de fechas ingresado");
         }
 
         return pagos;
