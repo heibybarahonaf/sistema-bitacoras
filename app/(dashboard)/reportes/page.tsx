@@ -28,6 +28,9 @@ interface BitacoraData {
   venta: string;
   firmaCliente: string;
   firma_base64: string;
+  forma_pago: string;
+  total: string;
+  detalle_pago: string;
 }
 
 export default function ReportesPage() {
@@ -37,11 +40,12 @@ export default function ReportesPage() {
     cliente: false,
     usuario: false,
     ventas: false,
+    pagos: false,
   });
 
   const [modalPreview, setModalPreview] = useState({
     isOpen: false,
-    tipo: "" as "general" | "cliente" | "usuario" | "ventas",
+    tipo: "" as "general" | "cliente" | "usuario" | "ventas" | "pagos",
     data: [] as BitacoraData[],
     loading: false,
     fechaInicio: "",
@@ -49,9 +53,10 @@ export default function ReportesPage() {
     filtroNombre: "",
     rtnCliente: "",
     nombreCliente: "",
+    nombreTecnico: "",
   });
 
-  const [activeTab, setActiveTab] = useState<"general" | "cliente" | "usuario" | "ventas">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "cliente" | "usuario" | "ventas" | "pagos">("general");
 
   // Alertas
   const mostrarAlertaError = (mensaje: string) => {
@@ -188,7 +193,7 @@ export default function ReportesPage() {
       cancelButtonText: "Cancelar",
       confirmButtonColor: "#295d0c",
       preConfirm: () => {
-        const selected = document.querySelector(".cliente-seleccionado");
+        const selected = document.querySelector(".cliente-seleccionado[data-selected='true']");
         if (!selected) {
           Swal.showValidationMessage("Debe seleccionar un cliente");
           return null;
@@ -218,11 +223,11 @@ export default function ReportesPage() {
           const target = e.target as HTMLInputElement;
           const termino = target.value.trim();
 
-          if (termino.length < 2) {
+          if (termino.length < 3) {
             resultados.innerHTML = `
               <tr>
                 <td colspan="4" class="px-4 py-4 text-center text-gray-500 text-sm">
-                  Ingrese al menos 2 caracteres
+                  Ingrese al menos 3 caracteres
                 </td>
               </tr>
             `;
@@ -274,12 +279,13 @@ export default function ReportesPage() {
 
           document.querySelectorAll(".cliente-seleccionado").forEach((fila) => {
             fila.addEventListener("click", () => {
-              document
-                .querySelectorAll(".cliente-seleccionado")
-                .forEach((f) => {
-                  f.classList.remove("bg-blue-50");
-                });
-              fila.classList.add("bg-blue-50");
+              document.querySelectorAll(".cliente-seleccionado").forEach((f) => {
+                f.classList.remove("bg-blue-200");
+                f.removeAttribute("data-selected");
+              });
+              
+              fila.classList.add("bg-blue-200");
+              fila.setAttribute("data-selected", "true");
             });
           });
         });
@@ -291,12 +297,13 @@ export default function ReportesPage() {
 
   // Función para generar reporte y descargar PDF
   const generarReporte = async (
-    tipo: "general" | "cliente" | "usuario" | "ventas",
+    tipo: "general" | "cliente" | "usuario" | "ventas" | "pagos",
     fechaInicio: string,
     fechaFinal: string,
     nombre?: string,
     rtn?: string,
     usuario?: string,
+    tecnico?: string,
     estadoBitacora?: "firmadas" | "pendientes" 
   ) => {
 
@@ -318,6 +325,11 @@ export default function ReportesPage() {
     }
 
     if (tipo === "ventas" && !usuario) {
+      mostrarAlertaError(`Selecciona el Nombre del técnico o "Todos los técnicos"`);
+      return;
+    }
+
+    if (tipo === "pagos" && !tecnico) {
       mostrarAlertaError(`Selecciona el Nombre del técnico o "Todos los técnicos"`);
       return;
     }
@@ -348,6 +360,10 @@ export default function ReportesPage() {
       } else if (tipo === "ventas" && usuario) {
         if (usuario !== "Todos") {
           params.append("usuario", usuario);
+        }
+      } else if (tipo === "pagos" && tecnico) {
+        if (tecnico !== "Todos") {
+          params.append("tecnico", tecnico);
         }
       }
 
@@ -409,12 +425,13 @@ export default function ReportesPage() {
 
   // Función para previsualizar reporte 
   const previsualizarReporte = async (
-    tipo: "general" | "cliente" | "usuario" | "ventas",
+    tipo: "general" | "cliente" | "usuario" | "ventas" | "pagos",
     fechaInicio: string,
     fechaFinal: string,
     id?: string,
     rtn?: string,
     usuario?: string,
+    tecnico?: string,
     estadoBitacora?: "firmadas" | "pendientes"
   ) => {
     if (!fechaInicio || !fechaFinal) {
@@ -447,6 +464,11 @@ export default function ReportesPage() {
       return;
     }
 
+    if (tipo === "pagos" && !tecnico) {
+      mostrarAlertaError("Selecciona un técnico o 'Todos los técnicos' para la vista previa");
+      return;
+    }
+
     setModalPreview({
       isOpen: true,
       tipo,
@@ -460,10 +482,13 @@ export default function ReportesPage() {
           : tipo === "usuario"
           ? id === "Todos" ? "Todos los técnicos" : `Técnico: ${id}`
           : tipo === "ventas"
-          ? usuario === "Todos" ? "Todos los técnicos" : `Técnico: ${usuario}`
+          ? id === "Todos" ? "Todos los técnicos" : `Técnico: ${usuario}`
+          : tipo === "pagos"
+          ? usuario === "Todos" ? "Todos los técnicos" : `Técnico: ${tecnico}`
           : "Reporte General",
       rtnCliente: tipo === "cliente" ? rtn || "" : "",
       nombreCliente: "",
+      nombreTecnico: "",
     });
 
     try {
@@ -485,7 +510,12 @@ export default function ReportesPage() {
         if (usuario !== "Todos") {
           params.append("usuario", usuario);
         }
+      } else if (tipo === "pagos" && tecnico) {
+        if (tecnico !== "Todos") {
+          params.append("tecnico", tecnico);
+        }
       }
+
 
       const response = await fetch(
         `/api/reportes/${tipo}-bitacoras/previsualizacion?${params.toString()}`,
@@ -541,6 +571,7 @@ export default function ReportesPage() {
       filtroNombre: "",
       rtnCliente: "",
       nombreCliente: "",
+      nombreTecnico: "",
     });
   };
 
@@ -549,6 +580,7 @@ export default function ReportesPage() {
     { tipo: "cliente" as const, title: "Reporte por Cliente" },
     { tipo: "usuario" as const, title: "Reporte Comisiones" },
     { tipo: "ventas" as const, title: "Reporte Ventas" },
+    { tipo: "pagos" as const, title: "Reporte Pagos" },
   ];
 
   return (
@@ -592,7 +624,7 @@ export default function ReportesPage() {
               isGenerating={isGenerating[tipo]}
               onGenerate={generarReporte}
               onPreview={previsualizarReporte}
-              showTodosOption={tipo === "usuario" || tipo === "ventas"}
+              showTodosOption={tipo === "usuario" || tipo === "ventas" || tipo === "pagos"}
             />
           ))}
       </div>
@@ -610,6 +642,8 @@ export default function ReportesPage() {
                   {modalPreview.tipo === "cliente"
                     ? `RTN: ${modalPreview.rtnCliente} - Cliente: ${modalPreview.nombreCliente}`
                     : modalPreview.tipo === "usuario"
+                    ? modalPreview.filtroNombre
+                    : modalPreview.tipo === "pagos"
                     ? modalPreview.filtroNombre
                     : modalPreview.tipo === "ventas"
                     ? modalPreview.filtroNombre
@@ -640,7 +674,31 @@ export default function ReportesPage() {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        {modalPreview.tipo === "ventas" ? (
+                        {modalPreview.tipo === "pagos" ? (
+                          <>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                              Fecha
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                              Factura #
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                              Cliente
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Forma Pago
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                              Total
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Técnico
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                              Detalle
+                            </th>
+                          </>
+                        ) : modalPreview.tipo === "ventas" ? (
                           <>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Fecha
@@ -777,6 +835,37 @@ export default function ReportesPage() {
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {bitacora.tecnico}
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        if (modalPreview.tipo === "pagos") {
+                          return (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {formatearFecha(bitacora.fecha)}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {bitacora.no_factura}
+                              </td>
+                              <td
+                                className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate"
+                                title={bitacora.cliente}
+                              >
+                                {bitacora.cliente}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {bitacora.forma_pago}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {bitacora.monto}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {bitacora.usuario}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {bitacora.detalle_pago}
                               </td>
                             </tr>
                           );

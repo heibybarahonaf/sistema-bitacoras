@@ -28,7 +28,7 @@ export async function POST(req: Request) {
         response.cookies.set("codigo_token", token, {
             httpOnly: true,
             secure: false,
-            maxAge: 200,
+            maxAge: 600,
             path: "/",
             sameSite: "lax",
         });

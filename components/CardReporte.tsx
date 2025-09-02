@@ -4,24 +4,26 @@ import { FileText, Download, Eye } from "lucide-react";
 
 interface CardReporteProps {
   title: string;
-  tipo: "general" | "cliente" | "usuario" | "ventas";
+  tipo: "general" | "cliente" | "usuario" | "ventas" | "pagos";
   isGenerating: boolean;
   onGenerate: (
-    tipo: "general" | "cliente" | "usuario" | "ventas",
+    tipo: "general" | "cliente" | "usuario" | "ventas" | "pagos",
     fechaInicio: string,
     fechaFinal: string,
     id?: string,
     rtn?: string,
     usuario?: string,
+    tecnico?: string,
     estadoBitacora?: "firmadas" | "pendientes"
   ) => void;
   onPreview: (
-    tipo: "general" | "cliente" | "usuario" | "ventas",
+    tipo: "general" | "cliente" | "usuario" | "ventas" | "pagos",
     fechaInicio: string,
     fechaFinal: string,
     id?: string,
     rtn?: string,
     usuario?: string,
+    tecnico?: string,
     estadoBitacora?: "firmadas" | "pendientes"
   ) => void;
   showTodosOption?: boolean; 
@@ -51,7 +53,7 @@ export default function CardReporte({
   const [estadoBitacora, setEstadoBitacora] = useState<"firmadas" | "pendientes">("firmadas");
 
   useEffect(() => {
-    if (tipo === "usuario" || tipo === "ventas") {
+    if (tipo === "usuario" || tipo === "ventas" || tipo === "pagos") {
       cargarUsuariosActivos();
     }
   }, [tipo]);
@@ -92,7 +94,7 @@ export default function CardReporte({
   };
 
   const handleGenerate = () => {
-    const usuarioId = tipo === "usuario" || tipo === "ventas" ? 
+    const usuarioId = tipo === "usuario" || tipo === "ventas" || tipo === "pagos" ? 
     (entidadId === "Todos" ? "Todos" : entidadId) : undefined;
   
     const rtnCliente = tipo === "cliente" ? entidadId : undefined;
@@ -109,10 +111,15 @@ export default function CardReporte({
   };
 
   const handlePreview = () => {
-    const usuarioId = tipo === "usuario" || tipo === "ventas" ? 
-    (entidadId === "Todos" ? "Todos" : entidadId) : undefined;
+    let usuarioId, rtnCliente, tecnicoId;
   
-    const rtnCliente = tipo === "cliente" ? entidadId : undefined;
+    if (tipo === "usuario" || tipo === "ventas") {
+      usuarioId = entidadId === "Todos" ? "Todos" : entidadId;
+    } else if (tipo === "pagos") {
+      tecnicoId = entidadId === "Todos" ? "Todos" : entidadId;
+    } else if (tipo === "cliente") {
+      rtnCliente = entidadId;
+    }
     
     onPreview(
       tipo,
@@ -121,6 +128,7 @@ export default function CardReporte({
       usuarioId,
       rtnCliente,
       usuarioId,
+      tecnicoId,
       tipo === "usuario" ? estadoBitacora : undefined
     );
   };
@@ -130,6 +138,8 @@ export default function CardReporte({
       case "usuario":
         return "Técnico";
       case "ventas":
+        return "Técnico";
+      case "pagos":
         return "Técnico";
       default:
         return "";
@@ -142,13 +152,15 @@ export default function CardReporte({
         return "Seleccione un técnico";
       case "ventas":
         return "Seleccione un técnico";
+      case "pagos":
+        return "Seleccione un técnico";
       default:
         return "";
     }
   };
 
   const renderEntidadInput = () => {
-    if (tipo === "usuario" || tipo === "ventas") {
+    if (tipo === "usuario" || tipo === "ventas" || tipo === "pagos") {
       return (
         <div className="space-y-4">
           <div>
@@ -237,7 +249,7 @@ export default function CardReporte({
             </div>
           </div>
 
-          {(tipo === "usuario" || tipo === "ventas") && renderEntidadInput()}
+          {(tipo === "usuario" || tipo === "ventas" || tipo === "pagos") && renderEntidadInput()}
         </div>
 
       </div>
