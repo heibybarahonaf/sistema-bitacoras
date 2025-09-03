@@ -24,31 +24,31 @@ const transporter = nodemailer.createTransport({
 
 export class EmailService {
 
-    public static async enviarCodigoAcceso(destinatario: string, codigo: string): Promise<void> {
-        const html = this.plantillaHtmlCodigo(codigo);
+    static async enviarCodigoAcceso(correo: string, codigo: string) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT),
+        secure: false,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
 
-        try {
+      const info = await transporter.sendMail({
+        from: `"Sistema Bitácoras" <${process.env.SMTP_USER}>`,
+        to: correo,
+        subject: "Tu código de acceso",
+        text: `Tu código es: ${codigo}`,
+      });
 
-            await transporter.sendMail({
-                from: `"Notificaciones POS" <${process.env.EMAIL_USER}>`,
-                to: destinatario,
-                subject: "Código de acceso",
-                text: `Tu código de inicio de sesión es: ${codigo}`,
-                html,
-            });
-
-        } catch (error) {
-
-            if (error instanceof Error) {
-                if(/Invalid login|535|BadCredentials/.test(error.message)){}
-                throw new ResponseDto(500, "El Correo de notificaciones esta fuera de servicio, Contacta con Soporte o");
-            }
-
-            throw new ResponseDto(500, "Error al enviar el correo");            
-        
-        }
-
+      console.log("Correo enviado:", info.messageId);
+    } catch (error) {
+      console.error("Error al enviar correo:", error);
+      throw new ResponseDto(500, "El servicio de correo está fuera de servicio");
     }
+  }
 
 
     private static plantillaHtmlCodigo(codigo: string): string {

@@ -6,39 +6,39 @@ import { UsuarioService } from "@/app/services/usuarioService";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function POST(req: Request) {
-    
-    try {
-        
-        const { correo } = await req.json();
-        if (!correo) {
-            throw new ResponseDto(400, "El Correo es requerido");
-        }
+  try {
+    console.log("Recibiendo petición...");
 
-        const usuario = await UsuarioService.obtenerUsuarioPorCorreo(correo);
-        if(!usuario.activo){
-            throw new ResponseDto(400, "El usuario no esta activo!");
-        }
+    const { correo } = await req.json();
+    console.log("Correo recibido:", correo);
 
-        const codigo = GeneralUtils.generarCodigo(6);
-        const token = AuthUtils.generarTokenCodigo(correo, codigo, 600);
+    if (!correo) throw new ResponseDto(400, "El Correo es requerido");
 
-        await EmailService.enviarCodigoAcceso(correo, codigo);
+    const usuario = await UsuarioService.obtenerUsuarioPorCorreo(correo);
+    console.log("Usuario encontrado:", usuario);
 
-        const response = NextResponse.json(new ResponseDto(200, "Código enviado con éxito"));
-        response.cookies.set("codigo_token", token, {
-            httpOnly: true,
-            secure: false,
-            maxAge: 600,
-            path: "/",
-            sameSite: "lax",
-        });
+    if (!usuario?.activo) throw new ResponseDto(400, "El usuario no está activo");
 
-        return response;
+    const codigo = GeneralUtils.generarCodigo(6);
+    const token = AuthUtils.generarTokenCodigo(correo, codigo, 600);
+    console.log("Código generado:", codigo);
 
-    } catch (error) {
-      
-        return GeneralUtils.generarErrorResponse(error);
+    await EmailService.enviarCodigoAcceso(correo, codigo);
+    console.log("Correo enviado");
 
-    }
+    const response = NextResponse.json(new ResponseDto(200, "Código enviado con éxito"));
+    response.cookies.set("codigo_token", token, {
+      httpOnly: true,
+      secure: false,
+      maxAge: 600,
+      path: "/",
+      sameSite: "lax",
+    });
 
+    return response;
+
+  } catch (error) {
+    console.error("Error en /enviar-codigo:", error);
+    return GeneralUtils.generarErrorResponse(error);
+  }
 }
