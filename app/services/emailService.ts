@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { ResponseDto } from "../common/dtos/response.dto";
 
 interface DatosVenta {
@@ -11,50 +11,36 @@ interface DatosVenta {
     correo?: string;
 }
 
-
-function getTransporter() {
-  console.log("SMTP config:", {
-    host: process.env.EMAIL_HOST,
-    port: process.env.EMAIL_PORT,
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS ? "****" : "NO DEFINIDA",
-  });
-
-  return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT),
-    secure: true,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-}
-
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export class EmailService {
 
     static async enviarCodigoAcceso(correo: string, codigo: string) {
         try {
-        const transporter = getTransporter();
+            const html = this.plantillaHtmlCodigo(codigo);
+            const FROM = `Sistema Bitácoras <${process.env.EMAIL_USER || 'onboarding@resend.dev'}>`;
 
-        const info = await transporter.sendMail({
-            from: `"Sistema Bitácoras" <${process.env.EMAIL_USER}>`,
-            to: correo,
-            subject: "Tu código de acceso",
-            text: `Tu código es: ${codigo}`,
-        });
+            const { data, error } = await resend.emails.send({
+                from: FROM,
+                to: correo,
+                subject: "Tu código de acceso",
+                html,
+                text: `Tu código es: ${codigo}`,
+            });
 
-        console.log("Correo enviado:", info.messageId);
+            if (error) throw error;
+
+            console.log("Correo enviado:", data?.id);
+
         } catch (error) {
-        console.error("Error al enviar correo:", error);
-        throw new ResponseDto(500, "El servicio de correo está fuera de servicio");
+            console.error("Error al enviar correo:", error);
+            throw new ResponseDto(500, "El servicio de correo está fuera de servicio");
         }
+
     }
 
 
     private static plantillaHtmlCodigo(codigo: string): string {
-
         return `
             <!DOCTYPE html>
             <html lang="es">
@@ -69,8 +55,8 @@ export class EmailService {
                     <td align="center">
                     <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); overflow: hidden;">
                         <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 30px 30px; text-align: center;">
-                            <h1 style="margin: 0; color: white; font-size: 24px; font-weight: 600;">Código de Acceso</h1>
-                            </div>
+                        <h1 style="margin: 0; color: white; font-size: 24px; font-weight: 600;">Código de Acceso</h1>
+                        </div>
                         <div style="padding: 40px 30px;">
                         <p style="margin: 0 0 24px; color: #4a5568; font-size: 16px; line-height: 1.6; text-align: center;">
                             Usa el siguiente código para iniciar sesión en tu cuenta:
@@ -106,20 +92,20 @@ export class EmailService {
             </body>
             </html>
         `;
-    
     }
 
 
     public static async enviarNotificacionVenta(destinatario: string, datosVenta: DatosVenta): Promise<void> {
-        const html = this.plantillaHtmlVentas(datosVenta);
 
         try {
-            const transporter = getTransporter();
+            
+            const html = this.plantillaHtmlVentas(datosVenta);
 
-            await transporter.sendMail({
-                from: `"Notificaciones POS" <${process.env.EMAIL_USER}>`,
+            const { error } = await resend.emails.send({
+                from: `Notificaciones POS <${process.env.EMAIL_USER || 'onboarding@resend.dev'}>`,
                 to: destinatario,
                 subject: `Nueva Oportunidad de Venta - ${datosVenta.cliente}`,
+                html,
                 text: `Nueva oportunidad de venta reportada por ${datosVenta.tecnico}:
                     Cliente: ${datosVenta.cliente}
                     Teléfono: ${datosVenta.telefono}
@@ -128,20 +114,18 @@ export class EmailService {
                     Zona: ${datosVenta.zona}
                     Detalles: ${datosVenta.ventas}
                     Técnico: ${datosVenta.tecnico}`,
-                    html,
-                });
+            });
+
+            if (error) throw error;
 
         } catch {
-
             throw new ResponseDto(500, "Error al enviar la notificación de venta");
-
         }
-
+        
     }
 
 
     private static plantillaHtmlVentas(datos: DatosVenta): string {
-
         return `
             <!DOCTYPE html>
             <html lang="es">
@@ -155,109 +139,61 @@ export class EmailService {
                 <tr>
                     <td align="center">
                     <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); overflow: hidden;">
-                        
                         <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 40px 30px 30px; text-align: center;">
-                            <h1 style="margin: 0; color: white; font-size: 26px; font-weight: 600;">Oportunidad de Venta</h1>
-                            <p style="margin: 10px 0 0; color: #fecaca; font-size: 14px;">Notificación para Departamento Comercial </p>
+                        <h1 style="margin: 0; color: white; font-size: 26px; font-weight: 600;">Oportunidad de Venta</h1>
+                        <p style="margin: 10px 0 0; color: #fecaca; font-size: 14px;">Notificación para Departamento Comercial </p>
                         </div>
-                        
                         <div style="padding: 40px 30px;">
-                            
-                            <div style="margin-bottom: 35px;">
-                                <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 20px; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-                                    Información del Cliente
-                                </h2>
-                                
-                                <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 10px; padding: 25px; border-left: 4px solid #3b82f6;">
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td style="padding: 8px 0; width: 30%; vertical-align: top;">
-                                                <strong style="color: #475569; font-size: 14px;">Nombre:</strong>
-                                            </td>
-                                            <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">
-                                                ${datos.cliente}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 8px 0; width: 30%; vertical-align: top;">
-                                                <strong style="color: #475569; font-size: 14px;">Teléfono:</strong>
-                                            </td>
-                                            <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">
-                                                <a href="tel:${datos.telefono}" style="color: #2563eb; text-decoration: none;">${datos.telefono}</a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 8px 0; width: 30%; vertical-align: top;">
-                                                <strong style="color: #475569; font-size: 14px;">Correo:</strong>
-                                            </td>
-                                            <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">
-                                                <a href="mailto:${datos.correo}" style="color: #2563eb; text-decoration: none;">${datos.correo}</a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 8px 0; width: 30%; vertical-align: top;">
-                                                <strong style="color: #475569; font-size: 14px;">RTN:</strong>
-                                            </td>
-                                            <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: 'Courier New', monospace;">
-                                                ${datos.rtn}
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 8px 0; width: 30%; vertical-align: top;">
-                                                <strong style="color: #475569; font-size: 14px;">Zona:</strong>
-                                            </td>
-                                            <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: 'Courier New', monospace;">
-                                                ${datos.zona}
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div style="margin-bottom: 35px;">
-                                <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 20px; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-                                    Detalles de la Venta
-                                </h2>
-                                
-                                <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 10px; padding: 25px; border-left: 4px solid #10b981;">
-                                    <div style="font-size: 16px; color: #064e3b; line-height: 1.6;">
-                                        ${datos.ventas}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style="margin-bottom: 30px;">
-                                <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 20px; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-                                    Técnico Responsable
-                                </h2>
-                                
-                                <div style="background: linear-gradient(135deg, #fef3e2 0%, #fef7ed 100%); border-radius: 10px; padding: 20px; border-left: 4px solid #f59e0b;">
-                                    <p style="margin: 0; color: #92400e; font-size: 16px; font-weight: 600;">
-                                        ${datos.tecnico}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div style="text-align: center; margin-top: 30px;">
-                                <p style="margin: 0; color: #64748b; font-size: 12px;">
-                                    Notificación generada el ${new Date().toLocaleDateString('es-HN', { 
-                                        year: 'numeric', 
-                                        month: 'long', 
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </p>
+                        <div style="margin-bottom: 35px;">
+                            <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 20px; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
+                            Información del Cliente
+                            </h2>
+                            <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 10px; padding: 25px; border-left: 4px solid #3b82f6;">
+                            <table width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                <td style="padding: 8px 0; width: 30%; vertical-align: top;"><strong style="color: #475569; font-size: 14px;">Nombre:</strong></td>
+                                <td style="padding: 8px 0; color: #1e293b; font-size: 14px;">${datos.cliente}</td>
+                                </tr>
+                                <tr>
+                                <td style="padding: 8px 0; width: 30%; vertical-align: top;"><strong style="color: #475569; font-size: 14px;">Teléfono:</strong></td>
+                                <td style="padding: 8px 0; color: #1e293b; font-size: 14px;"><a href="tel:${datos.telefono}" style="color: #2563eb; text-decoration: none;">${datos.telefono}</a></td>
+                                </tr>
+                                <tr>
+                                <td style="padding: 8px 0; width: 30%; vertical-align: top;"><strong style="color: #475569; font-size: 14px;">Correo:</strong></td>
+                                <td style="padding: 8px 0; color: #1e293b; font-size: 14px;"><a href="mailto:${datos.correo}" style="color: #2563eb; text-decoration: none;">${datos.correo}</a></td>
+                                </tr>
+                                <tr>
+                                <td style="padding: 8px 0; width: 30%; vertical-align: top;"><strong style="color: #475569; font-size: 14px;">RTN:</strong></td>
+                                <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: 'Courier New', monospace;">${datos.rtn}</td>
+                                </tr>
+                                <tr>
+                                <td style="padding: 8px 0; width: 30%; vertical-align: top;"><strong style="color: #475569; font-size: 14px;">Zona:</strong></td>
+                                <td style="padding: 8px 0; color: #1e293b; font-size: 14px; font-family: 'Courier New', monospace;">${datos.zona}</td>
+                                </tr>
+                            </table>
                             </div>
                         </div>
-                        
+                        <div style="margin-bottom: 35px;">
+                            <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 20px; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Detalles de la Venta</h2>
+                            <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border-radius: 10px; padding: 25px; border-left: 4px solid #10b981;">
+                            <div style="font-size: 16px; color: #064e3b; line-height: 1.6;">${datos.ventas}</div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 30px;">
+                            <h2 style="margin: 0 0 20px; color: #1e293b; font-size: 20px; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Técnico Responsable</h2>
+                            <div style="background: linear-gradient(135deg, #fef3e2 0%, #fef7ed 100%); border-radius: 10px; padding: 20px; border-left: 4px solid #f59e0b;">
+                            <p style="margin: 0; color: #92400e; font-size: 16px; font-weight: 600;">${datos.tecnico}</p>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 30px;">
+                            <p style="margin: 0; color: #64748b; font-size: 12px;">
+                            Notificación generada el ${new Date().toLocaleDateString('es-HN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                        </div>
+                        </div>
                         <div style="background-color: #f8f9fa; padding: 25px 30px; text-align: center; border-top: 1px solid #e2e8f0;">
-                            <p style="margin: 0 0 5px; color: #6b7280; font-size: 14px; font-weight: 500;">
-                                Sistema POS - Notificaciones Automáticas
-                            </p>
-                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                                © POS de Honduras. Todos los derechos reservados.
-                            </p>
+                        <p style="margin: 0 0 5px; color: #6b7280; font-size: 14px; font-weight: 500;">Sistema POS - Notificaciones Automáticas</p>
+                        <p style="margin: 0; color: #9ca3af; font-size: 12px;">© POS de Honduras. Todos los derechos reservados.</p>
                         </div>
                     </div>
                     </td>
@@ -266,7 +202,6 @@ export class EmailService {
             </body>
             </html>
         `;
-    
     }
 
 }
