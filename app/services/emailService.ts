@@ -27,8 +27,8 @@ export class EmailService {
     static async enviarCodigoAcceso(correo: string, codigo: string) {
     try {
       const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
+        host: process.env.EMAIL_HOST,
+        port: Number(process.env.EMAIL_PORT),
         secure: true,
         auth: {
           user: process.env.EMAIL_USER,
