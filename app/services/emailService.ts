@@ -37,7 +37,7 @@ export class EmailService {
       });
 
       const info = await transporter.sendMail({
-        from: `"Sistema Bitácoras" <${process.env.SMTP_USER}>`,
+        from: `"Sistema Bitácoras" <${process.env.EMAIL_USER}>`,
         to: correo,
         subject: "Tu código de acceso",
         text: `Tu código es: ${codigo}`,
