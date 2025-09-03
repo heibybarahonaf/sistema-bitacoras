@@ -7,3 +7,9 @@ export const LoginDto = z.object({
     codigo: z.string().length(6, "El código debe tener 6 dígitos"),
 
 });
+
+// sin campo código
+export const LoginSimpleDto = LoginDto.omit({ codigo: true });
+
+export type LoginDtoType = z.infer<typeof LoginDto>;
+export type LoginSimpleDtoType = z.infer<typeof LoginSimpleDto>;

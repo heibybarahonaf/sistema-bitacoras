@@ -8,32 +8,39 @@ import { ResponseDto } from "@/app/common/dtos/response.dto";
 import { UsuarioService } from "@/app/services/usuarioService";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 
+// sin campo código
+const LoginSimpleDto = LoginDto.omit({ codigo: true });
+
 export async function POST(req: Request) {
 
     try {
 
         const body = await req.json();
-        const parsed = LoginDto.safeParse(body);
+        
+        // DTO sin código
+        const parsed = LoginSimpleDto.safeParse(body);
         if (!parsed.success) {
             GeneralUtils.zodValidationError(parsed.error);
         }
 
-        const { correo, password, codigo } = parsed.data;
-        const cookieStore = cookies();
-        const token = (await cookieStore).get("codigo_token")?.value;
+        const { correo, password } = parsed.data;
 
-        if (!token) {
-            throw new ResponseDto(401, "Token de verificación expirado");
-        }
+        // VALIDACIÓN DEL TOKEN Y CÓDIGO
+        // const cookieStore = cookies();
+        // const token = (await cookieStore).get("codigo_token")?.value;
 
-        const tokenInfo = AuthUtils.verificarTokenCodigo(token);
-        if (tokenInfo.correo !== correo) {
-            throw new ResponseDto(400, "El correo ingresado no coincide con el correo de solicitud del codigo");
-        }
+        // if (!token) {
+        //     throw new ResponseDto(401, "Token de verificación expirado");
+        // }
 
-        if (tokenInfo.codigo !== codigo) {
-            throw new ResponseDto(400, "Código incorrecto");
-        }
+        // const tokenInfo = AuthUtils.verificarTokenCodigo(token);
+        // if (tokenInfo.correo !== correo) {
+        //     throw new ResponseDto(400, "El correo ingresado no coincide con el correo de solicitud del codigo");
+        // }
+
+        // if (tokenInfo.codigo !== codigo) {
+        //     throw new ResponseDto(400, "Código incorrecto");
+        // }
 
         const usuario = await UsuarioService.obtenerUsuarioPorCorreo(correo);
         const passwordValida = await AuthUtils.comparePassword(password, usuario.password);
@@ -53,10 +60,11 @@ export async function POST(req: Request) {
             sameSite: "lax",
         });
 
-        response.cookies.set("codigo_token", "", {
-            maxAge: 0,
-            path: "/",
-        });
+        // código_token de momento no
+        // response.cookies.set("codigo_token", "", {
+        //     maxAge: 0,
+        //     path: "/",
+        // });
 
         return response;
 

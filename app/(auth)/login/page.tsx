@@ -2,25 +2,28 @@
 
 import Swal from 'sweetalert2';
 import React, { useState } from 'react';
-import { Mail, Lock, Key, Send, LogIn } from 'lucide-react';
+import { Mail, Lock, LogIn } from 'lucide-react'; // Key y Send
 
 interface FormData {
   correo: string;
   password: string;
-  codigo: string;
+  // codigo: string;
 }
 
 interface FormErrors {
   correo?: string;
   password?: string;
-  codigo?: string;
+  // codigo?: string;
 }
 
 export default function LoginInterface() {
-    const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
-    const [formData, setFormData] = useState<FormData>({ correo: '', password: '', codigo: '' });
+    const [formData, setFormData] = useState<FormData>({ 
+      correo: '', 
+      password: '', 
+      // codigo: ''
+    });
 
     const validateEmail = (email:string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,33 +33,24 @@ export default function LoginInterface() {
     const validateForm = () => {
         const newErrors: FormErrors = {};
 
-        if (step === 1) {
-
-            if (!formData.correo.trim()) {
-                newErrors.correo = 'El correo es requerido';
-            } else if (!validateEmail(formData.correo)) {
-                newErrors.correo = 'Ingrese un correo válido';
-            }
-
-        } else {
-
-            if (!formData.correo.trim()) {
-                newErrors.correo = 'El correo es requerido';
-            } else if (!validateEmail(formData.correo)) {
-                newErrors.correo = 'Ingrese un correo válido';
-            }
-            
-            if (!formData.password.trim()) {
-                newErrors.password = 'La contraseña es requerida';
-            } else if (formData.password.length < 6) {
-                newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
-            }
-            
-            if (!formData.codigo.trim()) {
-                newErrors.codigo = 'El código es requerido';
-            }
-
+        if (!formData.correo.trim()) {
+            newErrors.correo = 'El correo es requerido';
+        } else if (!validateEmail(formData.correo)) {
+            newErrors.correo = 'Ingrese un correo válido';
         }
+        
+        if (!formData.password.trim()) {
+            newErrors.password = 'La contraseña es requerida';
+        } else if (formData.password.length < 6) {
+            newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+        }
+        
+        // validación del código
+        /*
+        if (!formData.codigo.trim()) {
+            newErrors.codigo = 'El código es requerido';
+        }
+        */
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -79,6 +73,8 @@ export default function LoginInterface() {
 
     };
 
+    // solicitar código
+    /*
     const handleSolicitarCodigo = async () => {
         if (!validateForm()) return;
         setIsLoading(true);
@@ -142,6 +138,7 @@ export default function LoginInterface() {
         }
 
     };
+    */
 
     const handleLogin = async () => {
         if (!validateForm()) return;
@@ -154,7 +151,7 @@ export default function LoginInterface() {
                 body: JSON.stringify({
                     correo: formData.correo,
                     password: formData.password,
-                    codigo: formData.codigo
+                    // codigo: formData.codigo //  envío del código
                 })
             });
 
@@ -166,9 +163,14 @@ export default function LoginInterface() {
                     setErrors(prev => ({ ...prev, correo: data.message }));
                 } else if (msg.includes("contraseña")) {
                     setErrors(prev => ({ ...prev, password: data.message }));
-                } else if (msg.includes("código")) {
+                } 
+                // verificación de error de código
+                /*
+                else if (msg.includes("código")) {
                     setErrors(prev => ({ ...prev, codigo: data.message }));
-                } else {
+                } 
+                */
+                else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error de autenticación',
@@ -209,7 +211,8 @@ export default function LoginInterface() {
 
     };
 
-
+    // sin steps
+    /*
     const handleVolver = () => {
         setStep(1);
         setFormData(prev => ({
@@ -220,6 +223,7 @@ export default function LoginInterface() {
 
         setErrors({});
     };
+    */
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -228,11 +232,11 @@ export default function LoginInterface() {
 
             <h1 className="text-2xl font-bold text-gray-900">Inicio de Sesión</h1>
             <p className="text-gray-600 mt-2">
-                {step === 1 ? 'Ingresa tu correo para recibir el código' : 'Completa tu información para ingresar'}
+                Ingresa tus credenciales para acceder {/* Cambiamos el mensaje */}
             </p>
             </div>
 
-            {step === 1 ? (
+            {/* Eliminamos la lógica de steps y mostramos siempre el formulario completo */}
             <div className="space-y-6">
                 <div>
                 <label htmlFor="correo" className="block text-sm font-medium text-gray-700 mb-2">
@@ -250,46 +254,6 @@ export default function LoginInterface() {
                             errors.correo ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="correo@gmail.com"
-                        disabled={isLoading}
-                    />
-                </div>
-                {errors.correo && (
-                    <p className="mt-1 text-sm text-red-600">{errors.correo}</p>
-                )}
-                </div>
-
-                <button
-                    onClick={handleSolicitarCodigo}
-                    disabled={isLoading}
-                    className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                    {isLoading ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                        <>
-                        Solicitar Código
-                        </>
-                    )}
-                </button>
-            </div>
-            ) : (
-            <div className="space-y-6">
-                <div>
-                <label htmlFor="correo-step2" className="block text-sm font-medium text-gray-700 mb-2">
-                    Correo Electrónico
-                </label>
-                <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                        type="email"
-                        id="correo-step2"
-                        name="correo"
-                        value={formData.correo}
-                        onChange={handleInputChange}
-                        className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors ${
-                            errors.correo ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="tu@ejemplo.com"
                         disabled={isLoading}
                     />
                 </div>
@@ -322,6 +286,8 @@ export default function LoginInterface() {
                 )}
                 </div>
 
+                {/* código de verificación */}
+                {/*
                 <div>
                 <label htmlFor="codigo" className="block text-sm font-medium text-gray-700 mb-2">
                     Código de Verificación
@@ -345,6 +311,7 @@ export default function LoginInterface() {
                     <p className="mt-1 text-sm text-red-600">{errors.codigo}</p>
                 )}
                 </div>
+                */}
 
                 <div className="space-y-3">
                 <button
@@ -357,10 +324,13 @@ export default function LoginInterface() {
                     ) : (
                     <>
                         Ingresar
+                        <LogIn className="w-5 h-5" />
                     </>
                     )}
                 </button>
 
+                {/* sin steps */}
+                {/*
                 <button
                     onClick={handleVolver}
                     disabled={isLoading}
@@ -368,9 +338,9 @@ export default function LoginInterface() {
                 >
                     Volver
                 </button>
+                */}
                 </div>
             </div>
-            )}
         </div>
         </div>
     );
