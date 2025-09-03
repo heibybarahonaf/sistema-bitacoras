@@ -12,43 +12,45 @@ interface DatosVenta {
 }
 
 
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: process.env.EMAIL_PORT ? parseInt(process.env.EMAIL_PORT) : 465,
+function getTransporter() {
+  console.log("SMTP config:", {
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS ? "****" : "NO DEFINIDA",
+  });
+
+  return nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
     secure: true,
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
     },
-});
+  });
+}
+
 
 export class EmailService {
 
     static async enviarCodigoAcceso(correo: string, codigo: string) {
-    try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: Number(process.env.EMAIL_PORT),
-        secure: true,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
-      });
+        try {
+        const transporter = getTransporter();
 
-      const info = await transporter.sendMail({
-        from: `"Sistema Bitácoras" <${process.env.EMAIL_USER}>`,
-        to: correo,
-        subject: "Tu código de acceso",
-        text: `Tu código es: ${codigo}`,
-      });
+        const info = await transporter.sendMail({
+            from: `"Sistema Bitácoras" <${process.env.EMAIL_USER}>`,
+            to: correo,
+            subject: "Tu código de acceso",
+            text: `Tu código es: ${codigo}`,
+        });
 
-      console.log("Correo enviado:", info.messageId);
-    } catch (error) {
-      console.error("Error al enviar correo:", error);
-      throw new ResponseDto(500, "El servicio de correo está fuera de servicio");
+        console.log("Correo enviado:", info.messageId);
+        } catch (error) {
+        console.error("Error al enviar correo:", error);
+        throw new ResponseDto(500, "El servicio de correo está fuera de servicio");
+        }
     }
-  }
 
 
     private static plantillaHtmlCodigo(codigo: string): string {
@@ -112,6 +114,7 @@ export class EmailService {
         const html = this.plantillaHtmlVentas(datosVenta);
 
         try {
+            const transporter = getTransporter();
 
             await transporter.sendMail({
                 from: `"Notificaciones POS" <${process.env.EMAIL_USER}>`,
