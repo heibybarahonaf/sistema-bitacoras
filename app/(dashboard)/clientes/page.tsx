@@ -8,7 +8,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEffect, useState, useCallback  } from "react";
 import PaginationButtons from "@/components/PaginationButtons";
 import { TableHeader, TableCell } from "@/components/TableComponents";
-import { Contact, Plus, Edit3, Trash2, DollarSign } from "lucide-react";
+import { Handshake, Plus, Edit3, Trash2, DollarSign } from "lucide-react";
 
 interface clienteActualizado {
   empresa: string,
@@ -384,7 +384,7 @@ export default function ClientesPage() {
       {/* Encabezado */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-3 mb-2">
-          <Contact className="w-6 h-6 text-emerald-700" />
+          <Handshake className="w-6 h-6 text-emerald-700" />
           Gestión de Clientes
         </h1>
         <div className="border-b border-gray-200"></div>

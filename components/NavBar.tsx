@@ -6,8 +6,8 @@ import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  User, Users, NotebookText, BarChart, LogOut,
-  ClipboardList, Settings, HardDrive, Receipt, MonitorDot
+  User, Users, NotebookText, Handshake, LogOut, MonitorSmartphone,
+  ClipboardList, Settings, HardDrive, Receipt, ChartNoAxesCombined
 } from "lucide-react";
 
 export default function Navbar() {
@@ -21,13 +21,13 @@ export default function Navbar() {
 
   const menuItems = [
     { href: "/perfil", label: "Perfil", icon: User },
-    { href: "/clientes", label: "Clientes", icon: Users },
+    { href: "/clientes", label: "Clientes", icon: Handshake },
     { href: "/bitacoras", label: "Bitácoras", icon: NotebookText },
     { href: "/pagos", label: "Pagos", icon: Receipt },
-    { href: "/equipos", label: "Equipos", icon: MonitorDot },
+    { href: "/equipos", label: "Equipos", icon: MonitorSmartphone },
     { href: "/sistemas", label: "Sistemas", icon: HardDrive },
-    { href: "/usuarios", label: "Usuarios", icon: User },
-    { href: "/reportes", label: "Reportes", icon: BarChart },
+    { href: "/usuarios", label: "Usuarios", icon: Users },
+    { href: "/reportes", label: "Reportes", icon: ChartNoAxesCombined },
     { href: "/encuestas", label: "Encuesta", icon: ClipboardList },
     { href: "/configuracion", label: "Configuración", icon: Settings },
   ];
@@ -102,8 +102,7 @@ export default function Navbar() {
   return (
     <>
       {/* Barra superior */}
-      <nav className="bg-red-700 text-white px-6 py-4 flex justify-between items-center shadow fixed top-0 left-0 right-0 z-50">
-        <div className="flex items-center space-x-4">
+        <nav className="bg-gradient-to-r from-red-700 to-red-900 text-white px-6 py-4 flex justify-between items-center shadow fixed top-0 left-0 right-0 z-50">        <div className="flex items-center space-x-4">
           <button
             className="text-white text-2xl"
             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -150,8 +149,8 @@ export default function Navbar() {
       {/* Overlay oscuro */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40"
-          //onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/10 transition-opacity"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 

@@ -30,11 +30,10 @@ export class EmailService {
 
             if (error) throw error;
 
-            console.log("Correo enviado:", data?.id);
-
         } catch (error) {
-            console.error("Error al enviar correo:", error);
+
             throw new ResponseDto(500, "El servicio de correo está fuera de servicio");
+
         }
 
     }
@@ -119,7 +118,9 @@ export class EmailService {
             if (error) throw error;
 
         } catch {
+
             throw new ResponseDto(500, "Error al enviar la notificación de venta");
+        
         }
         
     }

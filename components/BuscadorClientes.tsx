@@ -6,7 +6,7 @@ import ModalPago from "@/components/ModalPago";
 import FormNuevaBitacora from "@/components/ModalBitacora";
 import PaginationButtons from "@/components/PaginationButtons";
 import React, { useEffect, useState, useCallback } from "react";
-import { Eye, Notebook, Download, ChevronLeft, Trash2  } from "lucide-react";
+import { Eye, NotebookText, Download, ChevronLeft, Trash2  } from "lucide-react";
 import ModalDetalleBitacora from "@/components/ModalDetalleBitacora";
 import { TableHeader, TableCell } from "@/components/TableComponents";
 import { Bitacora, Cliente, Sistema, Equipo, Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
@@ -460,7 +460,7 @@ const BuscarCliente: React.FC = () => {
         {/* Encabezado */}
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-3 mb-2">
-            <Notebook className="w-6 h-6 text-emerald-700" />
+            <NotebookText className="w-6 h-6 text-emerald-700" />
             Gestión de Bitácoras
           </h1>
           <div className="border-b border-gray-200"></div>

@@ -139,6 +139,8 @@ export class PagoService {
                 },
             },
             select: {
+                cliente_id: true,
+                usuario_id: true,
                 no_factura: true,
                 forma_pago: true,
                 detalle_pago: true,
@@ -186,6 +188,8 @@ export class PagoService {
                 },
             },
             select: {
+                cliente_id: true,
+                usuario_id: true,
                 no_factura: true,
                 forma_pago: true,
                 detalle_pago: true,

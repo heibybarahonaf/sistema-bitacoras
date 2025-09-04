@@ -6,39 +6,35 @@ import { UsuarioService } from "@/app/services/usuarioService";
 import { GeneralUtils } from "@/app/common/utils/general.utils";
 
 export async function POST(req: Request) {
-  try {
-    console.log("Recibiendo petición...");
 
-    const { correo } = await req.json();
-    console.log("Correo recibido:", correo);
+    try {
+  
+        const { correo } = await req.json();
+        if (!correo) throw new ResponseDto(400, "El Correo es requerido");
 
-    if (!correo) throw new ResponseDto(400, "El Correo es requerido");
+        const usuario = await UsuarioService.obtenerUsuarioPorCorreo(correo);
+        if (!usuario?.activo) throw new ResponseDto(400, "El usuario no está activo");
 
-    const usuario = await UsuarioService.obtenerUsuarioPorCorreo(correo);
-    console.log("Usuario encontrado:", usuario);
+        const codigo = GeneralUtils.generarCodigo(6);
+        const token = AuthUtils.generarTokenCodigo(correo, codigo, 600);
 
-    if (!usuario?.activo) throw new ResponseDto(400, "El usuario no está activo");
+        await EmailService.enviarCodigoAcceso(correo, codigo);
+        
+        const response = NextResponse.json(new ResponseDto(200, "Código enviado con éxito"));
+        response.cookies.set("codigo_token", token, {
+            httpOnly: true,
+            secure: false,
+            maxAge: 600,
+            path: "/",
+            sameSite: "lax",
+        });
 
-    const codigo = GeneralUtils.generarCodigo(6);
-    const token = AuthUtils.generarTokenCodigo(correo, codigo, 600);
-    console.log("Código generado:", codigo);
+        return response;
 
-    await EmailService.enviarCodigoAcceso(correo, codigo);
-    console.log("Correo enviado");
+    } catch (error) {
 
-    const response = NextResponse.json(new ResponseDto(200, "Código enviado con éxito"));
-    response.cookies.set("codigo_token", token, {
-      httpOnly: true,
-      secure: false,
-      maxAge: 600,
-      path: "/",
-      sameSite: "lax",
-    });
+        return GeneralUtils.generarErrorResponse(error);
+        
+    }
 
-    return response;
-
-  } catch (error) {
-    console.error("Error en /enviar-codigo:", error);
-    return GeneralUtils.generarErrorResponse(error);
-  }
 }

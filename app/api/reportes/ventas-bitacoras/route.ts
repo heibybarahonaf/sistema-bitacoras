@@ -21,8 +21,7 @@ export async function GET(request: Request) {
             throw new ResponseDto(400, "Se requiere el nombre del técnico o 'Todos los técnicos'");
         }
 
-        let bitacoras;
-        let buffer;
+        let bitacoras, buffer;
 
         if(usuario === "Todos" || !usuario){
             bitacoras = await BitacoraService.obtenerTodasBitacorasVentasFechas(fechaInicio, fechaFinal);

@@ -5,7 +5,7 @@ import { Sistema } from "@prisma/client";
 import ModalSistema from "@/components/ModalSistema";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEffect, useState, useCallback } from "react";
-import { Settings2, Plus, Edit3, Trash2 } from "lucide-react";
+import { HardDrive, Plus, Edit3, Trash2 } from "lucide-react";
 import PaginationButtons from "@/components/PaginationButtons";
 import { TableHeader, TableCell } from "@/components/TableComponents";
 
@@ -312,7 +312,7 @@ export default function SistemasPage() {
       {/* Encabezado */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-3 mb-2">
-          <Settings2 className="w-6 h-6 text-emerald-700" />
+          <HardDrive className="w-6 h-6 text-emerald-700" />
           Gestión de Sistemas
         </h1>
         <div className="border-b border-gray-200"></div>

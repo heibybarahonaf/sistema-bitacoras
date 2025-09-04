@@ -94,10 +94,15 @@ export default function CardReporte({
   };
 
   const handleGenerate = () => {
-    const usuarioId = tipo === "usuario" || tipo === "ventas" || tipo === "pagos" ? 
-    (entidadId === "Todos" ? "Todos" : entidadId) : undefined;
+    let usuarioId, rtnCliente, tecnicoId;
   
-    const rtnCliente = tipo === "cliente" ? entidadId : undefined;
+    if (tipo === "usuario" || tipo === "ventas") {
+      usuarioId = entidadId === "Todos" ? "Todos" : entidadId;
+    } else if (tipo === "pagos") {
+      tecnicoId = entidadId === "Todos" ? "Todos" : entidadId;
+    } else if (tipo === "cliente") {
+      rtnCliente = entidadId;
+    }
     
     onGenerate(
       tipo,
@@ -106,6 +111,7 @@ export default function CardReporte({
       usuarioId,
       rtnCliente,
       usuarioId,
+      tecnicoId,
       tipo === "usuario" ? estadoBitacora : undefined
     );
   };

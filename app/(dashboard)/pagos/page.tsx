@@ -3,7 +3,7 @@
 import Swal from "sweetalert2";
 import ModalPago from "@/components/ModalPago";
 import { Pagos_Cliente } from "@prisma/client";
-import { DollarSign, Eye, Edit } from "lucide-react";
+import { Receipt, Eye, Edit } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import PaginationButtons from "@/components/PaginationButtons";
@@ -168,7 +168,7 @@ export default function PagosPage() {
       {/* Encabezado */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-3 mb-2">
-          <DollarSign className="w-6 h-6 text-emerald-700" />
+          <Receipt className="w-6 h-6 text-emerald-700" />
           Pagos Registrados
         </h1>
         <div className="border-b border-gray-200"></div>

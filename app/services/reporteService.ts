@@ -58,6 +58,23 @@ export type BitacoraReporteVentas = {
     } | null;
 };
 
+export type PagoReporte = {
+    cliente_id: number;
+    usuario_id: number;
+    no_factura: string | null;
+    forma_pago: string | null;
+    monto: number;
+    detalle_pago: string | null;
+    createdAt: Date;
+    cliente?: { empresa: string } | null;
+    usuario?: { 
+        nombre: string;
+        correo: string | null;
+        telefono: string | null;
+        zona_asignada: string | null;
+    } | null;
+};
+
 export type BitacoraReporteCliente = {
     fecha_servicio: Date;
     no_ticket: string | null;
@@ -315,6 +332,48 @@ export async function generarPDFPorVentasTecnico(bitacoras: BitacoraReporteVenta
     const doc = generarReporte(
         "Reporte de Ventas Técnico",  
         bitacoras,                       
+        fechaInicio,                     
+        fechaFinal,                      
+        columnas,                        
+        datos,                           
+        undefined,
+        {
+            tecnico: safe(nombre == "Todos" ? "Todos los técnicos" : usuario?.nombre),
+            correoUsuario: safe(nombre == "Todos" ? "N/A" : usuario?.correo),
+            telefono_usuario: safe(nombre == "Todos" ? "N/A" : usuario?.telefono),
+            zona: safe(nombre == "Todos" ? "N/A" : usuario?.zona_asignada)
+        }
+    );
+
+    return doc.output('arraybuffer');
+
+}
+
+
+export async function generarPDFPorPagosTecnico(pagos: PagoReporte[], fechaInicio: string, fechaFinal: string, nombre?: string): Promise<ArrayBuffer> {
+   
+    const usuario = pagos[0]?.usuario ?? null;
+    const columnas = [
+        "FECHA", "FACTURA #", "CLIENTE", "FORMA PAGO", "TOTAL", "TÉCNICO", "DETALLE"
+    ];
+
+    const datos = pagos.map(p => {
+
+        return [
+            formatearFecha(p.createdAt.toISOString()),
+            p.no_factura ?? "N/A",
+            p.cliente?.empresa ?? `ID: ${p.cliente_id}`,
+            p.forma_pago ?? campo_vacio,
+            p.monto.toFixed(2) ?? campo_vacio,
+            p.usuario?.nombre ?? `ID: ${p.usuario_id}`,
+            p.detalle_pago ?? campo_vacio,
+        ].map(v => v === undefined ? null : v);
+
+    }) as (string | number | null)[][];
+
+    const doc = generarReporte(
+        "Reporte de Ventas Técnico",  
+        pagos,                       
         fechaInicio,                     
         fechaFinal,                      
         columnas,                        

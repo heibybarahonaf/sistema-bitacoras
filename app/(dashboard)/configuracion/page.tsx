@@ -1,7 +1,7 @@
 "use client";
 
 import Swal from "sweetalert2";
-import { Cog } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useEffect, useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { Tipo_Servicio, Fase_Implementacion } from "@prisma/client";
@@ -300,7 +300,7 @@ export default function ConfiguracionPage() {
   return (
     <div className="max-w-xl mx-auto text-sm mt-10 mb-24 p-6 bg-white rounded shadow">
       <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
-        <Cog className="w-8 h-8 text-[#295d0c]" />
+        <Settings className="w-8 h-8 text-[#295d0c]" />
         Configuración del Sistema
       </h1>
 

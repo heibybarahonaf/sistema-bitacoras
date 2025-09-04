@@ -3,7 +3,7 @@
 import Swal from "sweetalert2";
 import { useState } from "react";
 import { Cliente } from "@prisma/client";
-import { BarChart, X } from "lucide-react";
+import { ChartNoAxesCombined, X } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import CardReporte from "../../../components/CardReporte";
 
@@ -586,7 +586,7 @@ export default function ReportesPage() {
   return (
     <div className="p-6 mb-6">
       <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
-        <BarChart className="w-8 h-8 text-[#295d0c]" />
+        <ChartNoAxesCombined className="w-8 h-8 text-[#295d0c]" />
         Gestión de Reportes
       </h1>
 
@@ -648,7 +648,7 @@ export default function ReportesPage() {
                     : modalPreview.tipo === "ventas"
                     ? modalPreview.filtroNombre
                     : "Reporte General"}{" "}
-                  • {formatearFecha(modalPreview.fechaInicio)} al {" "}
+                   • {formatearFecha(modalPreview.fechaInicio)} al {" "}
                   {formatearFecha(modalPreview.fechaFinal)}
                 </p>
               </div>
@@ -694,7 +694,7 @@ export default function ReportesPage() {
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Técnico
                             </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                               Detalle
                             </th>
                           </>
@@ -704,7 +704,7 @@ export default function ReportesPage() {
                               Fecha
                             </th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                              Bitacora
+                              Bitacora #
                             </th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                               Cliente
@@ -769,7 +769,7 @@ export default function ReportesPage() {
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                   Modalidad
                                 </th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-80">
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                   Descripción
                                 </th>
                               </>
@@ -825,12 +825,12 @@ export default function ReportesPage() {
                                 {bitacora.id}
                               </td>
                               <td
-                                className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate"
+                                className="px-4 py-4 text-sm text-gray-900 max-w-64 truncate"
                                 title={bitacora.cliente}
                               >
                                 {bitacora.cliente}
                               </td>
-                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 max-w-96 truncate " title={bitacora.venta}>
                                 {bitacora.venta}
                               </td>
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -850,7 +850,7 @@ export default function ReportesPage() {
                                 {bitacora.no_factura}
                               </td>
                               <td
-                                className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate"
+                                className="px-4 py-4 text-sm text-gray-900 max-w-64 truncate"
                                 title={bitacora.cliente}
                               >
                                 {bitacora.cliente}
@@ -864,7 +864,7 @@ export default function ReportesPage() {
                               <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {bitacora.usuario}
                               </td>
-                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-64" title={bitacora.detalle_pago}>
                                 {bitacora.detalle_pago}
                               </td>
                             </tr>
@@ -882,7 +882,7 @@ export default function ReportesPage() {
                             {modalPreview.tipo === "general" && (
                               <>
                                 <td
-                                  className="px-4 py-4 text-sm text-gray-900 max-w-32 truncate"
+                                  className="px-4 py-4 text-sm text-gray-900 max-w-64 truncate"
                                   title={bitacora.cliente}
                                 >
                                   {bitacora.cliente}
@@ -905,7 +905,7 @@ export default function ReportesPage() {
                                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                   {bitacora.modalidad}
                                 </td>
-                                <td className="px-4 py-4 text-sm text-gray-900 whitespace-pre-line max-w-80 break-words">
+                                <td className="px-4 py-4 text-sm text-gray-900 whitespace-nowrap max-w-96 truncate" title={bitacora.descripcion}>
                                   {bitacora.descripcion}
                                 </td>
                               </>

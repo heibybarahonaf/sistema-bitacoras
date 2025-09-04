@@ -247,7 +247,9 @@ export default function ModalDetalleBitacora({
               <div key={label} className="mb-2">
                 <span className="font-medium text-gray-600 text-sm">{label}:</span>
                 <p className="mt-1 text-gray-800 whitespace-pre-wrap break-words">
-                  {value || "-"}
+                  {typeof value === "string"
+                    ? value.trim() !== "" ? value : "-"
+                    : value !== undefined && value !== null ? value : "-"}
                 </p>
               </div>
             ))}
@@ -283,7 +285,9 @@ export default function ModalDetalleBitacora({
               <div className="mb-4">
                 <span className="font-medium text-gray-600 text-sm">Comentarios:</span>
                 <p className="mt-1 text-gray-800 whitespace-pre-wrap break-words">
-                  {bitacora.comentarios}
+                  {bitacora.comentarios && bitacora.comentarios.trim() !== "" 
+                    ? bitacora.comentarios 
+                    : "-"}
                 </p>
               </div>
             )}

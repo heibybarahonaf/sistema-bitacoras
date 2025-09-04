@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { ClipboardList } from "lucide-react";
 import { useEffect, useState } from "react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -147,7 +147,7 @@ export default function CrearEncuestaPage() {
   return (
     <div className="max-w-3xl mx-auto p-6 mb-24 relative">
       <h1 className="text-2xl font-semibold mb-6 pb-2 border-b border-gray-300 tracking-wide text-gray-800 flex items-center gap-3">
-        <FileText className="w-8 h-8 text-[#295d0c]" />
+        <ClipboardList className="w-8 h-8 text-[#295d0c]" />
         Gestión de Encuesta
       </h1>
 

@@ -438,7 +438,6 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         comentarios,
         calificacion: 0,
         ventas,
-        //agregar campo factura
         no_factura: factura,
         horas_consumidas: horasConsumidas,
         tipo_horas: tipoHoras,
@@ -470,7 +469,8 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
         throw new Error(errorData.message || "Error al guardar la bitácora");
       }
 
-      if (ventas && ventas.trim() !== "") {
+      // notificación ventas deshabilitado temporalmente
+      /*if (ventas && ventas.trim() !== "") {
         const notificacionRes = await fetch("/api/notificacion-ventas", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -489,7 +489,7 @@ const FormNuevaBitacora: React.FC<FormNuevaBitacoraProps> = ({
             title: "Error al enviar notificación de venta",
           });
         }
-      }
+      }*/
 
       if (modalidad === "Remoto") {
         Swal.fire({

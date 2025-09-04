@@ -54,7 +54,7 @@ export default function HomeContent() {
         ></div>
       </div>
 
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
+      <div className="relative z-0 min-h-screen flex flex-col items-center justify-center px-4 py-8">
         <div className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 md:p-12 pb-0 shadow-2xl border border-white/20 max-w-2xl w-full mx-auto relative overflow-hidden">          <div className="absolute bottom-[-20px] left-0 w-full overflow-hidden leading-[0] z-0">
             <svg
               className="relative block w-[calc(150%+1.3px)] h-[200px]"

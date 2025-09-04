@@ -313,7 +313,7 @@ export class FirmaReporteService {
             currentY += 6;
         }
         
-        if (bitacora.ventas) {
+        if (bitacora.ventas && bitacora.ventas.trim() !== "") {
             doc.setFont("helvetica", "bold");
             doc.text("Ventas:", leftX, currentY);
             doc.setFont("helvetica", "normal");
@@ -333,7 +333,7 @@ export class FirmaReporteService {
             currentY += 6;
         }
 
-        if (bitacora.comentarios) {
+        if (bitacora.comentarios && bitacora.comentarios.trim() !== "") {
             doc.setFont("helvetica", "bold");
             doc.text("Comentarios:", leftX, currentY);
             doc.setFont("helvetica", "normal");
